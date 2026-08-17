@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface-bright: #31394d;
+  --color-surface-variant: #2d3449;
+  --color-on-error-container: #ffdad6;
+  --color-on-secondary-fixed-variant: #004e5c;
+  --color-secondary-fixed-dim: #4cd7f6;
+  --color-on-tertiary: #490080;
+  --color-secondary: #4cd7f6;
+  --color-on-secondary-fixed: #001f26;
+  --color-on-surface: #dae2fd;
+  --color-tertiary-fixed-dim: #ddb7ff;
+  --color-outline-variant: #464554;
+  --color-error-container: #93000a;
+  --color-on-tertiary-fixed: #2c0051;
+  --color-tertiary-fixed: #f0dbff;
+  --color-primary: #c0c1ff;
+  --color-error: #ffb4ab;
+  --color-on-primary-fixed-variant: #2f2ebe;
+  --color-on-background: #dae2fd;
+  --color-on-tertiary-fixed-variant: #6900b3;
+  --color-on-tertiary-container: #400071;
+  --color-surface-tint: #c0c1ff;
+  --color-on-primary-container: #0d0096;
+  --color-primary-fixed-dim: #c0c1ff;
+  --color-primary-fixed: #e1e0ff;
+  --color-on-secondary-container: #00424e;
+  --color-on-primary: #1000a9;
+  --color-surface-container-highest: #2d3449;
+  --color-inverse-primary: #494bd6;
+  --color-tertiary-container: #b76dff;
+  --color-surface-container: #171f33;
+  --color-surface-container-high: #222a3d;
+  --color-secondary-container: #03b5d3;
+  --color-on-secondary: #003640;
+  --color-surface: #0b1326;
+  --color-background: #0b1326;
+  --color-on-primary-fixed: #07006c;
+  --color-on-surface-variant: #c7c4d7;
+  --color-inverse-surface: #dae2fd;
+  --color-primary-container: #8083ff;
+  --color-outline: #908fa0;
+  --color-inverse-on-surface: #283044;
+  --color-on-error: #690005;
+  --color-surface-container-lowest: #060e20;
+  --color-surface-container-low: #131b2e;
+  --color-surface-dim: #0b1326;
+  --color-secondary-fixed: #acedff;
+  --color-tertiary: #ddb7ff;
+  --spacing-container-max-width: 1440px;
+  --spacing-margin-mobile: 16px;
+  --spacing-margin-desktop: 32px;
+  --spacing-gutter: 16px;
+  --spacing-unit: 4px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xs: 4px;
+  --spacing-xl: 32px;
+  --spacing-container-padding: 16px;
+  --radius: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+  --font-display-lg: "Plus Jakarta Sans";
+  --font-title-md: "Plus Jakarta Sans";
+  --font-label-md: "Plus Jakarta Sans";
+  --font-headline-lg: "Plus Jakarta Sans";
+  --font-body-md: "Plus Jakarta Sans";
+  --font-body-sm: "Plus Jakarta Sans";
+  --font-data-mono: "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace";
+}
+
+
+@layer utilities {
+  .status-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+  
+  .express-glow {
+    box-shadow: 0 0 15px rgba(221, 183, 255, 0.1);
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
