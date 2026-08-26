@@ -93,19 +93,29 @@ router.get('/analytics', async (req, res) => {
         const todayResult = await pool.query(
             `SELECT COUNT(*) as today_count, COALESCE(SUM(amount_total), 0) as today_revenue 
              FROM orders 
-             WHERE shop_id = $1 AND created_at >= CURRENT_DATE`,
+             WHERE shop_id = $1 AND created_at >= CURRENT_DATE AND status != 'cancelled'`,
             [req.shop_id]
         );
         const totalResult = await pool.query(
-            `SELECT COALESCE(SUM(amount_total), 0) as total_revenue 
+            `SELECT COUNT(*) as total_count, COALESCE(SUM(amount_total), 0) as total_revenue 
              FROM orders 
-             WHERE shop_id = $1`,
+             WHERE shop_id = $1 AND status != 'cancelled'`,
             [req.shop_id]
         );
+        const completedResult = await pool.query(
+            `SELECT COUNT(*) as completed_count, COALESCE(SUM(amount_total), 0) as completed_revenue 
+             FROM orders 
+             WHERE shop_id = $1 AND status = 'collected'`,
+            [req.shop_id]
+        );
+
         res.json({
             todayOrders: parseInt(todayResult.rows[0].today_count, 10),
             todayRevenue: parseFloat(todayResult.rows[0].today_revenue),
-            totalRevenue: parseFloat(totalResult.rows[0].total_revenue)
+            totalOrders: parseInt(totalResult.rows[0].total_count, 10),
+            totalRevenue: parseFloat(totalResult.rows[0].total_revenue),
+            completedOrders: parseInt(completedResult.rows[0].completed_count, 10),
+            completedRevenue: parseFloat(completedResult.rows[0].completed_revenue)
         });
     } catch (err) {
         console.error('Error fetching analytics:', err);
@@ -763,6 +773,67 @@ async function triggerNotification(customerId, title, body, orderId) {
         console.error(`❌ Push notification failed for order ${orderId}:`, err.message);
     }
 }
+
+/**
+ * @route   GET /api/shop/profile
+ * @desc    Get current shop details and capabilities
+ * @access  Private (Shop Owner Only)
+ */
+router.get('/profile', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT s.*, 
+                COALESCE(
+                    (SELECT json_agg(sc.capability) FROM shop_capabilities sc WHERE sc.shop_id = s.shop_id), 
+                    '[]'::json
+                ) AS capabilities
+             FROM shops s 
+             WHERE s.shop_id = $1`,
+            [req.shop_id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Shop not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error fetching shop profile:', err);
+        res.status(500).json({ error: 'Failed to fetch shop profile' });
+    }
+});
+
+/**
+ * @route   PATCH /api/shop/profile
+ * @desc    Update current shop details
+ * @access  Private (Shop Owner Only)
+ */
+router.patch('/profile', async (req, res) => {
+    const { name, address, phone, price_bw, price_color, opening_time, closing_time, is_open } = req.body;
+
+    try {
+        const result = await pool.query(
+            `UPDATE shops 
+             SET name = COALESCE($1, name), 
+                 address = COALESCE($2, address), 
+                 phone = COALESCE($3, phone),
+                 price_bw = COALESCE($4, price_bw),
+                 price_color = COALESCE($5, price_color),
+                 opening_time = COALESCE($6, opening_time), 
+                 closing_time = COALESCE($7, closing_time),
+                 is_open = COALESCE($8, is_open)
+             WHERE shop_id = $9 
+             RETURNING *`,
+            [name, address, phone, price_bw, price_color, opening_time, closing_time, is_open, req.shop_id]
+        );
+
+        res.json({
+            message: 'Shop profile updated successfully',
+            shop: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Error updating shop profile:', err);
+        res.status(500).json({ error: 'Failed to update shop profile' });
+    }
+});
 
 /**
  * @route   GET /api/shop/status

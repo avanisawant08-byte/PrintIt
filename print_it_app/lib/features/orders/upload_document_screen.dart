@@ -9,6 +9,7 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
 import 'order_provider.dart';
+import 'widgets/office_doc_helper.dart';
 
 class UploadDocumentScreen extends ConsumerStatefulWidget {
   final String? shopId;
@@ -58,7 +59,8 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
         int pages = 1;
         debugPrint('File picked: ${file.name}, size: ${file.size}, bytes length: ${file.bytes?.length}');
 
-        if (file.extension?.toLowerCase() == 'pdf') {
+        final ext = file.extension?.toLowerCase() ?? '';
+        if (ext == 'pdf') {
           try {
             List<int>? bytes = file.bytes;
             if (bytes == null && !kIsWeb && file.path != null) {
@@ -73,6 +75,12 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
             }
           } catch (e) {
             debugPrint('Error parsing PDF: $e');
+          }
+        } else if (['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].contains(ext)) {
+          try {
+            pages = await OfficeDocHelper.getOfficePageCount(file);
+          } catch (e) {
+            debugPrint('Error parsing office document page count: $e');
           }
         }
 
@@ -466,9 +474,11 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                             fontSize: 13,
                           ),
                         ),
-                        if (file.extension?.toLowerCase() == 'pdf') ...[
+                        if (fileState.pages > 0) ...[
                           Text(
-                            ' • ${fileState.pages} page${fileState.pages > 1 ? 's' : ''}',
+                            file.extension?.toLowerCase() == 'ppt' || file.extension?.toLowerCase() == 'pptx'
+                                ? ' • ${fileState.pages} slide${fileState.pages > 1 ? 's' : ''}'
+                                : ' • ${fileState.pages} page${fileState.pages > 1 ? 's' : ''}',
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 13,

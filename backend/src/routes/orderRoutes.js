@@ -47,8 +47,10 @@ router.post('/guest', async (req, res) => {
 
     // 3. Insert order into DB
     try {
+        const order_id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
         const result = await pool.query(
             `INSERT INTO orders (
+        order_id,
         customer_id,
         shop_id,
         files,
@@ -59,9 +61,10 @@ router.post('/guest', async (req, res) => {
         payment_status,
         payment_id,
         print_instructions
-      ) VALUES ($1, $2, $3, $4, 'queued', $5, $6, 'pending', $7, $8)
+      ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'pending', $8, $9)
       RETURNING *`,
             [
+                order_id,
                 customer_id,
                 shop_id,
                 JSON.stringify(files),

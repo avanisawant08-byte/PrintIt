@@ -12,6 +12,7 @@ const productOrderRoutes = require('./productOrderRoutes');
 const supportRoutes = require('./supportRoutes');
 
 const shopWalletRoutes = require('./shopWalletRoutes');
+const shopAnalyticsRoutes = require('./shopAnalyticsRoutes');
 const adminPayoutRoutes = require('./adminPayoutRoutes');
 
 // Mount routes
@@ -19,6 +20,7 @@ router.use('/auth', authRoutes);
 router.use('/orders', orderRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/shop/analytics', shopAnalyticsRoutes);
 router.use('/shop', shopRoutes);
 router.use('/shop', shopWalletRoutes);
 router.use('/admin/payouts', adminPayoutRoutes);

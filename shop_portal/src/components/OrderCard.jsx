@@ -1,5 +1,4 @@
 import React from 'react';
-import api from '../core/api';
 
 const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => {
   const shortId = order.order_id.split('-')[0];
@@ -27,78 +26,160 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
   }
 
   const phoneStr = order.customer_phone || 'N/A';
-  const pickupTypeStr = opts.pickup_type === 'scheduled' ? '🗓️ Scheduled' : '⚡ Express';
-  let pickupTimeStr = 'ASAP';
-  if (opts.pickup_type === 'scheduled' && opts.pickup_time) {
+  const isScheduled = opts.pickup_type === 'scheduled' || order.order_id?.startsWith('S');
+  const pickupTypeStr = isScheduled ? 'Scheduled' : 'Express';
+  let pickupTimeStr = 'ASAP Pickup';
+  if (isScheduled && opts.pickup_time) {
     const pt = new Date(opts.pickup_time);
-    pickupTimeStr = pt.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + pt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    pickupTimeStr = pt.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + pt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   const handleAction = async (status, e) => {
     e.stopPropagation();
     if (status === 'processing') {
-      // First download/print, then mark processing
       onPrint(order.order_id, true);
     }
     onStatusUpdate(order.order_id, status);
   };
 
+  const handlePrintClick = (e) => {
+    e.stopPropagation();
+    onPrint(order.order_id, false);
+  };
+
   return (
     <div 
-      className="bg-surface-container/80 backdrop-blur-md border border-outline-variant/30 rounded-xl p-4 transition-all hover:-translate-y-1 hover:shadow-xl hover:border-outline-variant cursor-pointer flex flex-col gap-4"
+      className="bg-surface-bright rounded-lg border border-outline-variant p-5 hover:border-primary/50 transition-colors shadow-[0_4px_12px_rgba(0,0,0,0.1)] relative group cursor-pointer flex flex-col"
       onClick={() => onOpenModal(order)}
     >
-      <div className="flex justify-between items-start">
+      {/* Card Header */}
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <div className="font-data-mono text-[1.1rem] font-bold tracking-wider">#{shortId}</div>
-          {order.queue_position && colType === 'queued' && (
-            <span className="text-[0.75rem] text-on-surface-variant bg-black/30 px-2 py-0.5 rounded">Pos {order.queue_position}</span>
-          )}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-title-md text-title-md text-primary font-bold">#{shortId}</span>
+            {order.queue_position && colType === 'queued' && (
+              <span className="bg-surface-container px-2 py-0.5 rounded text-xs text-on-surface-variant border border-outline-variant">
+                Pos {order.queue_position}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 text-on-surface-variant text-xs">
+            <span className="material-symbols-outlined text-[14px]">
+              {isScheduled ? 'event' : 'bolt'}
+            </span>
+            {pickupTypeStr}
+          </div>
         </div>
-        <div className="font-bold text-accent text-lg">₹{order.amount_total}</div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-3 bg-black/20 p-3 rounded-lg">
-        <div className="flex flex-col"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Color</span><span className="text-sm font-medium">{opts.color === 'color' ? '🎨 Full Color' : '⬛ B&W'}</span></div>
-        <div className="flex flex-col"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Config</span><span className="text-sm font-medium">{opts.size || 'A4'} • {opts.sides || 'Single'}</span></div>
-        <div className="flex flex-col"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Copies</span><span className="text-sm font-medium">{opts.copies || 1}</span></div>
-        <div className="flex flex-col"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Binding</span><span className="text-sm font-medium">{opts.binding || 'None'}</span></div>
-        <div className="flex flex-col"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Phone</span><span className="text-sm font-medium">📞 {phoneStr}</span></div>
-        <div className="flex flex-col"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Pickup</span><span className="text-sm font-medium">{pickupTypeStr}</span></div>
-        <div className="flex flex-col col-span-2"><span className="text-[0.7rem] text-on-surface-variant uppercase tracking-wider mb-0.5">Pickup Time</span><span className="text-sm font-medium">⏰ {pickupTimeStr}</span></div>
+
+        <div className="text-right">
+          <div className="font-title-md text-title-md text-on-surface font-bold">₹{order.amount_total}</div>
+          <div className="flex items-center justify-end gap-1.5 mt-0.5">
+            <span className="text-xs text-on-surface-variant">Total</span>
+            {order.payment_status && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                order.payment_status === 'captured' 
+                  ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                  : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+              }`}>
+                {order.payment_status === 'captured' ? 'Paid' : 'Unpaid'}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
-      {order.print_instructions && (
-        <div className="mt-2 p-2 bg-yellow-500/10 border-l-2 border-yellow-500 text-yellow-400 text-xs italic">
-          💬 {order.print_instructions}
+      {/* Divider */}
+      <div className="h-px w-full bg-outline-variant mb-4"></div>
+
+      {/* Details Grid */}
+      <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-5 font-body-sm text-body-sm text-on-surface-variant">
+        <div>
+          <span className="block text-[10px] uppercase tracking-wider text-outline mb-0.5">Color</span>
+          <span className="text-on-surface font-medium">{opts.color === 'color' ? 'Color' : 'B&W'}</span>
+        </div>
+        <div>
+          <span className="block text-[10px] uppercase tracking-wider text-outline mb-0.5">Config</span>
+          <span className="text-on-surface font-medium">{opts.size || 'A4'} {opts.sides === 'double' ? 'Double' : 'Single'}</span>
+        </div>
+        <div>
+          <span className="block text-[10px] uppercase tracking-wider text-outline mb-0.5">Copies</span>
+          <span className="text-on-surface font-medium">{opts.copies || 1}</span>
+        </div>
+        <div>
+          <span className="block text-[10px] uppercase tracking-wider text-outline mb-0.5">Binding</span>
+          <span className="text-on-surface font-medium">{opts.binding || 'None'}</span>
+        </div>
+        <div className="col-span-2">
+          <span className="block text-[10px] uppercase tracking-wider text-outline mb-0.5">Customer Contact</span>
+          <div className="flex items-center gap-1 text-on-surface font-medium">
+            <span className="material-symbols-outlined text-[14px]">call</span>
+            {phoneStr}
+          </div>
+        </div>
+        <div className="col-span-2 bg-surface-container-highest p-2 rounded border border-outline-variant">
+          <span className="block text-[10px] uppercase tracking-wider text-outline mb-0.5">Pickup Details</span>
+          <div className="flex items-center gap-2 text-on-surface text-sm">
+            <span className="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
+            {isScheduled ? `Scheduled: ${pickupTimeStr}` : 'Express ASAP Pickup'}
+          </div>
+        </div>
+      </div>
+
+      {/* Print Instructions */}
+      {(order.print_instructions || opts.instructions) && (
+        <div className="mb-4 p-2 bg-amber-500/10 border-l-2 border-amber-500 text-amber-300 text-xs italic">
+          💬 {order.print_instructions || opts.instructions}
         </div>
       )}
 
-      <div className="flex justify-between items-center">
-        <button 
-          onClick={(e) => { e.stopPropagation(); onPrint(order.order_id); }}
-          className="bg-green-500/15 text-green-400 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-500/25 transition-colors"
-        >
-          🖨️ Print
-        </button>
-        {order.payment_status === 'captured' 
-          ? <span className="bg-green-500/15 text-green-400 border border-green-500/30 px-2 py-1 rounded text-[0.65rem] font-bold uppercase tracking-wider">Paid</span>
-          : <span className="bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 px-2 py-1 rounded text-[0.65rem] font-bold uppercase tracking-wider">Unpaid</span>
-        }
-      </div>
-
-      <div className="flex gap-2 mt-2">
+      {/* Actions */}
+      <div className="flex items-center gap-3 mt-auto pt-4 border-t border-outline-variant">
         {colType === 'queued' && (
           <>
-            <button onClick={(e) => handleAction('processing', e)} className="flex-1 bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 p-2 rounded-lg font-semibold text-sm hover:bg-yellow-500/25 hover:-translate-y-px transition-all">⚙️ Accept & DL</button>
-            <button onClick={(e) => handleAction('cancelled', e)} className="flex-[0.4] bg-red-500/10 text-red-400 border border-red-500/20 p-2 rounded-lg font-semibold text-sm hover:bg-red-500/20 transition-colors">✕</button>
+            <button
+              onClick={(e) => handleAction('processing', e)}
+              className="flex-1 bg-primary-container text-on-primary-container font-label-md text-label-md py-2 rounded flex items-center justify-center gap-2 hover:bg-primary active:scale-[0.98] transition-all font-bold cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">download_done</span>
+              Accept &amp; DL
+            </button>
+            <button
+              onClick={(e) => handleAction('cancelled', e)}
+              className="w-10 h-10 rounded border border-error/50 text-error flex items-center justify-center hover:bg-error/10 hover:border-error active:scale-95 transition-all shrink-0 cursor-pointer"
+              title="Reject Order"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
           </>
         )}
+
         {colType === 'processing' && (
-          <button onClick={(e) => handleAction('ready', e)} className="flex-1 bg-green-500/15 text-green-400 border border-green-500/30 p-2 rounded-lg font-semibold text-sm hover:bg-green-500/25 hover:-translate-y-px transition-all">📦 Mark as Ready</button>
+          <>
+            <button
+              onClick={handlePrintClick}
+              className="bg-surface-container border border-outline-variant text-primary px-3 py-2 rounded text-xs font-bold hover:bg-surface-variant active:scale-[0.98] transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+              Print
+            </button>
+            <button
+              onClick={(e) => handleAction('ready', e)}
+              className="flex-1 bg-primary-container text-on-primary-container font-label-md text-label-md py-2 px-3 rounded flex items-center justify-center gap-1.5 hover:bg-primary active:scale-[0.98] transition-all font-bold cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">check_box</span>
+              Mark Ready
+            </button>
+          </>
         )}
+
         {colType === 'ready' && (
-          <button onClick={(e) => handleAction('collected', e)} className="flex-1 bg-white/10 text-white p-2 rounded-lg font-semibold text-sm hover:bg-white/20 transition-colors">✓ Handed to Customer</button>
+          <button
+            onClick={(e) => handleAction('collected', e)}
+            className="flex-1 bg-primary-container text-on-primary-container font-label-md text-label-md py-2 px-3 rounded flex items-center justify-center gap-1.5 hover:bg-primary active:scale-[0.98] transition-all font-bold cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+            Handed to Customer
+          </button>
         )}
       </div>
     </div>

@@ -13,11 +13,37 @@ final shopOrdersProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async
   throw Exception('Failed to load orders');
 });
 
-class ExpressDashboardScreen extends ConsumerWidget {
+class ExpressDashboardScreen extends ConsumerStatefulWidget {
   const ExpressDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExpressDashboardScreen> createState() => _ExpressDashboardScreenState();
+}
+
+class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen> {
+  String _selectedQueue = 'express'; // 'express', 'scheduled', 'all'
+
+  String _getPickupType(dynamic order) {
+    if (order == null) return 'express';
+    final orderId = order['order_id']?.toString() ?? '';
+    if (orderId.startsWith('S')) return 'scheduled';
+
+    final optsRaw = order['print_options'];
+    Map<String, dynamic> opts = {};
+    if (optsRaw is Map<String, dynamic>) {
+      opts = optsRaw;
+    } else if (optsRaw is String) {
+      try {
+        opts = jsonDecode(optsRaw) as Map<String, dynamic>;
+      } catch (_) {}
+    }
+
+    if (opts['pickup_type'] == 'scheduled') return 'scheduled';
+    return 'express';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ordersAsync = ref.watch(shopOrdersProvider);
 
     return Scaffold(
@@ -32,17 +58,37 @@ class ExpressDashboardScreen extends ConsumerWidget {
                 Expanded(
                   child: ordersAsync.when(
                     data: (orders) {
-                      final queued = orders.where((o) => o['status'] == 'queued').toList();
-                      final processing = orders.where((o) => o['status'] == 'processing').toList();
-                      final ready = orders.where((o) => o['status'] == 'ready').toList();
-                      
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          if (constraints.maxWidth < 900) {
-                            return _buildMobileLayout(context, ref, queued, processing, ready);
-                          }
-                          return _buildDesktopLayout(context, ref, queued, processing, ready);
-                        },
+                      final expressOrders = orders.where((o) => _getPickupType(o) == 'express').toList();
+                      final scheduledOrders = orders.where((o) => _getPickupType(o) == 'scheduled').toList();
+
+                      final activeExpressCount = expressOrders.where((o) => ['queued', 'processing', 'ready'].contains(o['status'])).length;
+                      final activeScheduledCount = scheduledOrders.where((o) => ['queued', 'processing', 'ready'].contains(o['status'])).length;
+                      final totalActiveCount = orders.where((o) => ['queued', 'processing', 'ready'].contains(o['status'])).length;
+
+                      final currentOrders = _selectedQueue == 'express'
+                          ? expressOrders
+                          : _selectedQueue == 'scheduled'
+                              ? scheduledOrders
+                              : orders;
+
+                      final queued = currentOrders.where((o) => o['status'] == 'queued').toList();
+                      final processing = currentOrders.where((o) => o['status'] == 'processing').toList();
+                      final ready = currentOrders.where((o) => o['status'] == 'ready').toList();
+
+                      return Column(
+                        children: [
+                          _buildQueueTabBar(activeExpressCount, activeScheduledCount, totalActiveCount),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                if (constraints.maxWidth < 900) {
+                                  return _buildMobileLayout(context, ref, queued, processing, ready);
+                                }
+                                return _buildDesktopLayout(context, ref, queued, processing, ready);
+                              },
+                            ),
+                          ),
+                        ],
                       );
                     },
                     loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFDDB7FF))),
@@ -56,7 +102,7 @@ class ExpressDashboardScreen extends ConsumerWidget {
                             child: const Text('Retry'),
                           )
                         ],
-                      )
+                      ),
                     ),
                   ),
                 ),
@@ -68,6 +114,71 @@ class ExpressDashboardScreen extends ConsumerWidget {
       bottomNavigationBar: MediaQuery.of(context).size.width < 900
           ? _buildBottomNav()
           : null,
+    );
+  }
+
+  Widget _buildQueueTabBar(int expressCount, int scheduledCount, int totalCount) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _queueTabButton('express', '⚡ Express Queue', expressCount, const Color(0xFFFFC107)),
+            const SizedBox(width: 8),
+            _queueTabButton('scheduled', '🗓️ Scheduled Queue', scheduledCount, const Color(0xFF00E5FF)),
+            const SizedBox(width: 8),
+            _queueTabButton('all', '🌐 All Orders', totalCount, const Color(0xFFDDB7FF)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _queueTabButton(String queueKey, String label, int count, Color activeColor) {
+    final isSelected = _selectedQueue == queueKey;
+    return InkWell(
+      onTap: () => setState(() => _selectedQueue = queueKey),
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.2) : const Color(0xFF131B2E),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? activeColor : const Color(0xFF464554).withValues(alpha: 0.4),
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? activeColor : Colors.white70,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected ? activeColor.withValues(alpha: 0.3) : Colors.white10,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: isSelected ? activeColor : Colors.white60,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -94,45 +205,6 @@ class ExpressDashboardScreen extends ConsumerWidget {
                     TextSpan(
                       text: 'Shop Portal',
                       style: TextStyle(fontWeight: FontWeight.normal, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF222A3D),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.bolt, color: Color(0xFFDDB7FF), size: 18),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'EXPRESS MODE',
-                      style: TextStyle(color: Color(0xFFDDB7FF), fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 32,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDDB7FF),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          margin: const EdgeInsets.all(2),
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2C0051),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                 ),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'order_provider.dart';
+import 'widgets/office_doc_helper.dart';
 
 class ExpressPickupScreen extends ConsumerStatefulWidget {
   const ExpressPickupScreen({super.key});
@@ -52,7 +53,8 @@ class _ExpressPickupScreenState extends ConsumerState<ExpressPickupScreen> with 
 
       for (var file in result.files) {
         int pages = 1;
-        if (file.extension?.toLowerCase() == 'pdf') {
+        final ext = file.extension?.toLowerCase() ?? '';
+        if (ext == 'pdf') {
           try {
             List<int>? bytes = file.bytes;
             if (bytes == null && !kIsWeb && file.path != null) {
@@ -65,6 +67,12 @@ class _ExpressPickupScreenState extends ConsumerState<ExpressPickupScreen> with 
             }
           } catch (e) {
             debugPrint('Error parsing PDF: $e');
+          }
+        } else if (['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].contains(ext)) {
+          try {
+            pages = await OfficeDocHelper.getOfficePageCount(file);
+          } catch (e) {
+            debugPrint('Error parsing office document page count: $e');
           }
         }
         newEntries.add(FileEntry(file: file, pages: pages));

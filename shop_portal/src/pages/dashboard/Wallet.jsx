@@ -40,30 +40,16 @@ const Wallet = () => {
 
   // Filters
   const [typeFilter, setTypeFilter] = useState('all');
-
-  const [fetchError, setFetchError] = useState('');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
-    setFetchError('');
     try {
       const [walletRes, bankRes, txRes, withRes] = await Promise.all([
-        api.get('/shop/wallet').catch(err => {
-          console.error('Error loading /shop/wallet:', err);
-          return { data: { availableBalance: 0, pendingBalance: 0, totalEarned: 0, totalWithdrawn: 0 } };
-        }),
-        api.get('/shop/bank-accounts').catch(err => {
-          console.error('Error loading /shop/bank-accounts:', err);
-          return { data: [] };
-        }),
-        api.get(`/shop/wallet/transactions${typeFilter !== 'all' ? `?type=${typeFilter}` : ''}`).catch(err => {
-          console.error('Error loading /shop/wallet/transactions:', err);
-          return { data: { transactions: [] } };
-        }),
-        api.get('/shop/wallet/withdrawals').catch(err => {
-          console.error('Error loading /shop/wallet/withdrawals:', err);
-          return { data: [] };
-        })
+        api.get('/shop/wallet').catch(() => ({ data: { availableBalance: 0, pendingBalance: 0, totalEarned: 0, totalWithdrawn: 0 } })),
+        api.get('/shop/bank-accounts').catch(() => ({ data: [] })),
+        api.get(`/shop/wallet/transactions${typeFilter !== 'all' ? `?type=${typeFilter}` : ''}`).catch(() => ({ data: { transactions: [] } })),
+        api.get('/shop/wallet/withdrawals').catch(() => ({ data: [] }))
       ]);
 
       setWallet(walletRes.data || { availableBalance: 0, pendingBalance: 0, totalEarned: 0, totalWithdrawn: 0 });
@@ -78,7 +64,6 @@ const Wallet = () => {
       }
     } catch (err) {
       console.error('Failed to load wallet data:', err);
-      setFetchError(err.response?.data?.error || err.message || 'Failed to load wallet data');
     } finally {
       setIsLoading(false);
     }
@@ -175,370 +160,418 @@ const Wallet = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col max-w-7xl mx-auto w-full">
-      {/* Header & Main Cards */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-on-surface">Shopkeeper Wallet & Payouts</h1>
-          <p className="text-on-surface-variant text-sm">Track earnings, transaction history, and request bank withdrawals</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowAddBankModal(true)}
-            className="flex items-center gap-2 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">account_balance</span>
-            Manage Bank Accounts
-          </button>
-          <button
-            onClick={() => setShowWithdrawModal(true)}
-            disabled={wallet.availableBalance < 100}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-on-primary px-5 py-2 rounded-xl text-sm font-semibold shadow-md disabled:opacity-50 transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">payments</span>
-            Request Withdrawal
-          </button>
-        </div>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Available Balance */}
-        <div className="bg-surface-container border border-primary/30 p-5 rounded-2xl relative overflow-hidden shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Available Balance</span>
-            <span className="material-symbols-outlined text-primary text-2xl">account_balance_wallet</span>
-          </div>
-          <div className="text-3xl font-extrabold text-on-surface mb-1">
+    <div className="w-full flex flex-col space-y-8">
+      {/* Summary Cards Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card 1: Available Balance */}
+        <div className="glass-panel p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden group hover:glow-active transition-all duration-500">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors"></div>
+          <span className="text-label-md font-label-md text-on-surface-variant">Available Balance</span>
+          <div className="text-headline-lg font-headline-lg font-bold text-primary mt-1">
             ₹{wallet.availableBalance.toFixed(2)}
           </div>
-          <p className="text-xs text-on-surface-variant">Ready for immediate withdrawal</p>
+          <div className="mt-4">
+            <button
+              onClick={() => setShowWithdrawModal(true)}
+              disabled={wallet.availableBalance < 100}
+              className="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(96,165,250,0.3)] cursor-pointer font-bold active:scale-[0.98] disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-sm">payments</span>
+              Request Withdrawal
+            </button>
+          </div>
         </div>
 
-        {/* Pending Balance */}
-        <div className="bg-surface-container border border-outline-variant/30 p-5 rounded-2xl shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">Pending Balance</span>
-            <span className="material-symbols-outlined text-amber-400 text-2xl">pending</span>
-          </div>
-          <div className="text-3xl font-extrabold text-on-surface mb-1">
+        {/* Card 2: Pending Balance */}
+        <div className="glass-panel p-6 rounded-xl flex flex-col gap-2">
+          <span className="text-label-md font-label-md text-on-surface-variant">Pending Balance</span>
+          <div className="text-headline-lg font-headline-lg font-bold text-on-surface mt-1">
             ₹{wallet.pendingBalance.toFixed(2)}
           </div>
-          <p className="text-xs text-on-surface-variant">Earnings awaiting order confirmation</p>
+          <p className="text-label-sm font-label-sm text-on-surface-variant/70 mt-auto pt-4">
+            Clearing in 2-3 business days
+          </p>
         </div>
 
-        {/* Total Earned */}
-        <div className="bg-surface-container border border-outline-variant/30 p-5 rounded-2xl shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Lifetime Earned</span>
-            <span className="material-symbols-outlined text-emerald-400 text-2xl">trending_up</span>
-          </div>
-          <div className="text-3xl font-extrabold text-on-surface mb-1">
+        {/* Card 3: Lifetime Earned */}
+        <div className="glass-panel p-6 rounded-xl flex flex-col gap-2">
+          <span className="text-label-md font-label-md text-on-surface-variant">Lifetime Earned</span>
+          <div className="text-headline-lg font-headline-lg font-bold text-on-surface mt-1">
             ₹{wallet.totalEarned.toFixed(2)}
           </div>
-          <p className="text-xs text-on-surface-variant">All-time gross credits</p>
+          <p className="text-label-sm font-label-sm text-on-surface-variant/70 mt-auto pt-4">
+            Since Jan 2023
+          </p>
         </div>
 
-        {/* Total Withdrawn */}
-        <div className="bg-surface-container border border-outline-variant/30 p-5 rounded-2xl shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-sky-400">Total Withdrawn</span>
-            <span className="material-symbols-outlined text-sky-400 text-2xl">output</span>
-          </div>
-          <div className="text-3xl font-extrabold text-on-surface mb-1">
+        {/* Card 4: Total Withdrawn */}
+        <div className="glass-panel p-6 rounded-xl flex flex-col gap-2">
+          <span className="text-label-md font-label-md text-on-surface-variant">Total Withdrawn</span>
+          <div className="text-headline-lg font-headline-lg font-bold text-on-surface mt-1">
             ₹{wallet.totalWithdrawn.toFixed(2)}
           </div>
-          <p className="text-xs text-on-surface-variant">Processed payouts to bank</p>
+          <p className="text-label-sm font-label-sm text-on-surface-variant/70 mt-auto pt-4">
+            To linked accounts
+          </p>
         </div>
-      </div>
+      </section>
 
-      {/* Tabs */}
-      <div className="flex border-b border-outline-variant/30 mb-6 gap-6">
-        <button
-          onClick={() => setActiveTab('ledger')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'ledger'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <span className="material-symbols-outlined text-[18px]">receipt_long</span>
-          Transaction Ledger
-        </button>
-        <button
-          onClick={() => setActiveTab('withdrawals')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'withdrawals'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <span className="material-symbols-outlined text-[18px]">history</span>
-          Withdrawal Requests ({withdrawals.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('banks')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'banks'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <span className="material-symbols-outlined text-[18px]">account_balance</span>
-          Saved Bank Accounts ({bankAccounts.length}/2)
-        </button>
-      </div>
+      {/* Main Content Area with Tabs */}
+      <section className="glass-panel rounded-xl overflow-hidden flex flex-col min-h-[500px]">
+        {/* Tab Navigation */}
+        <div className="border-b border-glass-edge/30 px-2 flex overflow-x-auto hide-scrollbar">
+          <button
+            onClick={() => setActiveTab('ledger')}
+            className={`px-6 py-4 font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === 'ledger'
+                ? 'text-primary border-b-2 border-primary font-bold bg-primary/5'
+                : 'text-on-surface-variant hover:text-on-surface border-b-2 border-transparent hover:bg-glass-edge/10'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">receipt_long</span>
+            Transaction Ledger
+          </button>
 
-      {/* Tab 1: Transaction Ledger */}
-      {activeTab === 'ledger' && (
-        <div className="flex-1 flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-on-surface">Recent Wallet Transactions</h2>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-on-surface-variant">Filter:</label>
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="bg-surface-container-highest border border-outline-variant/50 rounded-lg text-xs p-2 text-on-surface focus:outline-none focus:border-primary"
-              >
-                <option value="all">All Types</option>
-                <option value="credit">Credit</option>
-                <option value="withdrawal">Withdrawal</option>
-                <option value="debit">Debit</option>
-                <option value="refund">Refund</option>
-              </select>
-            </div>
-          </div>
+          <button
+            onClick={() => setActiveTab('withdrawals')}
+            className={`px-6 py-4 font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === 'withdrawals'
+                ? 'text-primary border-b-2 border-primary font-bold bg-primary/5'
+                : 'text-on-surface-variant hover:text-on-surface border-b-2 border-transparent hover:bg-glass-edge/10'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">schedule</span>
+            Withdrawal Requests ({withdrawals.length})
+          </button>
 
-          <div className="bg-surface-container border border-outline-variant/30 rounded-2xl overflow-x-auto shadow-sm">
-            {isLoading ? (
-              <div className="p-8 text-center text-on-surface-variant">Loading transactions...</div>
-            ) : transactions.length === 0 ? (
-              <div className="p-8 text-center text-on-surface-variant">No transaction entries found.</div>
-            ) : (
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-black/30 border-b border-outline-variant/30 text-[0.75rem] uppercase tracking-wider text-on-surface-variant">
-                    <th className="p-4">Date & Time</th>
-                    <th className="p-4">Description</th>
-                    <th className="p-4">Type</th>
-                    <th className="p-4 text-right">Gross Amount</th>
-                    <th className="p-4 text-right">Platform Fee</th>
-                    <th className="p-4 text-right">Net Credited/Debited</th>
-                    <th className="p-4 text-right">Running Balance</th>
-                    <th className="p-4 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/10 text-sm">
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-surface-variant/30 transition-colors">
-                      <td className="p-4 text-xs font-mono text-on-surface-variant">
-                        {new Date(tx.createdAt).toLocaleString()}
-                      </td>
-                      <td className="p-4 font-medium text-on-surface">
-                        {tx.description || (tx.type === 'withdrawal' ? 'Withdrawal Request' : 'Order Credit')}
-                      </td>
-                      <td className="p-4 uppercase text-xs font-bold">
-                        <span
-                          className={`px-2 py-1 rounded-md ${
-                            tx.type === 'credit'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : tx.type === 'withdrawal'
-                              ? 'bg-amber-500/20 text-amber-400'
-                              : tx.type === 'refund'
-                              ? 'bg-sky-500/20 text-sky-400'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}
+          <button
+            onClick={() => setActiveTab('banks')}
+            className={`px-6 py-4 font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === 'banks'
+                ? 'text-primary border-b-2 border-primary font-bold bg-primary/5'
+                : 'text-on-surface-variant hover:text-on-surface border-b-2 border-transparent hover:bg-glass-edge/10'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">account_balance</span>
+            Saved Bank Accounts ({bankAccounts.length}/2)
+          </button>
+        </div>
+
+        {/* Tab 1: Transaction Ledger */}
+        {activeTab === 'ledger' && (
+          <div className="p-6 flex-1 flex flex-col">
+            {/* Header & Controls */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h3 className="text-body-lg font-body-lg font-semibold text-on-surface">Recent Wallet Transactions</h3>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="glass-panel hover:bg-glass-edge/20 text-on-surface-variant text-label-md font-label-md py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-glass-edge cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">filter_list</span>
+                    Filter: {typeFilter === 'all' ? 'All' : typeFilter.toUpperCase()}
+                    <span className="material-symbols-outlined text-sm ml-2">expand_more</span>
+                  </button>
+
+                  {showFilterDropdown && (
+                    <div className="absolute right-0 mt-2 w-44 glass-panel-heavy rounded-xl p-2 z-30 shadow-2xl">
+                      {['all', 'credit', 'withdrawal', 'debit', 'refund'].map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => { setTypeFilter(t); setShowFilterDropdown(false); }}
+                          className={`w-full text-left px-3 py-1.5 text-xs font-label-md rounded hover:bg-glass-edge/20 ${typeFilter === t ? 'text-primary font-bold' : 'text-on-surface-variant'}`}
                         >
-                          {tx.type}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right font-mono">
-                        {tx.grossAmount > 0 ? `₹${tx.grossAmount.toFixed(2)}` : '—'}
-                      </td>
-                      <td className="p-4 text-right font-mono text-on-surface-variant">
-                        {tx.platformFee > 0 ? `₹${tx.platformFee.toFixed(2)}` : '—'}
-                      </td>
-                      <td className={`p-4 text-right font-mono font-bold ${tx.netAmount >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                        {tx.netAmount >= 0 ? `+₹${tx.netAmount.toFixed(2)}` : `-₹${Math.abs(tx.netAmount).toFixed(2)}`}
-                      </td>
-                      <td className="p-4 text-right font-mono font-bold text-on-surface">
-                        ₹{tx.balanceAfter.toFixed(2)}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className="text-xs px-2 py-1 rounded-full bg-surface-container-high border border-outline-variant/30 text-on-surface-variant">
-                          {tx.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Withdrawal Requests */}
-      {activeTab === 'withdrawals' && (
-        <div className="bg-surface-container border border-outline-variant/30 rounded-2xl overflow-x-auto shadow-sm">
-          {withdrawals.length === 0 ? (
-            <div className="p-8 text-center text-on-surface-variant">No withdrawal requests submitted yet.</div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-black/30 border-b border-outline-variant/30 text-[0.75rem] uppercase tracking-wider text-on-surface-variant">
-                  <th className="p-4">Requested At</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Bank Account</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">UTR Number / Note</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/10 text-sm">
-                {withdrawals.map((w) => (
-                  <tr key={w.id} className="hover:bg-surface-variant/30 transition-colors">
-                    <td className="p-4 text-xs font-mono text-on-surface-variant">
-                      {new Date(w.requestedAt).toLocaleString()}
-                    </td>
-                    <td className="p-4 font-bold text-on-surface">₹{w.amount.toFixed(2)}</td>
-                    <td className="p-4">
-                      {w.bankAccount ? (
-                        <div>
-                          <p className="font-semibold text-xs">{w.bankAccount.bankName}</p>
-                          <p className="text-xs font-mono text-on-surface-variant">{w.bankAccount.accountNumberMasked}</p>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-on-surface-variant">—</span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          w.status === 'processed'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : w.status === 'pending'
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}
-                      >
-                        {w.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="p-4 font-mono text-xs">
-                      {w.utrNumber ? (
-                        <span className="text-emerald-400 font-bold">UTR: {w.utrNumber}</span>
-                      ) : w.rejectionReason ? (
-                        <span className="text-red-400">{w.rejectionReason}</span>
-                      ) : (
-                        <span className="text-on-surface-variant opacity-50">Awaiting processing...</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* Tab 3: Saved Bank Accounts */}
-      {activeTab === 'banks' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {bankAccounts.map((acc) => (
-            <div
-              key={acc.id}
-              className={`bg-surface-container border p-5 rounded-2xl relative shadow-sm flex flex-col justify-between ${
-                acc.isPrimary ? 'border-primary' : 'border-outline-variant/30'
-              }`}
-            >
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
-                    <div>
-                      <h3 className="font-bold text-on-surface text-base">{acc.bankName}</h3>
-                      <p className="text-xs text-on-surface-variant uppercase">{acc.accountType} Account</p>
+                          {t === 'all' ? 'All Types' : t.toUpperCase()}
+                        </button>
+                      ))}
                     </div>
-                  </div>
-                  {acc.isPrimary && (
-                    <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-xs font-semibold">
-                      Primary Payout
-                    </span>
                   )}
                 </div>
 
-                <div className="space-y-1.5 text-sm my-4 font-mono">
-                  <p className="text-on-surface-variant">Holder: <span className="font-semibold text-on-surface">{acc.accountHolderName}</span></p>
-                  <p className="text-on-surface-variant">Account No: <span className="font-semibold text-on-surface">{acc.accountNumberMasked}</span></p>
-                  <p className="text-on-surface-variant">IFSC Code: <span className="font-semibold text-on-surface">{acc.ifscCode}</span></p>
-                  {acc.upiId && <p className="text-on-surface-variant">UPI ID: <span className="font-semibold text-on-surface">{acc.upiId}</span></p>}
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-3 border-t border-outline-variant/20">
-                {!acc.isPrimary && (
-                  <button
-                    onClick={() => handleSetPrimaryBank(acc.id)}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs py-2 rounded-lg font-medium border border-outline-variant/40"
-                  >
-                    Set as Primary
-                  </button>
-                )}
                 <button
-                  onClick={() => handleDeleteBank(acc.id)}
-                  className="px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs py-2 rounded-lg font-medium border border-red-500/20"
+                  onClick={() => setActiveTab('banks')}
+                  className="glass-panel text-primary border-primary/30 hover:bg-primary/10 text-label-md font-label-md py-2 px-4 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                 >
-                  Remove
+                  <span className="material-symbols-outlined text-sm">add_circle</span>
+                  Manage Bank Accounts
                 </button>
               </div>
             </div>
-          ))}
 
-          {bankAccounts.length < 2 && (
-            <button
-              onClick={() => setShowAddBankModal(true)}
-              className="border-2 border-dashed border-outline-variant/50 hover:border-primary/50 bg-surface-container/30 hover:bg-surface-container p-6 rounded-2xl flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:text-primary transition-all min-h-[180px]"
-            >
-              <span className="material-symbols-outlined text-3xl">add_circle</span>
-              <span className="font-semibold text-sm">Add New Bank Account</span>
-              <span className="text-xs opacity-70">Saved accounts: {bankAccounts.length}/2</span>
-            </button>
-          )}
-        </div>
-      )}
+            {/* Content Table / Empty State */}
+            {isLoading ? (
+              <div className="flex-1 flex items-center justify-center py-16 text-on-surface-variant">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-2xl animate-spin">autorenew</span>
+                  <span className="font-label-md text-xs">Loading ledger entries...</span>
+                </div>
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-16 text-center bg-surface-container/20 rounded-lg border border-dashed border-glass-edge/30">
+                <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 border border-glass-edge">
+                  <span className="material-symbols-outlined text-3xl text-outline">history_toggle_off</span>
+                </div>
+                <h4 className="text-body-lg font-body-lg text-on-surface mb-2 font-semibold">No transaction entries found.</h4>
+                <p className="text-body-md font-body-md text-on-surface-variant/70 max-w-md text-sm">
+                  Your transaction history will appear here once you process orders or initiate withdrawals.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-surface-container/40 border border-glass-edge/30 rounded-xl overflow-x-auto">
+                <table className="w-full text-left border-collapse font-label-md text-xs">
+                  <thead>
+                    <tr className="bg-black/30 border-b border-glass-edge/20 uppercase tracking-wider text-on-surface-variant font-bold">
+                      <th className="p-4">Date & Time</th>
+                      <th className="p-4">Description</th>
+                      <th className="p-4">Type</th>
+                      <th className="p-4 text-right">Gross</th>
+                      <th className="p-4 text-right">Fee</th>
+                      <th className="p-4 text-right">Net Amount</th>
+                      <th className="p-4 text-right">Balance</th>
+                      <th className="p-4 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-glass-edge/10">
+                    {transactions.map((tx) => (
+                      <tr key={tx.id} className="hover:bg-glass-edge/10 transition-colors">
+                        <td className="p-4 font-mono text-on-surface-variant">
+                          {new Date(tx.createdAt).toLocaleString()}
+                        </td>
+                        <td className="p-4 font-semibold text-on-surface">
+                          {tx.description || (tx.type === 'withdrawal' ? 'Withdrawal Request' : 'Order Credit')}
+                        </td>
+                        <td className="p-4 uppercase font-bold">
+                          <span
+                            className={`px-2 py-1 rounded text-[10px] ${
+                              tx.type === 'credit'
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                : tx.type === 'withdrawal'
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            }`}
+                          >
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right font-mono">
+                          {tx.grossAmount > 0 ? `₹${tx.grossAmount.toFixed(2)}` : '—'}
+                        </td>
+                        <td className="p-4 text-right font-mono text-on-surface-variant">
+                          {tx.platformFee > 0 ? `₹${tx.platformFee.toFixed(2)}` : '—'}
+                        </td>
+                        <td className={`p-4 text-right font-mono font-bold ${tx.netAmount >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                          {tx.netAmount >= 0 ? `+₹${tx.netAmount.toFixed(2)}` : `-₹${Math.abs(tx.netAmount).toFixed(2)}`}
+                        </td>
+                        <td className="p-4 text-right font-mono font-bold text-on-surface">
+                          ₹{tx.balanceAfter.toFixed(2)}
+                        </td>
+                        <td className="p-4 text-center">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container border border-glass-edge text-on-surface-variant uppercase">
+                            {tx.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: Withdrawal Requests */}
+        {activeTab === 'withdrawals' && (
+          <div className="p-6 flex-1 flex flex-col">
+            <h3 className="text-body-lg font-body-lg font-semibold text-on-surface mb-6">Withdrawal Requests History</h3>
+            {withdrawals.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-16 text-center bg-surface-container/20 rounded-lg border border-dashed border-glass-edge/30">
+                <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 border border-glass-edge">
+                  <span className="material-symbols-outlined text-3xl text-outline">schedule</span>
+                </div>
+                <h4 className="text-body-lg font-body-lg text-on-surface mb-2 font-semibold">No withdrawal requests submitted yet.</h4>
+                <p className="text-body-md font-body-md text-on-surface-variant/70 max-w-md text-sm">
+                  Click "Request Withdrawal" to transfer available funds to your linked bank account.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-surface-container/40 border border-glass-edge/30 rounded-xl overflow-x-auto">
+                <table className="w-full text-left border-collapse font-label-md text-xs">
+                  <thead>
+                    <tr className="bg-black/30 border-b border-glass-edge/20 uppercase tracking-wider text-on-surface-variant font-bold">
+                      <th className="p-4">Requested At</th>
+                      <th className="p-4">Amount</th>
+                      <th className="p-4">Bank Account</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">UTR Number / Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-glass-edge/10">
+                    {withdrawals.map((w) => (
+                      <tr key={w.id} className="hover:bg-glass-edge/10 transition-colors">
+                        <td className="p-4 font-mono text-on-surface-variant">
+                          {new Date(w.requestedAt).toLocaleString()}
+                        </td>
+                        <td className="p-4 font-bold text-primary">₹{w.amount.toFixed(2)}</td>
+                        <td className="p-4">
+                          {w.bankAccount ? (
+                            <div>
+                              <p className="font-semibold text-on-surface">{w.bankAccount.bankName}</p>
+                              <p className="text-[10px] font-mono text-on-surface-variant">{w.bankAccount.accountNumberMasked}</p>
+                            </div>
+                          ) : (
+                            <span className="text-on-surface-variant opacity-50">—</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              w.status === 'processed'
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                : w.status === 'pending'
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            }`}
+                          >
+                            {w.status}
+                          </span>
+                        </td>
+                        <td className="p-4 font-mono text-xs">
+                          {w.utrNumber ? (
+                            <span className="text-emerald-400 font-bold">UTR: {w.utrNumber}</span>
+                          ) : w.rejectionReason ? (
+                            <span className="text-red-400">{w.rejectionReason}</span>
+                          ) : (
+                            <span className="text-on-surface-variant opacity-50">Awaiting processing...</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 3: Saved Bank Accounts */}
+        {activeTab === 'banks' && (
+          <div className="p-6 flex-1 flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-body-lg font-body-lg font-semibold text-on-surface">Saved Bank Accounts ({bankAccounts.length}/2)</h3>
+              {bankAccounts.length < 2 && (
+                <button
+                  onClick={() => setShowAddBankModal(true)}
+                  className="glass-panel text-primary border-primary/30 hover:bg-primary/10 text-label-md font-label-md py-2 px-4 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  Add Bank Account
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {bankAccounts.map((acc) => (
+                <div
+                  key={acc.id}
+                  className={`glass-panel p-6 rounded-xl relative flex flex-col justify-between transition-all ${
+                    acc.isPrimary ? 'border-primary shadow-[0_0_20px_rgba(96,165,250,0.15)]' : 'border-glass-edge'
+                  }`}
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center border border-glass-edge">
+                          <span className="material-symbols-outlined text-primary">account_balance</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-on-surface text-base">{acc.bankName}</h4>
+                          <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">{acc.accountType} Account</p>
+                        </div>
+                      </div>
+                      {acc.isPrimary && (
+                        <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          Primary Payout
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 text-xs font-mono my-4 text-on-surface-variant bg-surface-container/50 p-4 rounded-lg border border-glass-edge/20">
+                      <p>Account Holder: <span className="font-semibold text-on-surface">{acc.accountHolderName}</span></p>
+                      <p>Account No: <span className="font-semibold text-on-surface">{acc.accountNumberMasked}</span></p>
+                      <p>IFSC Code: <span className="font-semibold text-on-surface">{acc.ifscCode}</span></p>
+                      {acc.upiId && <p>UPI ID: <span className="font-semibold text-on-surface">{acc.upiId}</span></p>}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-3 border-t border-glass-edge/20">
+                    {!acc.isPrimary && (
+                      <button
+                        onClick={() => handleSetPrimaryBank(acc.id)}
+                        className="flex-1 glass-panel hover:bg-glass-edge/20 text-on-surface text-xs font-label-md py-2 rounded-lg transition-colors border border-glass-edge cursor-pointer"
+                      >
+                        Set as Primary
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteBank(acc.id)}
+                      className="px-4 bg-error/10 hover:bg-error/20 text-error text-xs font-label-md py-2 rounded-lg transition-colors border border-error/20 cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {bankAccounts.length < 2 && (
+                <button
+                  onClick={() => setShowAddBankModal(true)}
+                  className="border-2 border-dashed border-glass-edge/40 hover:border-primary/50 bg-glass-surface/20 hover:bg-glass-surface p-6 rounded-xl flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:text-primary transition-all min-h-[220px] cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-3xl">add_circle</span>
+                  <span className="font-semibold text-sm">Add New Bank Account</span>
+                  <span className="text-xs text-on-surface-variant/70">Saved accounts: {bankAccounts.length}/2</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* WITHDRAWAL REQUEST MODAL */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
           <div 
-            className="bg-surface-container border border-outline-variant/30 rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
-            style={{ width: '100%', maxWidth: '480px', minWidth: '320px' }}
+            className="glass-panel-heavy rounded-2xl p-6 shadow-[0_0_32px_rgba(96,165,250,0.15)] max-h-[90vh] overflow-y-auto w-full max-w-md border border-glass-edge animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-headline-md font-bold text-primary text-xl flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">payments</span>
                 Request Withdrawal
-              </h2>
-              <button onClick={() => setShowWithdrawModal(false)} className="text-on-surface-variant hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
+              </h3>
+              <button 
+                onClick={() => setShowWithdrawModal(false)} 
+                className="w-8 h-8 rounded-full bg-surface-container border border-glass-edge text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
               </button>
             </div>
 
             {withdrawError && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs p-3 rounded-xl mb-4">
+              <div className="bg-error/10 border border-error/30 text-error text-xs p-3 rounded-lg mb-4 font-label-md">
                 {withdrawError}
               </div>
             )}
 
-            <form onSubmit={handleWithdrawSubmit} className="space-y-4">
+            <form onSubmit={handleWithdrawSubmit} className="space-y-4 font-label-md text-xs">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">Available Balance</label>
-                <div className="text-xl font-bold text-emerald-400">₹{wallet.availableBalance.toFixed(2)}</div>
+                <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Available Balance</label>
+                <div className="text-2xl font-bold text-primary font-mono">₹{wallet.availableBalance.toFixed(2)}</div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">Withdrawal Amount (₹)</label>
+                <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Withdrawal Amount (₹)</label>
                 <input
                   type="number"
                   min="100"
@@ -548,12 +581,12 @@ const Wallet = () => {
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder="Enter amount (min ₹100)"
-                  className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
+                  className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">Select Payout Bank Account</label>
+                <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Select Payout Bank Account</label>
                 {bankAccounts.length === 0 ? (
                   <p className="text-xs text-amber-400">No bank accounts saved. Please add a bank account first.</p>
                 ) : (
@@ -561,7 +594,7 @@ const Wallet = () => {
                     value={selectedBankId}
                     onChange={(e) => setSelectedBankId(e.target.value)}
                     required
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-xs focus:outline-none focus:border-primary"
                   >
                     {bankAccounts.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -572,24 +605,24 @@ const Wallet = () => {
                 )}
               </div>
 
-              <div className="bg-surface-container-high p-3 rounded-xl text-xs space-y-1 text-on-surface-variant">
+              <div className="bg-surface-container/60 border border-glass-edge/30 p-3 rounded-xl space-y-1 text-on-surface-variant text-[11px]">
                 <p>• Minimum withdrawal: <strong>₹100</strong></p>
                 <p>• Payout is processed manually/IMPS by platform admin</p>
-                <p>• You will receive a bank UTR number once processed</p>
+                <p>• Bank UTR number is provided upon confirmation</p>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-4 border-t border-glass-edge/20">
                 <button
                   type="button"
                   onClick={() => setShowWithdrawModal(false)}
-                  className="flex-1 bg-surface-container-high text-on-surface text-sm py-2.5 rounded-xl font-medium"
+                  className="flex-1 glass-panel text-on-surface text-xs py-3 rounded-xl font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingWithdraw || bankAccounts.length === 0}
-                  className="flex-1 bg-primary text-on-primary text-sm py-2.5 rounded-xl font-semibold hover:bg-primary/90 disabled:opacity-50"
+                  className="flex-1 bg-primary hover:bg-primary-container text-on-primary text-xs py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(96,165,250,0.3)] disabled:opacity-50 cursor-pointer active:scale-[0.98]"
                 >
                   {isSubmittingWithdraw ? 'Submitting...' : 'Confirm Request'}
                 </button>
@@ -601,68 +634,71 @@ const Wallet = () => {
 
       {/* ADD BANK ACCOUNT MODAL */}
       {showAddBankModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
           <div 
-            className="bg-surface-container border border-outline-variant/30 rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
-            style={{ width: '100%', maxWidth: '580px', minWidth: '340px' }}
+            className="glass-panel-heavy rounded-2xl p-6 shadow-[0_0_32px_rgba(96,165,250,0.15)] max-h-[90vh] overflow-y-auto w-full max-w-lg border border-glass-edge animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-headline-md font-bold text-primary text-xl flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">account_balance</span>
                 Add Bank Account
-              </h2>
-              <button onClick={() => setShowAddBankModal(false)} className="text-on-surface-variant hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
+              </h3>
+              <button 
+                onClick={() => setShowAddBankModal(false)} 
+                className="w-8 h-8 rounded-full bg-surface-container border border-glass-edge text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
               </button>
             </div>
 
             {bankError && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs p-3 rounded-xl mb-4">
+              <div className="bg-error/10 border border-error/30 text-error text-xs p-3 rounded-lg mb-4 font-label-md">
                 {bankError}
               </div>
             )}
 
-            <form onSubmit={handleAddBankSubmit} className="space-y-4">
+            <form onSubmit={handleAddBankSubmit} className="space-y-4 font-label-md text-xs">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">Account Holder Name *</label>
+                <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Account Holder Name *</label>
                 <input
                   type="text"
                   required
                   value={bankFormData.accountHolderName}
                   onChange={(e) => setBankFormData({ ...bankFormData, accountHolderName: e.target.value })}
                   placeholder="Full name as on bank account"
-                  className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary"
+                  className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">Account Number *</label>
+                  <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Account Number *</label>
                   <input
                     type="password"
                     required
                     value={bankFormData.accountNumber}
                     onChange={(e) => setBankFormData({ ...bankFormData, accountNumber: e.target.value })}
                     placeholder="Enter account number"
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">Confirm Account Number *</label>
+                  <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Confirm Account *</label>
                   <input
                     type="text"
                     required
                     value={bankFormData.confirmAccountNumber}
                     onChange={(e) => setBankFormData({ ...bankFormData, confirmAccountNumber: e.target.value })}
                     placeholder="Re-enter account number"
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">IFSC Code *</label>
+                  <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">IFSC Code *</label>
                   <input
                     type="text"
                     required
@@ -670,41 +706,41 @@ const Wallet = () => {
                     value={bankFormData.ifscCode}
                     onChange={(e) => setBankFormData({ ...bankFormData, ifscCode: e.target.value.toUpperCase() })}
                     placeholder="e.g. SBIN0001234"
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono uppercase"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">Bank Name</label>
+                  <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Bank Name</label>
                   <input
                     type="text"
                     value={bankFormData.bankName}
                     onChange={(e) => setBankFormData({ ...bankFormData, bankName: e.target.value })}
                     placeholder="e.g. State Bank of India"
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">Account Type</label>
+                  <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">Account Type</label>
                   <select
                     value={bankFormData.accountType}
                     onChange={(e) => setBankFormData({ ...bankFormData, accountType: e.target.value })}
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-xs focus:outline-none focus:border-primary"
                   >
                     <option value="savings">Savings</option>
                     <option value="current">Current</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">UPI ID (Optional)</label>
+                  <label className="block text-on-surface-variant mb-1 font-semibold uppercase tracking-wider">UPI ID (Optional)</label>
                   <input
                     type="text"
                     value={bankFormData.upiId}
                     onChange={(e) => setBankFormData({ ...bankFormData, upiId: e.target.value })}
                     placeholder="name@upi"
-                    className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
+                    className="w-full bg-surface-container border border-glass-edge rounded-xl p-3 text-on-surface text-sm focus:outline-none focus:border-primary font-mono"
                   />
                 </div>
               </div>
@@ -715,25 +751,25 @@ const Wallet = () => {
                   id="isPrimaryCheck"
                   checked={bankFormData.isPrimary}
                   onChange={(e) => setBankFormData({ ...bankFormData, isPrimary: e.target.checked })}
-                  className="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"
+                  className="rounded border-glass-edge text-primary focus:ring-primary h-4 w-4"
                 />
                 <label htmlFor="isPrimaryCheck" className="text-xs text-on-surface font-medium cursor-pointer">
                   Set as Primary payout bank account
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-outline-variant/20">
+              <div className="flex gap-3 pt-4 border-t border-glass-edge/20">
                 <button
                   type="button"
                   onClick={() => setShowAddBankModal(false)}
-                  className="flex-1 bg-surface-container-high text-on-surface text-sm py-2.5 rounded-xl font-medium"
+                  className="flex-1 glass-panel text-on-surface text-xs py-3 rounded-xl font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingBank}
-                  className="flex-1 bg-primary text-on-primary text-sm py-2.5 rounded-xl font-semibold hover:bg-primary/90 disabled:opacity-50"
+                  className="flex-1 bg-primary hover:bg-primary-container text-on-primary text-xs py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(96,165,250,0.3)] disabled:opacity-50 cursor-pointer active:scale-[0.98]"
                 >
                   {isSubmittingBank ? 'Saving...' : 'Save Bank Account'}
                 </button>
