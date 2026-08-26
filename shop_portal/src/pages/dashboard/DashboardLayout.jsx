@@ -11,31 +11,17 @@ const DashboardLayout = () => {
   const [showNewJobModal, setShowNewJobModal] = useState(false);
 
   const navItems = [
-    { name: 'Live Queue', path: '/dashboard/queue', icon: 'queue_play_next' },
-    { name: 'Orders', path: '/dashboard/orders', icon: 'shopping_bag' },
-    { name: 'My Listings', path: '/dashboard/listings', icon: 'list_alt' },
-    { name: 'Product Orders', path: '/dashboard/product-orders', icon: 'shopping_cart' },
+    { name: 'Live Queue', path: '/dashboard/queue', icon: 'post_add' },
+    { name: 'Orders', path: '/dashboard/orders', icon: 'shopping_cart' },
+    { name: 'My Listings', path: '/dashboard/listings', icon: 'inventory_2' },
     { name: 'Pricing', path: '/dashboard/pricing', icon: 'payments' },
     { name: 'Wallet & Payouts', path: '/dashboard/wallet', icon: 'account_balance_wallet' },
-    { name: 'Analytics', path: '/dashboard/analytics', icon: 'leaderboard' },
-    { name: 'Settings', path: '/dashboard/settings', icon: 'settings' },
+    { name: 'Analytics', path: '/dashboard/analytics', icon: 'analytics' },
   ];
 
   const handleLogout = () => {
     logout();
     navigate('/');
-  };
-
-  const getPageTitle = () => {
-    const currentPath = location.pathname;
-    if (currentPath.includes('/wallet')) return 'Shopkeeper Wallet & Payouts';
-    if (currentPath.includes('/queue')) return 'Order Workflow & Live Queue';
-    if (currentPath.includes('/orders')) return 'Order History & Status';
-    if (currentPath.includes('/listings')) return 'My Products & Listings';
-    if (currentPath.includes('/pricing')) return 'Pricing & Catalog';
-    if (currentPath.includes('/analytics')) return 'Performance Analytics';
-    if (currentPath.includes('/settings')) return 'Shop Settings';
-    return 'Shopkeeper Portal';
   };
 
   const handleCreateJobSubmit = (jobData) => {
@@ -54,46 +40,45 @@ const DashboardLayout = () => {
       {/* SideNavBar */}
       <aside className="hidden md:flex flex-col h-full fixed left-0 top-0 w-64 rounded-r-xl bg-glass-surface backdrop-blur-xl border-r border-glass-edge shadow-xl shadow-primary/10 z-50">
         {/* Header */}
-        <div className="px-6 py-6 border-b border-glass-edge/20 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center border border-glass-edge shrink-0">
+        <div className="px-5 py-6 border-b border-glass-edge/20 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-surface-container/80 border border-glass-edge shrink-0 flex items-center justify-center">
             <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
           </div>
           <div>
-            <h1 className="text-headline-md font-display font-bold text-primary text-xl leading-tight">
-              Shopkeeper Pro
+            <h1 className="font-display font-bold text-on-surface text-sm leading-tight tracking-tight">
+              PrintIt Shopkeepers Portal
             </h1>
-            <p className="text-label-sm font-label-sm text-on-surface-variant">
-              {shopName || 'Merchant Portal'}
+            <p className="text-[11px] text-on-surface-variant/80 font-medium mt-0.5">
+              {shopName || user?.name || user?.owner_name || user?.shop_name || 'PrintTech'}
             </p>
           </div>
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 overflow-y-auto py-6 px-2 space-y-1">
+        <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-1.5">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `relative flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-300 group ${
+                `relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
                   isActive
-                    ? 'text-primary font-bold bg-primary/10 scale-[0.99] opacity-90'
-                    : 'text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl'
+                    ? 'text-primary font-semibold bg-primary/10 border border-primary/40 shadow-[0_0_15px_rgba(96,165,250,0.15)]'
+                    : 'text-on-surface-variant/80 hover:text-on-surface hover:bg-glass-edge/20'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  {isActive && <div className="nav-indicator"></div>}
+                  {isActive && <div className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-full"></div>}
                   <span
-                    className={`material-symbols-outlined text-[20px] transition-colors ${
-                      isActive ? 'text-primary' : 'group-hover:text-primary'
+                    className={`material-symbols-outlined text-[21px] transition-colors ${
+                      isActive ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary'
                     }`}
-                    style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
                   >
                     {item.icon}
                   </span>
-                  <span className="text-label-md font-label-md">{item.name}</span>
+                  <span className="text-sm font-medium tracking-wide">{item.name}</span>
                 </>
               )}
             </NavLink>
@@ -101,57 +86,52 @@ const DashboardLayout = () => {
         </nav>
 
         {/* Footer Navigation */}
-        <div className="mt-auto px-2 pb-6 pt-4 border-t border-glass-edge/20 space-y-2">
-          <button
-            onClick={() => setShowNewJobModal(true)}
-            className="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(96,165,250,0.3)] font-bold cursor-pointer active:scale-[0.98]"
+        <div className="mt-auto px-3 pb-6 pt-4 border-t border-glass-edge/20">
+          <NavLink
+            to="/dashboard/settings"
+            className={({ isActive }) =>
+              `flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                isActive ? 'text-primary font-semibold bg-primary/10' : 'text-on-surface-variant/80 hover:text-on-surface hover:bg-glass-edge/20'
+              }`
+            }
           >
-            <span className="material-symbols-outlined text-sm">add</span>
-            New Print Job
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-error hover:bg-error/10 hover:text-error transition-colors rounded-lg font-label-md text-label-md border border-error/20 cursor-pointer active:scale-[0.98]"
-          >
-            <span className="material-symbols-outlined text-sm">logout</span>
-            Logout
-          </button>
+            <span className="material-symbols-outlined text-[21px]">settings</span>
+            <span className="text-sm font-medium">Settings</span>
+          </NavLink>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 ml-0 md:ml-64 h-screen overflow-y-auto scroll-smooth flex flex-col">
         {/* TopAppBar */}
-        <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-glass-edge/20 px-4 md:px-margin-desktop h-20 flex items-center justify-between shrink-0">
-          <div>
-            <h2 className="text-headline-md font-headline-md font-bold text-primary text-xl md:text-2xl">
-              {getPageTitle()}
-            </h2>
+        <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-glass-edge/20 px-6 md:px-10 h-16 flex items-center justify-between shrink-0">
+          {/* Search Input on Left */}
+          <div className="relative w-64 sm:w-80">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">search</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search orders, jobs..."
+              className="w-full bg-surface-container/60 border border-glass-edge/40 rounded-full py-1.5 pl-9 pr-4 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/50"
+            />
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Search Input */}
-            <div className="relative w-48 sm:w-64 hidden sm:block">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">search</span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search orders, jobs..."
-                className="w-full bg-surface-container border border-glass-edge rounded-full py-1.5 pl-9 pr-4 text-xs font-label-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-outline"
-              />
-            </div>
-
+          {/* Right Header Actions: Bell, LOGOUT button, Profile Avatar */}
+          <div className="flex items-center gap-5">
             <button className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors focus:ring-2 focus:ring-primary/50 outline-none cursor-pointer">
               <span className="material-symbols-outlined text-[20px]">notifications</span>
             </button>
 
-            <button className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors focus:ring-2 focus:ring-primary/50 outline-none cursor-pointer">
-              <span className="material-symbols-outlined text-[20px]">chat_bubble</span>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 text-xs font-bold text-on-surface-variant/90 hover:text-error transition-colors px-2 py-1 rounded cursor-pointer uppercase tracking-wider"
+            >
+              <span>LOGOUT</span>
+              <span className="material-symbols-outlined text-[18px]">logout</span>
             </button>
 
-            <div className="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-glass-edge shrink-0 hidden sm:block">
+            <div className="w-9 h-9 rounded-full bg-surface-container overflow-hidden border border-glass-edge shrink-0">
               <img
                 alt="User Avatar"
                 className="w-full h-full object-cover"

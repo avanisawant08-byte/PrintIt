@@ -53,23 +53,35 @@
   --color-glass-edge: rgba(164, 201, 255, 0.25);
   --color-primary-glow: rgba(96, 165, 250, 0.15);
 
-  --font-manrope: "Manrope", sans-serif;
-  --font-grotesk: "Hanken Grotesk", sans-serif;
-  --font-display-lg: "Manrope", sans-serif;
-  --font-title-md: "Manrope", sans-serif;
+  --font-manrope: "Manrope", "Hanken Grotesk", system-ui, sans-serif;
+  --font-grotesk: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  --font-display-lg: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  --font-title-md: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
   --font-label-md: "JetBrains Mono", monospace;
   --font-label-sm: "JetBrains Mono", monospace;
-  --font-headline-lg: "Hanken Grotesk", sans-serif;
-  --font-headline-md: "Hanken Grotesk", sans-serif;
-  --font-body-md: "Hanken Grotesk", sans-serif;
-  --font-body-sm: "Manrope", sans-serif;
+  --font-headline-lg: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  --font-headline-md: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  --font-body-md: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  --font-body-sm: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
   --font-data-mono: "JetBrains Mono", monospace;
+  --font-sans: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  --font-serif: "EB Garamond", Garamond, Georgia, serif;
 
   --spacing-base: 8px;
   --spacing-margin-desktop: 40px;
   --spacing-margin-mobile: 16px;
   --spacing-container-max: 1440px;
   --spacing-gutter: 24px;
+}
+
+@layer base {
+  body, input, button, select, textarea {
+    font-family: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
+  }
+
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+  }
 }
 
 @layer utilities {

@@ -156,16 +156,16 @@ const LiveQueue = () => {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between md:items-end mb-6 shrink-0 gap-4">
         <div>
-          <h2 className="font-display-lg text-display-lg text-on-surface mb-2 font-extrabold text-3xl md:text-4xl">Order Workflow</h2>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">Manage incoming and processing print jobs.</p>
+          <h2 className="font-display font-extrabold text-on-surface mb-1 text-3xl md:text-4xl tracking-tight">Order Workflow</h2>
+          <p className="text-xs md:text-sm text-on-surface-variant/80 font-normal">Manage incoming and processing print jobs.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Quick Tab Filters */}
-          <div className="flex items-center gap-1 p-1 bg-surface-container-high border border-outline-variant rounded-lg">
+          <div className="hidden sm:flex items-center gap-1 p-1 bg-surface-container-high border border-glass-edge/30 rounded-xl">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded font-label-md text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'all'
                   ? 'bg-primary-container text-on-primary-container font-bold shadow'
                   : 'text-on-surface-variant hover:text-on-surface'
@@ -176,7 +176,7 @@ const LiveQueue = () => {
 
             <button
               onClick={() => setActiveTab('express')}
-              className={`px-3 py-1.5 rounded font-label-md text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'express'
                   ? 'bg-primary-container text-on-primary-container font-bold shadow'
                   : 'text-on-surface-variant hover:text-on-surface'
@@ -187,7 +187,7 @@ const LiveQueue = () => {
 
             <button
               onClick={() => setActiveTab('scheduled')}
-              className={`px-3 py-1.5 rounded font-label-md text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'scheduled'
                   ? 'bg-primary-container text-on-primary-container font-bold shadow'
                   : 'text-on-surface-variant hover:text-on-surface'
@@ -197,18 +197,18 @@ const LiveQueue = () => {
             </button>
           </div>
 
-          {/* Filter Dropdown */}
+          {/* Filter Button */}
           <div className="relative">
             <button 
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex items-center gap-2 px-4 py-2 bg-surface-container-high border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:border-primary transition-colors ${colorFilter !== 'all' ? 'border-primary text-primary' : ''}`}
+              className={`flex items-center gap-2 px-4 py-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-xs font-semibold text-on-surface hover:border-primary transition-colors ${colorFilter !== 'all' ? 'border-primary text-primary' : ''}`}
             >
-              <span className="material-symbols-outlined text-[18px]">filter_list</span>
+              <span className="material-symbols-outlined text-[18px]">tune</span>
               Filter {colorFilter !== 'all' ? `(${colorFilter.toUpperCase()})` : ''}
             </button>
 
             {showFilterMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-surface-container-high border border-outline-variant rounded-xl shadow-xl p-2 z-30">
+              <div className="absolute right-0 mt-2 w-48 bg-surface-container-high border border-glass-edge/40 rounded-xl shadow-xl p-2 z-30">
                 <span className="block px-3 py-1 text-[10px] font-bold text-outline uppercase tracking-wider">Color Filter</span>
                 <button
                   onClick={() => { setColorFilter('all'); setShowFilterMenu(false); }}
@@ -220,7 +220,7 @@ const LiveQueue = () => {
                   onClick={() => { setColorFilter('bw'); setShowFilterMenu(false); }}
                   className={`w-full text-left px-3 py-1.5 text-xs rounded hover:bg-surface-variant ${colorFilter === 'bw' ? 'text-primary font-bold' : 'text-on-surface'}`}
                 >
-                  Black & White
+                  Black &amp; White
                 </button>
                 <button
                   onClick={() => { setColorFilter('color'); setShowFilterMenu(false); }}
@@ -235,15 +235,15 @@ const LiveQueue = () => {
           {/* Refresh Button */}
           <button
             onClick={() => fetchOrders(true)}
-            className="p-2 bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary transition-colors flex items-center justify-center"
+            className="p-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-on-surface hover:border-primary transition-colors flex items-center justify-center cursor-pointer"
             title="Refresh Orders"
           >
             <span className="material-symbols-outlined text-[18px]">refresh</span>
           </button>
 
           {/* Queue Live Indicator */}
-          <div className="px-4 py-2 bg-surface-container-high border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          <div className="px-4 py-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-xs font-semibold text-on-surface flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
             Queue Live
           </div>
         </div>
@@ -253,21 +253,21 @@ const LiveQueue = () => {
         <div className="flex-1 flex items-center justify-center text-on-surface-variant">
           <div className="flex flex-col items-center gap-2">
             <span className="material-symbols-outlined text-primary text-3xl animate-spin">autorenew</span>
-            <span className="font-body-sm text-sm">Loading Order Workflow...</span>
+            <span className="text-sm">Loading Order Workflow...</span>
           </div>
         </div>
       ) : (
         /* Kanban Board Area */
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-gutter overflow-hidden pb-2">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden pb-2">
           {/* Column 1: New Orders */}
-          <div className="flex flex-col bg-surface-container rounded-xl border border-outline-variant shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
+          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
             {/* Column Header */}
-            <div className="p-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">inbox</span>
-                <h3 className="font-title-md text-title-md text-on-surface font-semibold text-base">New Orders</h3>
+            <div className="p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-primary text-xl">post_add</span>
+                <h3 className="font-title-md text-on-surface font-semibold text-base tracking-tight">New Orders</h3>
               </div>
-              <span className="bg-primary/20 text-primary font-label-md text-label-md px-2 py-1 rounded-full border border-primary/30">
+              <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center font-bold border border-primary/30">
                 {queued.length}
               </span>
             </div>
@@ -275,11 +275,11 @@ const LiveQueue = () => {
             {/* Column Content */}
             <div className="flex-1 p-4 overflow-y-auto kanban-col flex flex-col gap-4">
               {queued.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60 py-12">
-                  <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 border border-outline-variant">
-                    <span className="material-symbols-outlined text-[32px] text-outline">inbox</span>
+                <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60 py-16">
+                  <div className="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 border border-glass-edge/20">
+                    <span className="material-symbols-outlined text-[28px] text-on-surface-variant/60">post_add</span>
                   </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant max-w-[200px]">
+                  <p className="text-xs text-on-surface-variant max-w-[180px]">
                     No new orders in this queue
                   </p>
                 </div>
@@ -299,14 +299,14 @@ const LiveQueue = () => {
           </div>
 
           {/* Column 2: Processing */}
-          <div className="flex flex-col bg-surface-container rounded-xl border border-outline-variant shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
+          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
             {/* Column Header */}
-            <div className="p-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-outline">autorenew</span>
-                <h3 className="font-title-md text-title-md text-on-surface font-semibold text-base">Processing</h3>
+            <div className="p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-on-surface-variant text-xl">sync</span>
+                <h3 className="font-title-md text-on-surface font-semibold text-base tracking-tight">Processing</h3>
               </div>
-              <span className="bg-surface-container-highest text-on-surface-variant font-label-md text-label-md px-2 py-1 rounded-full border border-outline-variant">
+              <span className="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant text-xs flex items-center justify-center font-bold border border-glass-edge/30">
                 {processing.length}
               </span>
             </div>
@@ -314,11 +314,11 @@ const LiveQueue = () => {
             {/* Column Content */}
             <div className="flex-1 p-4 overflow-y-auto kanban-col flex flex-col gap-4">
               {processing.length === 0 ? (
-                <div className="flex-1 p-4 kanban-col flex flex-col items-center justify-center text-center opacity-60">
-                  <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 border border-outline-variant">
-                    <span className="material-symbols-outlined text-[32px] text-outline">print_disabled</span>
+                <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60 py-16">
+                  <div className="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 border border-glass-edge/20">
+                    <span className="material-symbols-outlined text-[28px] text-on-surface-variant/60">print_disabled</span>
                   </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant max-w-[200px]">
+                  <p className="text-xs text-on-surface-variant max-w-[180px]">
                     No active processing in this queue
                   </p>
                 </div>
@@ -338,14 +338,14 @@ const LiveQueue = () => {
           </div>
 
           {/* Column 3: Ready for Pickup */}
-          <div className="flex flex-col bg-surface-container rounded-xl border border-outline-variant shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
+          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
             {/* Column Header */}
-            <div className="p-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-outline">inventory</span>
-                <h3 className="font-title-md text-title-md text-on-surface font-semibold text-base">Ready for Pickup</h3>
+            <div className="p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-on-surface-variant text-xl">inventory_2</span>
+                <h3 className="font-title-md text-on-surface font-semibold text-base tracking-tight">Ready for Pickup</h3>
               </div>
-              <span className="bg-surface-container-highest text-on-surface-variant font-label-md text-label-md px-2 py-1 rounded-full border border-outline-variant">
+              <span className="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant text-xs flex items-center justify-center font-bold border border-glass-edge/30">
                 {ready.length}
               </span>
             </div>
@@ -353,11 +353,11 @@ const LiveQueue = () => {
             {/* Column Content */}
             <div className="flex-1 p-4 overflow-y-auto kanban-col flex flex-col gap-4">
               {ready.length === 0 ? (
-                <div className="flex-1 p-4 kanban-col flex flex-col items-center justify-center text-center opacity-60">
-                  <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 border border-outline-variant">
-                    <span className="material-symbols-outlined text-[32px] text-outline">check_box_outline_blank</span>
+                <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60 py-16">
+                  <div className="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 border border-glass-edge/20">
+                    <span className="material-symbols-outlined text-[28px] text-on-surface-variant/60">check_box_outline_blank</span>
                   </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant max-w-[200px]">
+                  <p className="text-xs text-on-surface-variant max-w-[180px]">
                     No orders ready in this queue
                   </p>
                 </div>

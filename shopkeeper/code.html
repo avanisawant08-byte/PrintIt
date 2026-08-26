@@ -4,7 +4,7 @@
 <title>Wallet &amp; Payouts - Shopkeeper Pro</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <script id="tailwind-config">
         tailwind.config = {
@@ -77,14 +77,14 @@
                       "unit": "4px"
               },
               "fontFamily": {
-                      "body-lg": ["Hanken Grotesk"],
-                      "label-md": ["JetBrains Mono"],
-                      "body-md": ["Hanken Grotesk"],
-                      "label-sm": ["JetBrains Mono"],
-                      "display": ["Hanken Grotesk"],
-                      "headline-lg-mobile": ["Hanken Grotesk"],
-                      "headline-lg": ["Hanken Grotesk"],
-                      "headline-md": ["Hanken Grotesk"]
+                      "body-lg": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "label-md": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "body-md": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "label-sm": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "display": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "headline-lg-mobile": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "headline-lg": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "headline-md": ["EB Garamond", "Garamond", "Georgia", "serif"]
               },
               "fontSize": {
                       "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
@@ -101,6 +101,12 @@
         }
       </script>
 <style>
+          body, input, button, select, textarea, table, th, td, h1, h2, h3, h4, h5, h6, p, span, div, a {
+              font-family: 'EB Garamond', Garamond, Georgia, serif;
+          }
+          .material-symbols-outlined {
+              font-family: 'Material Symbols Outlined' !important;
+          }
           .glass-panel {
               background-color: rgba(15, 26, 54, 0.7);
               backdrop-filter: blur(20px);
