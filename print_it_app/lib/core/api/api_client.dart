@@ -9,7 +9,11 @@ final apiProvider = Provider<ApiClient>((ref) {
 
 class ApiClient {
   late final Dio dio;
-  static String currentBaseUrl = 'http://192.168.1.108:3000/api';
+  static String currentBaseUrl = kIsWeb
+      ? (Uri.base.host.isNotEmpty && Uri.base.host != 'localhost'
+          ? 'http://${Uri.base.host}:3000/api'
+          : 'http://localhost:3000/api')
+      : 'http://192.168.1.111:3000/api';
   static String get baseUrl => currentBaseUrl;
   bool _isDiscovering = false;
 
@@ -36,11 +40,11 @@ class ApiClient {
         return handler.next(options);
       },
       onError: (DioException e, handler) async {
-        if (_isConnectionFailure(e) && !_isDiscovering) {
-          debugPrint('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Connection failed to ${dio.options.baseUrl}. Attempting server auto-discovery...');
+        if (!kIsWeb && _isConnectionFailure(e) && !_isDiscovering) {
+          debugPrint('⚠️ Connection failed to ${dio.options.baseUrl}. Attempting server auto-discovery...');
           final workingUrl = await autoDiscoverBackend();
           if (workingUrl != null) {
-            debugPrint('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Server auto-discovered at: $workingUrl');
+            debugPrint('✅ Server auto-discovered at: $workingUrl');
             final opts = e.requestOptions;
             opts.baseUrl = workingUrl;
             try {
@@ -73,17 +77,15 @@ class ApiClient {
 
   /// Automatically discover working backend server on local WiFi or mDNS
   Future<String?> autoDiscoverBackend() async {
-    if (_isDiscovering) return null;
+    if (_isDiscovering || kIsWeb) return null;
     _isDiscovering = true;
 
     try {
       final List<String> candidateUrls = [
-        'http://10.108.45.102:3000/api',
-        'http://Sawant.local:3000/api',
-        if (currentBaseUrl != 'http://10.108.45.102:3000/api' && currentBaseUrl != 'http://Sawant.local:3000/api') currentBaseUrl,
-        'http://192.168.1.108:3000/api',
+        'http://localhost:3000/api',
         'http://127.0.0.1:3000/api',
-        'http://10.0.2.2:3000/api',
+        'http://192.168.1.111:3000/api',
+        if (currentBaseUrl != 'http://localhost:3000/api') currentBaseUrl,
       ];
 
       for (final url in candidateUrls) {
@@ -91,62 +93,6 @@ class ApiClient {
           await updateServerUrl(url);
           _isDiscovering = false;
           return url;
-        }
-      }
-
-      final List<String> commonSubnets = [
-        '192.168.137', // Windows Mobile Hotspot
-        '172.20.10',   // iPhone Hotspot
-        '192.168.43',  // Android Hotspot
-        '192.168.1', 
-        '192.168.0', 
-        '10.0.0',
-        '10.108.45'
-      ];
-
-      for (final subnet in commonSubnets) {
-        // Test gateway and a few common IPs first
-        List<String> fastTestUrls = [
-          'http://$subnet.1:3000/api',
-          'http://$subnet.100:3000/api',
-          'http://$subnet.108:3000/api'
-        ];
-
-        for (final url in fastTestUrls) {
-          if (candidateUrls.contains(url)) continue;
-          if (await _testUrl(url)) {
-            await updateServerUrl(url);
-            _isDiscovering = false;
-            return url;
-          }
-        }
-
-        // Parallel scan for a range of IPs
-        List<Future<String?>> futures = [];
-        for (int i = 2; i <= 254; i++) {
-          if (i == 100 || i == 108) continue;
-          final testUrl = 'http://$subnet.$i:3000/api';
-          if (candidateUrls.contains(testUrl)) continue;
-          
-          futures.add(() async {
-            if (await _testUrl(testUrl)) {
-              return testUrl;
-            }
-            return null;
-          }());
-        }
-
-        // Wait for any successful discovery in this subnet
-        // We chunk them to avoid too many open sockets
-        for (int i = 0; i < futures.length; i += 50) {
-          final chunk = futures.sublist(i, (i + 50 > futures.length) ? futures.length : i + 50);
-          final results = await Future.wait(chunk);
-          final found = results.firstWhere((r) => r != null, orElse: () => null);
-          if (found != null) {
-            await updateServerUrl(found);
-            _isDiscovering = false;
-            return found;
-          }
         }
       }
     } catch (e) {

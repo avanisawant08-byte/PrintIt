@@ -51,6 +51,8 @@ final appRouter = GoRouter(
       path: '/home',
       builder: (context, state) => const HomeScreen(),
     ),
+
+    // In-Store QR Code Scan Routes - Auto Locks Vendor Shop & Opens Upload
     GoRoute(
       path: '/upload-document/:shopId',
       builder: (context, state) {
@@ -58,6 +60,28 @@ final appRouter = GoRouter(
         return UploadDocumentScreen(shopId: shopId);
       },
     ),
+    GoRoute(
+      path: '/shop/:shopId',
+      builder: (context, state) {
+        final shopId = state.pathParameters['shopId']!;
+        return UploadDocumentScreen(shopId: shopId);
+      },
+    ),
+    GoRoute(
+      path: '/qr/:shopId',
+      builder: (context, state) {
+        final shopId = state.pathParameters['shopId']!;
+        return UploadDocumentScreen(shopId: shopId);
+      },
+    ),
+    GoRoute(
+      path: '/scan/:shopId',
+      builder: (context, state) {
+        final shopId = state.pathParameters['shopId']!;
+        return UploadDocumentScreen(shopId: shopId);
+      },
+    ),
+
     GoRoute(
       path: '/quick-upload',
       builder: (context, state) => const UploadDocumentScreen(shopId: null),
@@ -138,18 +162,6 @@ final appRouter = GoRouter(
       builder: (context, state) => const HelpSupportScreen(),
     ),
     GoRoute(
-      path: '/my-tickets',
-      builder: (context, state) => const MyTicketsScreen(),
-    ),
-    GoRoute(
-      path: '/create-ticket',
-      builder: (context, state) => const CreateTicketScreen(),
-    ),
-    GoRoute(
-      path: '/ticket/:id',
-      builder: (context, state) => TicketDetailScreen(ticketId: state.pathParameters['id']!),
-    ),
-    GoRoute(
       path: '/browse-categories',
       builder: (context, state) => const BrowseCategoriesScreen(),
     ),
@@ -173,28 +185,40 @@ final appRouter = GoRouter(
       builder: (context, state) => const ManageShopServicesScreen(),
     ),
     GoRoute(
-      path: '/shopkeeper-express',
+      path: '/express-dashboard',
       builder: (context, state) => const ExpressDashboardScreen(),
     ),
     GoRoute(
       path: '/browse-manuals',
-      builder: (context, state) {
-        final shopId = state.uri.queryParameters['shop_id'];
-        return BrowseManualsScreen(shopId: shopId);
-      },
+      builder: (context, state) => const BrowseManualsScreen(),
     ),
     GoRoute(
       path: '/manual-detail',
       builder: (context, state) {
-        final manual = state.extra as Map<String, dynamic>;
-        return ProductDetailScreen(manual: manual);
+        final item = state.extra as Map<String, dynamic>? ?? {};
+        return ProductDetailScreen(manual: item);
       },
     ),
     GoRoute(
       path: '/post-order',
       builder: (context, state) {
-        final order = state.extra as Map<String, dynamic>;
+        final order = state.extra as Map<String, dynamic>? ?? {};
         return PostOrderScreen(order: order);
+      },
+    ),
+    GoRoute(
+      path: '/my-tickets',
+      builder: (context, state) => const MyTicketsScreen(),
+    ),
+    GoRoute(
+      path: '/create-ticket',
+      builder: (context, state) => const CreateTicketScreen(),
+    ),
+    GoRoute(
+      path: '/ticket/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return TicketDetailScreen(ticketId: id);
       },
     ),
   ],

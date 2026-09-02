@@ -39,15 +39,15 @@ Welcome to the official master documentation for **Print It**, an all-in-one dig
 
 ## 2. Platform Architecture & Technology Stack
 
-The platform consists of four distinct sub-systems:
+The platform consists of five distinct sub-systems:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            CUSTOMER MOBILE APP                              │
-│                (Flutter, Riverpod, GoRouter, Firebase FCM)                  │
-└───────────────────────┬─────────────────────────────┬───────────────────────┘
-                        │                             │
-                        ▼                             ▼
+┌───────────────────────────────┐             ┌───────────────────────────────┐
+│     CUSTOMER MOBILE APP       │             │     CUSTOMER WEB PORTAL       │
+│  (Flutter, Riverpod, FCM)     │             │   (React 19, Vite, Tailwind)  │
+└───────────────┬───────────────┘             └───────────────┬───────────────┘
+                │                                             │
+                ▼                                             ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                             NODE.JS BACKEND API                             │
 │       (Express 5, PostgreSQL pool, GCS Storage, Firebase Admin, Redis)       │
@@ -69,6 +69,7 @@ The platform consists of four distinct sub-systems:
 | **Push Notifications** | Firebase Cloud Messaging (FCM) | Real-time push updates for order status |
 | **Payments** | Razorpay SDK & Internal Wallet Ledger | Online payment processing & balance transfers |
 | **Customer App** | Flutter (Dart 3.12), Riverpod | Native cross-platform Android & iOS application |
+| **Customer Web Portal** | React 19, Vite, TailwindCSS v4 | Mobile-first web application for customer print ordering |
 | **Shop Web Portal** | React 19, Vite 8, TailwindCSS v4 | Vendor queue management, pricing & listings portal |
 | **Admin Web Portal** | React 19, Vite 8, TailwindCSS v4 | Platform governance, payout transfers & support desk |
 
