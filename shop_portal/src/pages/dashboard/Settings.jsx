@@ -136,16 +136,17 @@ const Settings = () => {
     }
   };
 
-  // Direct In-Store QR URL
   const shopId = profile?.shop_id || profile?.id || '8473b134-01c6-46b1-9746-4befaaa5fd46';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '5173';
   const host = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? '192.168.0.103'
     : window.location.hostname;
-  const customerBaseUrl = 
-    import.meta.env.VITE_CUSTOMER_APP_URL || 
-    (window.location.port === '5173'
-      ? `${window.location.protocol}//${host}:8080`
-      : `${window.location.origin}`);
+  
+  const defaultCustomerUrl = isLocal 
+    ? `http://${host}:8080` 
+    : 'https://print-it-wp74.vercel.app';
+
+  const customerBaseUrl = import.meta.env.VITE_CUSTOMER_APP_URL || defaultCustomerUrl;
   const qrDirectUrl = `${customerBaseUrl}/#/upload-document/${shopId}`;
 
   const handleCopyLink = () => {
