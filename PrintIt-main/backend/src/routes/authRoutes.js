@@ -234,6 +234,80 @@ router.post('/google', async (req, res) => {
     }
 });
 
+// POST /api/auth/phone — Phone OTP Login via Firebase Token
+router.post('/phone', async (req, res) => {
+    const { firebase_token } = req.body;
+
+    if (!firebase_token) {
+        return res.status(400).json({ error: 'Firebase token is required' });
+    }
+
+    try {
+        const decodedToken = await getAuth().verifyIdToken(firebase_token);
+        const { phone_number, uid } = decodedToken;
+
+        if (!phone_number) {
+            return res.status(400).json({ error: 'No phone number associated with token' });
+        }
+
+        // Search user by phone number
+        let result = await pool.query('SELECT * FROM users WHERE phone = $1', [phone_number]);
+        let user;
+
+        if (result.rows.length === 0) {
+            const cleanPhone = phone_number.replace(/\D/g, '');
+            const fallbackEmail = `${cleanPhone}@phone.printit.in`;
+            const last4 = cleanPhone.slice(-4);
+            
+            const insertResult = await pool.query(
+                `INSERT INTO users (email, phone, full_name, role) 
+                 VALUES ($1, $2, $3, 'customer') 
+                 RETURNING *`,
+                [fallbackEmail, phone_number, `Customer ${last4}`]
+            );
+            user = insertResult.rows[0];
+        } else {
+            user = result.rows[0];
+        }
+
+        // Retroactively link past guest orders to this user
+        try {
+            const cleanDigits = phone_number.replace(/\D/g, '').slice(-10);
+            await pool.query(
+                `UPDATE orders SET customer_id = $1 
+                 WHERE customer_id IS NULL AND (
+                     print_instructions ILIKE '%' || $2 || '%'
+                 )`,
+                [user.user_id, cleanDigits]
+            );
+        } catch (linkErr) {
+            console.warn('Retroactive order link warning:', linkErr.message);
+        }
+
+        const token = jwt.sign(
+            { user_id: user.user_id, email: user.email, phone: user.phone, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            message: 'Phone login successful',
+            token,
+            user: {
+                user_id: user.user_id,
+                email: user.email,
+                full_name: user.full_name,
+                phone: user.phone,
+                avatar_url: user.avatar_url,
+                role: user.role
+            }
+        });
+    } catch (err) {
+        console.error('Phone login error:', err);
+        res.status(401).json({ error: 'Phone verification failed: ' + err.message });
+    }
+});
+
 
 // GET /api/auth/me — Get current user profile
 router.get('/me', auth, async (req, res) => {
