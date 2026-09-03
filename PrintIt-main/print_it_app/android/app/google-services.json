@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "322993568107",
+    "project_id": "printit-4d823",
+    "storage_bucket": "printit-4d823.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:322993568107:android:bc7b7652714c66bd4db42e",
+        "android_client_info": {
+          "package_name": "com.example.print_it_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "322993568107-aitfuqgck1bpn7um3av32hmoglcd1b7g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.print_it_app",
+            "certificate_hash": "9b88ce1497a9f0a22f57e6b5e672d72e21fe3979"
+          }
+        },
+        {
+          "client_id": "322993568107-dpgb4hsmat85kugnbeqjpltrdd4hbn3c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8F9AUrYaZglIxqNE4fPoDmPllZgkxsA4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "322993568107-dpgb4hsmat85kugnbeqjpltrdd4hbn3c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "322993568107-cevuivprc3ghgak773odrctav0k54m4t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.printItApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
