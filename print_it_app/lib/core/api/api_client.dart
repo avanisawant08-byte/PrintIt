@@ -9,11 +9,14 @@ final apiProvider = Provider<ApiClient>((ref) {
 
 class ApiClient {
   late final Dio dio;
-  static String currentBaseUrl = kIsWeb
-      ? (Uri.base.host.isNotEmpty && Uri.base.host != 'localhost'
-          ? 'http://${Uri.base.host}:3000/api'
-          : 'http://localhost:3000/api')
-      : 'http://192.168.1.111:3000/api';
+  static const String envApiUrl = String.fromEnvironment('API_URL');
+  static String currentBaseUrl = envApiUrl.isNotEmpty
+      ? envApiUrl
+      : (kIsWeb
+          ? (Uri.base.host.isNotEmpty && Uri.base.host != 'localhost'
+              ? 'http://${Uri.base.host}:3000/api'
+              : 'http://localhost:3000/api')
+          : 'http://192.168.1.111:3000/api');
   static String get baseUrl => currentBaseUrl;
   bool _isDiscovering = false;
 

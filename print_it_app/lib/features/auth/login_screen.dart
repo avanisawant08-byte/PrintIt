@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../shared/widgets/glass_container.dart';
 import '../../shared/widgets/ambient_background.dart';
 import 'auth_provider.dart';
+import '../orders/order_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -104,7 +105,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     passwordController.text,
                                   );
                               if (success && context.mounted) {
-                                context.go('/home');
+                                final lockedShopId = ref.read(orderProvider).shopId;
+                                if (lockedShopId != null && lockedShopId.isNotEmpty) {
+                                  context.go('/upload-document/$lockedShopId');
+                                } else {
+                                  context.go('/home');
+                                }
                               }
                             },
                       child: authState.isLoading && !_isGoogleLoading
@@ -158,7 +164,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 });
                               }
                               if (success && context.mounted) {
-                                context.go('/home');
+                                final lockedShopId = ref.read(orderProvider).shopId;
+                                if (lockedShopId != null && lockedShopId.isNotEmpty) {
+                                  context.go('/upload-document/$lockedShopId');
+                                } else {
+                                  context.go('/home');
+                                }
                               }
                             },
                       icon: _isGoogleLoading

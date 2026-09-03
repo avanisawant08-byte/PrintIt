@@ -138,9 +138,15 @@ const Settings = () => {
 
   // Direct In-Store QR URL
   const shopId = profile?.shop_id || profile?.id || '8473b134-01c6-46b1-9746-4befaaa5fd46';
-  // Point to the customer web app port (or root if served on same domain)
-  const customerBaseUrl = `${window.location.protocol}//${window.location.hostname}:5174`;
-  const qrDirectUrl = `${customerBaseUrl}/upload-document/${shopId}`;
+  const host = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? '192.168.0.103'
+    : window.location.hostname;
+  const customerBaseUrl = 
+    import.meta.env.VITE_CUSTOMER_APP_URL || 
+    (window.location.port === '5173'
+      ? `${window.location.protocol}//${host}:8080`
+      : `${window.location.origin}`);
+  const qrDirectUrl = `${customerBaseUrl}/#/upload-document/${shopId}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(qrDirectUrl);

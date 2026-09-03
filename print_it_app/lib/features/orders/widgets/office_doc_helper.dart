@@ -591,8 +591,12 @@ class OfficeDocHelper {
           final contentBytes = _getArchiveFileBytes(file);
           if (contentBytes.isNotEmpty) {
             final xml = utf8.decode(contentBytes, allowMalformed: true);
+            final pageBreakCount = RegExp(r'<w:lastRenderedPageBreak|<w:br[^>]+w:type="page"', caseSensitive: false).allMatches(xml).length;
+            if (pageBreakCount > 0) {
+              return pageBreakCount + 1;
+            }
             final pCount = RegExp(r'<w:p[ >]').allMatches(xml).length;
-            int estimated = (pCount / 12).ceil();
+            int estimated = (pCount / 6).ceil();
             return estimated < 1 ? 1 : estimated;
           }
         }
@@ -737,7 +741,7 @@ class OfficeDocHelper {
         final contentBytes = _getArchiveFileBytes(file);
         if (contentBytes.isNotEmpty) {
           final xml = utf8.decode(contentBytes, allowMalformed: true);
-          final match = RegExp(r'<Pages>(\d+)</Pages>').firstMatch(xml);
+          final match = RegExp(r'<(?:\w+:)?Pages>(\d+)</(?:\w+:)?Pages>', caseSensitive: false).firstMatch(xml);
           if (match != null) {
             return int.tryParse(match.group(1)!) ?? 0;
           }

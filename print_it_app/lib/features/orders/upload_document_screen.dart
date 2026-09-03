@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
+import '../../core/api/api_client.dart';
 import 'order_provider.dart';
 import 'widgets/office_doc_helper.dart';
 
@@ -40,6 +41,34 @@ class _FileUploadState {
 class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
     with TickerProviderStateMixin {
   final List<_FileUploadState> _uploadedFiles = [];
+  String? _shopName;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.shopId != null && widget.shopId!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        ref.read(orderProvider.notifier).setShopId(widget.shopId!);
+        try {
+          final dio = ref.read(apiProvider);
+          final res = await dio.get('/public/shops/${widget.shopId}');
+          if (res.data != null && mounted) {
+            final data = res.data is Map ? res.data : {};
+            final sName = data['name'] ?? data['shop_name'];
+            final bw = double.tryParse(data['price_bw']?.toString() ?? '') ?? 2.00;
+            final color = double.tryParse(data['price_color']?.toString() ?? '') ?? 10.00;
+            final rules = data['pricing_rules'] as List<dynamic>? ?? [];
+
+            if (sName != null) {
+              setState(() => _shopName = sName.toString());
+              ref.read(orderProvider.notifier).setShop(widget.shopId!, sName.toString());
+            }
+            ref.read(orderProvider.notifier).setPrices(bw, color, rules);
+          }
+        } catch (_) {}
+      });
+    }
+  }
 
   Future<void> _pickFiles() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -277,7 +306,67 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        if (widget.shopId != null && widget.shopId!.isNotEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                              border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.storefront, color: Theme.of(context).colorScheme.primary, size: 24),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Instant In-Store Print at:',
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      Text(
+                                        _shopName ?? 'Pr xerox shop',
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.check_circle, color: Colors.greenAccent, size: 14),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Selected',
+                                        style: TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                         // Drop Zone
                         GestureDetector(
                           onTap: _pickFiles,

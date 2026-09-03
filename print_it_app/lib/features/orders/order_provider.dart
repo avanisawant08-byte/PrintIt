@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../core/api/api_client.dart';
 
 /// Represents a single uploaded file with its own print configuration.
 class FileEntry {
@@ -83,7 +84,7 @@ class OrderState {
     this.activeFileIndex = 0,
     this.colorMode = 'B&W',
     this.copies = 1,
-    this.pages = 24, // Hardcoded for demo since we don't parse PDF yet
+    this.pages = 1,
     this.binding = 'none',
     this.pagesPerPaper = 1,
     this.printInstructions = '',
@@ -92,8 +93,8 @@ class OrderState {
     this.pickupType = 'express',
     this.pickupTime,
     this.amountTotal = 0.0,
-    this.priceBw = 0.10,
-    this.priceColor = 0.45,
+    this.priceBw = 2.00,
+    this.priceColor = 10.00,
     this.pricingRules = const [],
     this.subtotal = 0.0,
     this.gst = 0.0,
@@ -168,10 +169,35 @@ class OrderNotifier extends Notifier<OrderState> {
 
   void setShopId(String shopId) {
     state = state.copyWith(shopId: shopId);
+    fetchShopDetails(shopId);
+  }
+
+  Future<void> fetchShopDetails(String shopId) async {
+    try {
+      final dio = ref.read(apiProvider);
+      final res = await dio.get('/public/shops/$shopId');
+      if (res.data != null) {
+        final data = res.data is Map ? res.data : {};
+        final name = (data['name'] ?? data['shop_name'])?.toString();
+        final bw = double.tryParse(data['price_bw']?.toString() ?? '') ?? 2.00;
+        final color = double.tryParse(data['price_color']?.toString() ?? '') ?? 10.00;
+        final rules = data['pricing_rules'] as List<dynamic>? ?? [];
+
+        state = state.copyWith(
+          shopId: shopId,
+          shopName: name ?? state.shopName,
+          priceBw: bw,
+          priceColor: color,
+          pricingRules: rules,
+        );
+        _calculateTotal();
+      }
+    } catch (_) {}
   }
 
   void setShop(String id, String name) {
     state = state.copyWith(shopId: id, shopName: name);
+    fetchShopDetails(id);
   }
 
   void setPrices(double bw, double color, List<dynamic> rules) {
@@ -361,8 +387,8 @@ class OrderNotifier extends Notifier<OrderState> {
     double basePrice = entry.colorMode == 'B&W' ? state.priceBw : state.priceColor;
     double bindingPrice = 0.0;
 
-    if (entry.binding == 'spiral') bindingPrice = 2.50;
-    if (entry.binding == 'hardcover') bindingPrice = 5.00;
+    if (entry.binding == 'spiral') bindingPrice = 25.0; // ₹25 standard spiral binding
+    if (entry.binding == 'hardcover') bindingPrice = 60.0; // ₹60 standard hardcover
 
     String targetColor = entry.colorMode == 'B&W' ? 'bw' : 'color';
     String targetSides = entry.sides;
@@ -377,10 +403,14 @@ class OrderNotifier extends Notifier<OrderState> {
       }
     }
 
-    int printedSides = (entry.pages / entry.pagesPerPaper).ceil();
-    int physicalSheets = entry.sides == 'double' ? (printedSides / 2).ceil() : printedSides;
+    int totalPages = entry.pages > 0 ? entry.pages : 1;
+    int printedSides = (totalPages / entry.pagesPerPaper).ceil();
+    if (printedSides < 1) printedSides = 1;
 
-    return double.parse(((basePrice * physicalSheets * entry.copies) + bindingPrice).toStringAsFixed(2));
+    // Billing calculation: each printed page/side is charged basePrice
+    double docPrintCost = (basePrice * printedSides) * entry.copies;
+
+    return double.parse((docPrintCost + bindingPrice).toStringAsFixed(2));
   }
 
   /// Fallback for when files list is empty (backward compat).
@@ -388,8 +418,8 @@ class OrderNotifier extends Notifier<OrderState> {
     double basePrice = state.colorMode == 'B&W' ? state.priceBw : state.priceColor;
     double bindingPrice = 0.0;
     
-    if (state.binding == 'spiral') bindingPrice = 2.50;
-    if (state.binding == 'hardcover') bindingPrice = 5.00;
+    if (state.binding == 'spiral') bindingPrice = 25.0;
+    if (state.binding == 'hardcover') bindingPrice = 60.0;
 
     String targetColor = state.colorMode == 'B&W' ? 'bw' : 'color';
     String targetSides = state.sides;
@@ -404,10 +434,13 @@ class OrderNotifier extends Notifier<OrderState> {
       }
     }
     
-    int printedSides = (state.pages / state.pagesPerPaper).ceil();
-    int physicalSheets = state.sides == 'double' ? (printedSides / 2).ceil() : printedSides;
+    int totalPages = state.pages > 0 ? state.pages : 1;
+    int printedSides = (totalPages / state.pagesPerPaper).ceil();
+    if (printedSides < 1) printedSides = 1;
 
-    return double.parse(((basePrice * physicalSheets * state.copies) + bindingPrice).toStringAsFixed(2));
+    double docPrintCost = (basePrice * printedSides) * state.copies;
+
+    return double.parse((docPrintCost + bindingPrice).toStringAsFixed(2));
   }
 
   void reset() {

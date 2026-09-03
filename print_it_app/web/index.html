@@ -20,6 +20,18 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="PrintIt Customer App">
   
+  <script>
+    // Seamless routing for in-store QR scans and deep links
+    (function() {
+      var path = window.location.pathname;
+      if (path && (path.indexOf('/upload-document') !== -1 || path.indexOf('/shop/') !== -1 || path.indexOf('/qr/') !== -1)) {
+        if (!window.location.hash) {
+          window.location.replace(window.location.origin + '/#' + path + window.location.search);
+        }
+      }
+    })();
+  </script>
+  
   <!-- Google Sign-In Web Client ID -->
   <meta name="google-signin-client_id" content="322993568107-dpgb4hsmat85kugnbeqjpltrdd4hbn3c.apps.googleusercontent.com">
 
