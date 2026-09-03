@@ -446,12 +446,16 @@ class HomeScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star, size: 16, color: Colors.orangeAccent),
+                      Icon(
+                        shop['rating'] != null ? Icons.star : Icons.verified,
+                        size: 15,
+                        color: shop['rating'] != null ? Colors.orangeAccent : const Color(0xFF00daf3),
+                      ),
                       const SizedBox(width: 4),
                       Text(
-                        '4.9', // Hardcoded rating for now
+                        shop['rating'] != null ? '${shop['rating']}' : 'Verified',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),

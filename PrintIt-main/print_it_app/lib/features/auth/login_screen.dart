@@ -44,8 +44,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Liquid Glass Edition',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    'Smart & Instant Document Printing',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
                   ),
                   const SizedBox(height: 32),
                   TextField(

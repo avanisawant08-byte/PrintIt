@@ -7,6 +7,7 @@ import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
 import '../auth/auth_provider.dart';
 import '../wallet/wallet_provider.dart';
+import '../orders/order_history_screen.dart';
 import 'notification_settings_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -160,80 +161,113 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  user['email'] ?? '',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final email = user['email']?.toString() ?? '';
+                    final phone = user['phone']?.toString() ?? '';
+                    String displayContact = email;
+                    if (email.contains('@phone.printit.in') || email.isEmpty) {
+                      if (phone.isNotEmpty) {
+                        final digits = phone.replaceAll(RegExp(r'\D'), '');
+                        final last10 = digits.length >= 10 ? digits.substring(digits.length - 10) : digits;
+                        displayContact = '+91 ${last10.substring(0, 5)} ${last10.substring(5)}';
+                      } else {
+                        displayContact = 'Customer Account';
+                      }
+                    }
+                    return Text(
+                      displayContact,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                        ),
-                        child: const Column(
-                          children: [
-                            Text(
-                              '12',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF00daf3),
+                Builder(
+                  builder: (context) {
+                    final ordersAsync = ref.watch(orderHistoryProvider);
+                    final ordersCount = ordersAsync.value?.length ?? 0;
+                    final walletAsync = ref.watch(walletProvider);
+                    final walletBalance = walletAsync.value?['balance']?.toString() ?? '0.00';
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context.push('/orders'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '$ordersCount',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF00daf3),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'MY ORDERS',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Text(
-                              'PRINTS',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey,
-                                letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context.push('/wallet'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '₹$walletBalance',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF00daf3),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'WALLET',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                        ),
-                        child: const Column(
-                          children: [
-                            Text(
-                              '4.9',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF00daf3),
-                              ),
-                            ),
-                            Text(
-                              'RATING',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

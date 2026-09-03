@@ -74,9 +74,9 @@ class SelectShopScreen extends ConsumerWidget {
                   decoration: BoxDecoration(color: const Color(0xFF1E1E31), borderRadius: BorderRadius.circular(12)),
                   child: Row(
                     children: [
-                      Icon(Icons.star, color: Colors.amber, size: 14),
-                      SizedBox(width: 4),
-                      Text(shop['rating']?.toString() ?? '4.5', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 12)),
+                      Icon(shop['rating'] != null ? Icons.star : Icons.verified, color: shop['rating'] != null ? Colors.amber : const Color(0xFF00daf3), size: 14),
+                      const SizedBox(width: 4),
+                      Text(shop['rating'] != null ? '${shop['rating']}' : 'Verified', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),

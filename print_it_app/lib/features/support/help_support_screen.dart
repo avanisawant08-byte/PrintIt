@@ -88,7 +88,7 @@ class HelpSupportScreen extends ConsumerWidget {
                   const SizedBox(height: 40),
                   Center(
                     child: Text(
-                      'Print It - Liquid Glass Edition\nVersion 1.0.0',
+                      'PrintIt\nVersion 1.0.0',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
