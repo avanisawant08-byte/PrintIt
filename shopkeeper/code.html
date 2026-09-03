@@ -1,0 +1,307 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Wallet &amp; Payouts - Shopkeeper Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error-container": "#ffdad6",
+                      "surface-container": "#171f36",
+                      "tertiary-fixed": "#ffdea4",
+                      "secondary": "#b6c4ff",
+                      "on-primary-fixed-variant": "#004883",
+                      "surface-container-high": "#162245",
+                      "tertiary": "#fabd34",
+                      "surface-dim": "#0a1229",
+                      "inverse-primary": "#0060ac",
+                      "secondary-fixed-dim": "#b6c4ff",
+                      "surface-tint": "#a4c9ff",
+                      "outline": "#8b919d",
+                      "on-tertiary-fixed": "#261900",
+                      "primary-fixed": "#d4e3ff",
+                      "surface-bright": "#313851",
+                      "on-secondary": "#05297a",
+                      "on-primary-fixed": "#001c39",
+                      "background": "#0a1229",
+                      "surface-container-highest": "#2c344c",
+                      "error": "#ffb4ab",
+                      "primary-container": "#60a5fa",
+                      "on-secondary-fixed-variant": "#264191",
+                      "secondary-fixed": "#dce1ff",
+                      "on-error": "#690005",
+                      "on-surface-variant": "#c1c7d3",
+                      "on-secondary-fixed": "#00164e",
+                      "secondary-container": "#264191",
+                      "on-tertiary": "#412d00",
+                      "glass-surface": "rgba(15, 26, 54, 0.7)",
+                      "on-secondary-container": "#9db2ff",
+                      "surface-container-lowest": "#050d24",
+                      "primary-glow": "rgba(96, 165, 250, 0.15)",
+                      "glass-edge": "rgba(164, 201, 255, 0.25)",
+                      "surface": "#0a1229",
+                      "primary": "#a4c9ff",
+                      "tertiary-container": "#d19900",
+                      "on-surface": "#dbe1ff",
+                      "surface-variant": "#2c344c",
+                      "inverse-surface": "#dbe1ff",
+                      "on-tertiary-container": "#4b3500",
+                      "tertiary-fixed-dim": "#fabd34",
+                      "primary-fixed-dim": "#a4c9ff",
+                      "inverse-on-surface": "#282f48",
+                      "surface-container-low": "#131b32",
+                      "on-tertiary-fixed-variant": "#5d4200",
+                      "on-background": "#dbe1ff",
+                      "on-primary": "#00315d",
+                      "error-container": "#93000a",
+                      "on-primary-container": "#003a6b",
+                      "outline-variant": "#414751"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-tablet": "32px",
+                      "margin-desktop": "64px",
+                      "margin-mobile": "16px",
+                      "gutter-desktop": "24px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "body-lg": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "label-md": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "body-md": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "label-sm": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "display": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "headline-lg-mobile": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "headline-lg": ["EB Garamond", "Garamond", "Georgia", "serif"],
+                      "headline-md": ["EB Garamond", "Garamond", "Georgia", "serif"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "display": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "38px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          body, input, button, select, textarea, table, th, td, h1, h2, h3, h4, h5, h6, p, span, div, a {
+              font-family: 'EB Garamond', Garamond, Georgia, serif;
+          }
+          .material-symbols-outlined {
+              font-family: 'Material Symbols Outlined' !important;
+          }
+          .glass-panel {
+              background-color: rgba(15, 26, 54, 0.7);
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
+              border: 1px solid rgba(164, 201, 255, 0.25);
+          }
+          .glass-panel-heavy {
+              background-color: rgba(15, 26, 54, 0.9);
+              backdrop-filter: blur(24px);
+              -webkit-backdrop-filter: blur(24px);
+              border: 1px solid rgba(164, 201, 255, 0.25);
+          }
+          .glow-active {
+              box-shadow: 0 0 60px rgba(96, 165, 250, 0.15);
+          }
+          .nav-indicator {
+              position: absolute;
+              left: 0;
+              top: 0;
+              bottom: 0;
+              width: 2px;
+              background-color: #a4c9ff;
+              border-radius: 0 4px 4px 0;
+          }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex overflow-hidden">
+<!-- Background Atmospheric Effect -->
+<div class="fixed inset-0 pointer-events-none z-[-1]">
+<div class="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary-container/5 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-secondary-container/5 blur-[120px]"></div>
+</div>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-lg fixed left-0 top-0 w-64 rounded-r-xl bg-glass-surface backdrop-blur-xl border-r border-glass-edge shadow-xl shadow-primary/10 z-50">
+<!-- Header -->
+<div class="px-6 py-6 border-b border-glass-edge/20 flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center border border-glass-edge">
+<span class="material-symbols-outlined text-primary" data-icon="storefront">storefront</span>
+</div>
+<div>
+<h1 class="text-headline-md font-display font-bold text-primary text-xl leading-tight">Shopkeeper Pro</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Merchant Portal</p>
+</div>
+</div>
+<!-- Main Navigation -->
+<nav class="flex-1 overflow-y-auto py-6 px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined transition-colors group-hover:text-primary" data-icon="queue_play_next">queue_play_next</span>
+<span class="text-label-md font-label-md">Live Queue</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined transition-colors group-hover:text-primary" data-icon="shopping_bag">shopping_bag</span>
+<span class="text-label-md font-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined transition-colors group-hover:text-primary" data-icon="list_alt">list_alt</span>
+<span class="text-label-md font-label-md">My Listings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined transition-colors group-hover:text-primary" data-icon="payments">payments</span>
+<span class="text-label-md font-label-md">Pricing</span>
+</a>
+<!-- Active Nav Item -->
+<div class="relative">
+<div class="nav-indicator"></div>
+<a class="flex items-center gap-3 px-4 py-3 text-primary font-bold bg-primary/10 rounded-lg scale-[0.99] opacity-90 transition-transform ml-1" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="text-label-md font-label-md">Wallet &amp; Payouts</span>
+</a>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined transition-colors group-hover:text-primary" data-icon="leaderboard">leaderboard</span>
+<span class="text-label-md font-label-md">Analytics</span>
+</a>
+</nav>
+<!-- Footer Navigation -->
+<div class="mt-auto px-2 pb-6 pt-4 border-t border-glass-edge/20 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/70 hover:text-on-surface hover:bg-glass-edge/20 hover:backdrop-blur-2xl transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined transition-colors group-hover:text-primary" data-icon="settings">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+
+<button class="w-full flex items-center justify-center gap-2 px-4 py-3 mt-4 text-error hover:bg-error/10 hover:text-error transition-colors rounded-lg font-label-md text-label-md border border-error/20">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-64 h-screen overflow-y-auto scroll-smooth">
+<!-- TopAppBar Breadcrumb (Mobile Hidden, Web Visible as requested by layout, but using custom simpler header for this dashboard view) -->
+<header class="sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-glass-edge/20 px-margin-mobile md:px-margin-desktop h-20 flex items-center justify-between">
+<div>
+<h2 class="text-headline-md font-headline-md text-primary">Shopkeeper Wallet &amp; Payouts</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors focus:ring-2 focus:ring-primary/50 outline-none">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors focus:ring-2 focus:ring-primary/50 outline-none">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-glass-edge">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A small circular avatar image showing a professional shopkeeper portrait against a neutral dark background, lit softly to match the dark theme UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnOR0laNrpSOZQsExvk0rVxT_PFmJFukviA6Vgm9OGL6Y1JAkhl36GswjuFEUrvH0A_DnCy4cb0yp9PweO76qFa28BJrCyVMCXoc2XwPPkpvf_Oh3iAXaQbiRxBqJ743bn6My5qxCTW8MHh9mIPxTgQdpFz_HlMMybfgSelqyoc45D1GdeMCwrk7jQrXi8EhrbE3yyG6FeMG_LbF1Pn1TfsrNkvJArrP4eRhtjnlqRx7WMlXUVHBTBAA">
+</div>
+</div>
+</header>
+<div class="p-margin-mobile md:p-margin-desktop md:pt-8 max-w-7xl mx-auto space-y-8">
+<!-- Summary Cards Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden group hover:glow-active transition-shadow duration-500">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors"></div>
+<span class="text-label-md font-label-md text-on-surface-variant">Available Balance</span>
+<div class="text-headline-lg font-headline-lg text-primary mt-1">$0</div>
+<div class="mt-4">
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(96,165,250,0.3)]">
+<span class="material-symbols-outlined text-sm" data-icon="payments">payments</span>
+                            Request Withdrawal
+                        </button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-md font-label-md text-on-surface-variant">Pending Balance</span>
+<div class="text-headline-lg font-headline-lg text-on-surface mt-1">$0</div>
+<p class="text-label-sm font-label-sm text-on-surface-variant/70 mt-auto pt-4">Clearing in 2-3 business days</p>
+</div>
+<!-- Card 3 -->
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-md font-label-md text-on-surface-variant">Lifetime Earned</span>
+<div class="text-headline-lg font-headline-lg text-on-surface mt-1">$0</div>
+<p class="text-label-sm font-label-sm text-on-surface-variant/70 mt-auto pt-4">Since Jan 2023</p>
+</div>
+<!-- Card 4 -->
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-md font-label-md text-on-surface-variant">Total Withdrawn</span>
+<div class="text-headline-lg font-headline-lg text-on-surface mt-1">$0</div>
+<p class="text-label-sm font-label-sm text-on-surface-variant/70 mt-auto pt-4">To linked accounts</p>
+</div>
+</section>
+<!-- Main Content Area with Tabs -->
+<section class="glass-panel rounded-xl overflow-hidden flex flex-col min-h-[500px]">
+<!-- Tab Navigation -->
+<div class="border-b border-glass-edge/30 px-2 flex overflow-x-auto hide-scrollbar">
+<button class="px-6 py-4 text-primary border-b-2 border-primary font-label-md text-label-md whitespace-nowrap bg-primary/5 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="receipt_long">receipt_long</span>
+                        Transaction Ledger
+                    </button>
+<button class="px-6 py-4 text-on-surface-variant hover:text-on-surface border-b-2 border-transparent hover:bg-glass-edge/10 font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+                        Withdrawal Requests (0)
+                    </button>
+<button class="px-6 py-4 text-on-surface-variant hover:text-on-surface border-b-2 border-transparent hover:bg-glass-edge/10 font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="account_balance">account_balance</span>
+                        Saved Bank Accounts (0/2)
+                    </button>
+</div>
+<!-- Tab Content: Transaction Ledger -->
+<div class="p-6 flex-1 flex flex-col">
+<!-- Header & Controls -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<h3 class="text-body-lg font-body-lg font-semibold text-on-surface">Recent Wallet Transactions</h3>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<div class="relative group">
+<button class="glass-panel hover:bg-glass-edge/20 text-on-surface-variant text-label-md font-label-md py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-glass-edge">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                                    Filter: All
+                                    <span class="material-symbols-outlined text-sm ml-2" data-icon="expand_more">expand_more</span>
+</button>
+<!-- Dropdown Mock -->
+</div>
+<!-- Action button for context, as per image logic suggesting managing accounts might be nearby -->
+<button class="glass-panel text-primary border-primary/30 hover:bg-primary/10 text-label-md font-label-md py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+                                Manage Bank Accounts
+                            </button>
+</div>
+</div>
+<!-- Empty State -->
+<div class="flex-1 flex flex-col items-center justify-center py-16 text-center bg-surface-container/20 rounded-lg border border-dashed border-glass-edge/30">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 border border-glass-edge">
+<span class="material-symbols-outlined text-3xl text-outline" data-icon="history_toggle_off">history_toggle_off</span>
+</div>
+<h4 class="text-body-lg font-body-lg text-on-surface mb-2">No transaction entries found.</h4>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-md">
+                            Your transaction history will appear here once you process orders or initiate withdrawals.
+                        </p>
+</div>
+</div>
+</section>
+<!-- Reference Image (Hidden but included per instructions) -->
+<img alt="Reference UI" class="hidden" data-alt="A screenshot of a dark-themed wallet and payouts dashboard for a shopkeeper portal. It features a left sidebar navigation, top summary cards for balances, and a main content area with tabs for transaction ledger, withdrawal requests, and saved bank accounts showing an empty state." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByW4Qtbuf4hBdP7LHu-B4wBUf6ZVbTMo0WxgnZ40Chn2tbNYeGEDVCBjBp-YvEWyykW2s7aIYvriL6Zk0jJL4_PirbLcjK05AyIkyHVDQHZ2vMDa6utC_PGCNIDd4QhD6nXi2VCXu2TDn3UBlOhiMmUhUFk_gnrtxjlDG1V_7mF-hgjJsHVO0IqegjDF6B0TBRdt5aFo73D3YVAERoaS8VMaQweT7FPFeaw_X3No1PMBPNPCDaYeuh8LnBc4QHNM8aSQg">
+</div>
+</main>
+
+
+</body></html>

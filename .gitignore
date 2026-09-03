@@ -1,0 +1,37 @@
+# Node.js / Dependencies
+**/node_modules/
+package-lock.json
+
+# Web Builds / Distributables
+**/dist/
+**/build/
+.out/
+
+# Flutter / Dart
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/pubspec.lock
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Heavy Archives & Media (over GitHub size limit)
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.mp4
+*.mov

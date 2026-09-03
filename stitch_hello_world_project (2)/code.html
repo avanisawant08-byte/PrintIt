@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PrintIt Shop - My Listings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#0d1c2d",
+                        "inverse-surface": "#d4e4fa",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#131b2e",
+                        "surface-tint": "#7bd0ff",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#7bd0ff",
+                        "surface-bright": "#2c3a4c",
+                        "on-tertiary": "#283044",
+                        "on-tertiary-container": "#3c4459",
+                        "on-background": "#d4e4fa",
+                        "on-secondary-container": "#aeb9d0",
+                        "primary-container": "#38bdf8",
+                        "outline-variant": "#3e484f",
+                        "on-primary": "#00354a",
+                        "on-secondary": "#263143",
+                        "primary": "#8ed5ff",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "surface-dim": "#051424",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "on-surface-variant": "#bdc8d1",
+                        "on-primary-fixed": "#001e2c",
+                        "secondary": "#bcc7de",
+                        "background": "#051424",
+                        "tertiary-container": "#a9b1ca",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "secondary-container": "#3e495d",
+                        "tertiary-fixed": "#dae2fd",
+                        "on-surface": "#d4e4fa",
+                        "outline": "#87929a",
+                        "tertiary": "#c5cce6",
+                        "surface-container-lowest": "#010f1f",
+                        "inverse-primary": "#00668a",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#111c2d",
+                        "inverse-on-surface": "#233143",
+                        "surface-container-high": "#1c2b3c",
+                        "surface-variant": "#273647",
+                        "surface-container-highest": "#273647",
+                        "primary-fixed": "#c4e7ff",
+                        "surface-container": "#122131",
+                        "on-primary-container": "#004965",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#d8e3fb",
+                        "tertiary-fixed-dim": "#bec6e0",
+                        "on-primary-fixed-variant": "#004c69",
+                        "surface": "#051424"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "margin-desktop": "40px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Manrope", "sans-serif"],
+                        "headline-lg-mobile": ["Manrope", "sans-serif"],
+                        "display-lg": ["Manrope", "sans-serif"],
+                        "body-lg": ["Manrope", "sans-serif"],
+                        "body-sm": ["Manrope", "sans-serif"],
+                        "title-md": ["Manrope", "sans-serif"],
+                        "headline-lg": ["Manrope", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-lg flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="hidden md:flex bg-surface-container dark:bg-surface-container font-body-lg text-body-lg fixed left-0 top-0 h-screen w-[280px] border-r border-outline-variant flex-col h-full py-base z-50">
+<!-- Header -->
+<div class="px-gutter py-6 mb-4 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A stylized, modern geometric logo for a print shop portal. The logo should feature sharp edges and vibrant neon blue accents on a dark navy background. The style should be corporate modern, minimalist, and tech-forward, suitable for a professional dashboard avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWPFLIRGC-HOezbAU8Oast0cuffCwzA9cMisz-BpZgmbbEmC-j5LpiMkC0fujillnTwbID_dm8RD4N1C_UP4dWcvY5QS491bhb8PI6BjJ5Y2RDTy_3YP-h1kfNuI_INVRNWaGgyN2OQLT6sRTwjboE5drZsMyDMz56hOslIbsv5Aj6iXVl-vuJhjASKQGkqCSI-kWubQj2J-I_S0aiBwZwboEmInzoau-Z0sowNKFRQhBl50Dc7wraPw"/>
+</div>
+<div>
+<h1 class="font-title-md text-title-md text-primary dark:text-primary">PrintIt Shop</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Shopkeeper Portal</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col px-4 gap-2 flex-grow">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">queue_play_next</span>
+                Live Queue
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Orders
+            </a>
+<!-- Active -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-2 border-primary bg-surface-container-high/50 hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+                My Listings
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">payments</span>
+                Pricing
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                Wallet &amp; Payouts
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+                Analytics
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors active:scale-95 duration-100 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[280px] w-full md:w-[calc(100%-280px)] min-h-screen bg-background">
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-background dark:bg-background font-title-md text-title-md sticky full-width top-0 border-b border-outline-variant flex justify-between items-center w-full h-16 px-margin-desktop z-40">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors active:opacity-80 p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors active:opacity-80 p-2 rounded-full">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors active:opacity-80 font-label-md text-label-md ml-4 border border-outline-variant px-4 py-2 rounded-lg">
+                    Logout
+                </button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-margin-desktop pt-8 max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary hidden md:block">My Listings</h2>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary md:hidden">My Listings</h2>
+</div>
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-fixed-dim transition-colors shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Add New Manual
+                </button>
+</div>
+<!-- Content Area - Listings Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Listing Card -->
+<div class="bg-surface-container-high border border-outline-variant rounded-xl overflow-hidden flex flex-col group hover:border-primary/50 transition-colors">
+<!-- Image Area -->
+<div class="h-48 relative bg-surface-dim overflow-hidden">
+<img alt="Software Testing STE" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs0n_4AUTKcgp56cXRdw8p9qFUE9PDIw2c2lO8Yu42cnVyoyoyY7_PzRnlNRNY6ROvTNvJ0D4V4visH2-wboS5Q6MAFTVLqK89d-zHGWAubPl36lrRbSHjsWQSsiffyCxdbnPIeq17HYtshGe1oPdRXMcBIDxSimhl0PTpOtEhr7yy3RuKuKCMi3cbw8-sV3F41_6X0vmxV7CBt2jepQM5GEgNDCztfELM5iMIQjAY0gPWENUQZTt0fE0lWiMqjYNdSrA"/>
+<div class="absolute top-4 right-4 bg-primary-container text-on-primary-container font-label-md text-label-md px-2 py-1 rounded shadow-sm flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-surface"></span>
+                            Active
+                        </div>
+</div>
+<!-- Details Area -->
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="font-title-md text-title-md text-on-surface mb-2">Software Testing STE</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Computer Science • Polytechnic STW (5th Sem)</p>
+<div class="flex justify-between items-end mt-auto">
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block mb-1">Price</span>
+<span class="font-title-md text-title-md text-primary">₹100.00</span>
+</div>
+<!-- Stock Controls -->
+<div class="flex items-center gap-2 bg-surface-variant rounded-lg p-1 border border-outline-variant">
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<span class="font-body-lg text-body-lg font-bold px-2 w-8 text-center text-on-surface">4</span>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+<div class="w-[1px] h-4 bg-outline-variant mx-1"></div>
+<button class="h-8 px-2 rounded flex items-center justify-center text-primary hover:bg-surface font-label-md text-label-md transition-colors">
+                                    +10
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State / Add New Placeholder (Optional structural balance) -->
+<button class="bg-surface-container-low border border-dashed border-outline-variant rounded-xl h-[360px] flex flex-col items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all hover:bg-surface-container/50 group">
+<div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</div>
+<span class="font-title-md text-title-md">Create New Listing</span>
+<span class="font-body-sm text-body-sm mt-2 opacity-75">Upload a new manual or resource</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>
