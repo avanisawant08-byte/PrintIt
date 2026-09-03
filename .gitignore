@@ -1,3 +1,13 @@
+# Environment & Secrets
+.env
+.env.*
+*.env
+!.env.example
+serviceaccountkey.json
+serviceAccountKey.json
+*serviceAccountKey*.json
+*serviceaccountkey*.json
+
 # Node.js / Dependencies
 **/node_modules/
 package-lock.json
