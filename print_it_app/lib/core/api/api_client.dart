@@ -9,14 +9,17 @@ final apiProvider = Provider<ApiClient>((ref) {
 
 class ApiClient {
   late final Dio dio;
+  static const String defaultCloudBackend = 'https://printit-zaf4.onrender.com/api';
   static const String envApiUrl = String.fromEnvironment('API_URL');
   static String currentBaseUrl = envApiUrl.isNotEmpty
       ? envApiUrl
       : (kIsWeb
-          ? (Uri.base.host.isNotEmpty && Uri.base.host != 'localhost'
-              ? 'http://${Uri.base.host}:3000/api'
-              : 'http://localhost:3000/api')
-          : 'http://192.168.1.111:3000/api');
+          ? (Uri.base.host == 'localhost' || Uri.base.host == '127.0.0.1'
+              ? 'http://localhost:3000/api'
+              : (Uri.base.host.startsWith('192.') || Uri.base.host.startsWith('10.') || Uri.base.host.startsWith('172.')
+                  ? 'http://${Uri.base.host}:3000/api'
+                  : defaultCloudBackend))
+          : defaultCloudBackend);
   static String get baseUrl => currentBaseUrl;
   bool _isDiscovering = false;
 
