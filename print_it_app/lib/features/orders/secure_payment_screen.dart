@@ -157,14 +157,23 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
     final orderState = ref.read(orderProvider);
     if (orderState.files.isEmpty || orderState.shopId == null) return;
 
+    var authState = ref.read(authProvider);
+    var isLoggedIn = authState.user != null;
+
+    // If customer is not logged in, prompt phone number & OTP so the order is saved to their account history
+    if (!isLoggedIn) {
+      final authResult = await _promptPhoneAuthSheet(context);
+      if (authResult == null) return; // Cancelled
+      authState = ref.read(authProvider);
+      isLoggedIn = authState.user != null;
+    }
+
     setState(() {
       _isProcessing = true;
     });
 
     try {
       final dio = ref.read(apiProvider);
-      final authState = ref.read(authProvider);
-      final isLoggedIn = authState.user != null;
       
       // 1. Upload Files (Skip if already uploaded)
       if (_uploadedFiles.isEmpty) {
@@ -609,6 +618,187 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
           ],
         ),
       ),
+      ),
+    );
+  }
+
+  Future<bool?> _promptPhoneAuthSheet(BuildContext context) async {
+    final phoneController = TextEditingController();
+    final otpController = TextEditingController();
+    bool otpSent = false;
+    bool isSubmitting = false;
+    String? localError;
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (context, setModalState) => Dialog(
+          backgroundColor: const Color(0xFF0F1E2E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Color(0xFF22D3EE), width: 1.5),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF22D3EE).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.phone_android, color: Color(0xFF22D3EE), size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          otpSent ? 'Verify OTP' : 'Quick Mobile Login',
+                          style: const TextStyle(color: Color(0xFF8AEBFF), fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white60, size: 20),
+                      onPressed: () => Navigator.of(dialogCtx).pop(null),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  otpSent
+                      ? 'Enter the 6-digit code sent to +91 ${phoneController.text.trim()}'
+                      : 'Enter your mobile number to link this print order to your account and track its live printing status.',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                ),
+                const SizedBox(height: 20),
+                if (!otpSent) ...[
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    autofocus: true,
+                    maxLength: 10,
+                    style: const TextStyle(color: Colors.white, fontSize: 16, letterSpacing: 1),
+                    decoration: InputDecoration(
+                      prefixText: '+91 ',
+                      prefixStyle: const TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.bold, fontSize: 16),
+                      hintText: '98765 43210',
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF22D3EE))),
+                    ),
+                  ),
+                ] else ...[
+                  TextField(
+                    controller: otpController,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 22, letterSpacing: 8, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: '------',
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF22D3EE))),
+                    ),
+                  ),
+                ],
+                if (localError != null) ...[
+                  const SizedBox(height: 12),
+                  Text(localError!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF22D3EE),
+                      foregroundColor: const Color(0xFF00363E),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            setModalState(() {
+                              isSubmitting = true;
+                              localError = null;
+                            });
+
+                            if (!otpSent) {
+                              final phone = phoneController.text.trim();
+                              if (phone.length != 10) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                  localError = 'Please enter a valid 10-digit mobile number';
+                                });
+                                return;
+                              }
+
+                              final success = await ref.read(authProvider.notifier).sendPhoneOtp(phone);
+                              if (context.mounted) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                  if (success) {
+                                    otpSent = true;
+                                  } else {
+                                    localError = ref.read(authProvider).error ?? 'Failed to send OTP';
+                                  }
+                                });
+                              }
+                            } else {
+                              final otp = otpController.text.trim();
+                              if (otp.length != 6) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                  localError = 'Please enter 6-digit OTP';
+                                });
+                                return;
+                              }
+
+                              final success = await ref.read(authProvider.notifier).verifyPhoneOtpAndLogin(otp);
+                              if (context.mounted) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                });
+                                if (success) {
+                                  Navigator.of(dialogCtx).pop(true);
+                                } else {
+                                  setModalState(() {
+                                    localError = ref.read(authProvider).error ?? 'Invalid OTP code';
+                                  });
+                                }
+                              }
+                            }
+                          },
+                    child: isSubmitting
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00363E)))
+                        : Text(otpSent ? 'Verify & Continue' : 'Send Verification OTP', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogCtx).pop(false),
+                    child: const Text('Skip and continue as Guest', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

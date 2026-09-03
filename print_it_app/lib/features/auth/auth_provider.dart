@@ -281,4 +281,127 @@ class AuthNotifier extends Notifier<AuthState> {
       return false;
     }
   }
+
+  ConfirmationResult? _webConfirmationResult;
+  String? _mobileVerificationId;
+
+  /// Send SMS OTP to 10-digit Indian phone number
+  Future<bool> sendPhoneOtp(String rawPhone) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final cleanDigits = rawPhone.replaceAll(RegExp(r'\D'), '');
+      final formattedPhone = cleanDigits.length == 10
+          ? '+91$cleanDigits'
+          : (cleanDigits.startsWith('91') ? '+$cleanDigits' : '+$cleanDigits');
+
+      if (kIsWeb) {
+        _webConfirmationResult = await FirebaseAuth.instance.signInWithPhoneNumber(formattedPhone);
+      } else {
+        await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: formattedPhone,
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            await _loginWithFirebaseCredential(credential);
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            state = state.copyWith(isLoading: false, error: e.message ?? 'OTP verification failed');
+          },
+          codeSent: (String verId, int? resendToken) {
+            _mobileVerificationId = verId;
+            state = state.copyWith(isLoading: false);
+          },
+          codeAutoRetrievalTimeout: (String verId) {
+            _mobileVerificationId = verId;
+          },
+        );
+      }
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      debugPrint('Error sending phone OTP: $e');
+      String msg = 'Failed to send OTP: $e';
+      if (e is FirebaseAuthException) {
+        msg = e.message ?? 'OTP sending failed';
+      }
+      state = state.copyWith(isLoading: false, error: msg);
+      return false;
+    }
+  }
+
+  /// Verify 6-digit SMS OTP and login / create account
+  Future<bool> verifyPhoneOtpAndLogin(String smsCode) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      UserCredential userCredential;
+      if (kIsWeb) {
+        if (_webConfirmationResult == null) {
+          state = state.copyWith(isLoading: false, error: 'Please request OTP first');
+          return false;
+        }
+        userCredential = await _webConfirmationResult!.confirm(smsCode.trim());
+      } else {
+        if (_mobileVerificationId == null) {
+          state = state.copyWith(isLoading: false, error: 'Verification session expired. Please resend OTP.');
+          return false;
+        }
+        final credential = PhoneAuthProvider.credential(
+          verificationId: _mobileVerificationId!,
+          smsCode: smsCode.trim(),
+        );
+        userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      }
+
+      final String? firebaseToken = await userCredential.user?.getIdToken();
+      if (firebaseToken == null) {
+        state = state.copyWith(isLoading: false, error: 'Could not obtain authentication token');
+        return false;
+      }
+
+      final apiClient = ref.read(apiProvider);
+      final res = await apiClient.post('/auth/phone', data: {
+        'firebase_token': firebaseToken,
+      });
+
+      if (res.statusCode == 200) {
+        final token = res.data['token'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+        state = state.copyWith(isLoading: false, user: res.data['user']);
+        ref.read(notificationServiceProvider).initialize();
+        return true;
+      } else {
+        state = state.copyWith(isLoading: false, error: res.data['error'] ?? 'Phone login failed');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error verifying OTP: $e');
+      String msg = 'Invalid OTP: $e';
+      if (e is FirebaseAuthException) {
+        msg = e.message ?? 'Invalid OTP code entered';
+      } else if (e is DioException && e.response != null) {
+        msg = e.response?.data?['error'] ?? 'Server error during phone login';
+      }
+      state = state.copyWith(isLoading: false, error: msg);
+      return false;
+    }
+  }
+
+  Future<void> _loginWithFirebaseCredential(AuthCredential credential) async {
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final String? firebaseToken = await userCredential.user?.getIdToken();
+      if (firebaseToken != null) {
+        final apiClient = ref.read(apiProvider);
+        final res = await apiClient.post('/auth/phone', data: {
+          'firebase_token': firebaseToken,
+        });
+        if (res.statusCode == 200) {
+          final token = res.data['token'];
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          state = state.copyWith(isLoading: false, user: res.data['user']);
+          ref.read(notificationServiceProvider).initialize();
+        }
+      }
+    } catch (_) {}
+  }
 }

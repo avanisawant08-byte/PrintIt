@@ -195,12 +195,199 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+                        shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () => _showPhoneLoginDialog(context),
+                      icon: const Icon(Icons.phone_android, color: Color(0xFF22D3EE), size: 22),
+                      label: const Text(
+                        'Continue with Phone Number',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF8AEBFF),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showPhoneLoginDialog(BuildContext context) {
+    final phoneController = TextEditingController();
+    final otpController = TextEditingController();
+    bool otpSent = false;
+    bool isSubmitting = false;
+    String? localError;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (context, setModalState) => Dialog(
+          backgroundColor: const Color(0xFF0F1E2E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Color(0xFF22D3EE), width: 1.5)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      otpSent ? 'Enter SMS OTP' : 'Phone Number Login',
+                      style: const TextStyle(color: Color(0xFF8AEBFF), fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white70),
+                      onPressed: () => Navigator.of(dialogCtx).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  otpSent 
+                    ? 'We have sent a 6-digit verification code to +91 ${phoneController.text.trim()}'
+                    : 'Enter your 10-digit mobile number to receive a one-time OTP.',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 20),
+                if (!otpSent) ...[
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    autofocus: true,
+                    maxLength: 10,
+                    style: const TextStyle(color: Colors.white, fontSize: 16, letterSpacing: 1),
+                    decoration: InputDecoration(
+                      prefixText: '+91 ',
+                      prefixStyle: const TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.bold, fontSize: 16),
+                      hintText: '98765 43210',
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF22D3EE))),
+                    ),
+                  ),
+                ] else ...[
+                  TextField(
+                    controller: otpController,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 22, letterSpacing: 8, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: '------',
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF22D3EE))),
+                    ),
+                  ),
+                ],
+                if (localError != null) ...[
+                  const SizedBox(height: 12),
+                  Text(localError!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF22D3EE),
+                      foregroundColor: const Color(0xFF00363E),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            setModalState(() {
+                              isSubmitting = true;
+                              localError = null;
+                            });
+
+                            if (!otpSent) {
+                              final phone = phoneController.text.trim();
+                              if (phone.length != 10) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                  localError = 'Please enter a valid 10-digit mobile number';
+                                });
+                                return;
+                              }
+
+                              final success = await ref.read(authProvider.notifier).sendPhoneOtp(phone);
+                              if (context.mounted) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                  if (success) {
+                                    otpSent = true;
+                                  } else {
+                                    localError = ref.read(authProvider).error ?? 'Failed to send OTP. Please check number.';
+                                  }
+                                });
+                              }
+                            } else {
+                              final otp = otpController.text.trim();
+                              if (otp.length != 6) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                  localError = 'Please enter the 6-digit OTP';
+                                });
+                                return;
+                              }
+
+                              final success = await ref.read(authProvider.notifier).verifyPhoneOtpAndLogin(otp);
+                              if (context.mounted) {
+                                setModalState(() {
+                                  isSubmitting = false;
+                                });
+                                if (success) {
+                                  Navigator.of(dialogCtx).pop();
+                                  final lockedShopId = ref.read(orderProvider).shopId;
+                                  if (lockedShopId != null && lockedShopId.isNotEmpty) {
+                                    context.go('/upload-document/$lockedShopId');
+                                  } else {
+                                    context.go('/home');
+                                  }
+                                } else {
+                                  setModalState(() {
+                                    localError = ref.read(authProvider).error ?? 'Invalid OTP code';
+                                  });
+                                }
+                              }
+                            }
+                          },
+                    child: isSubmitting
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00363E)))
+                        : Text(otpSent ? 'Verify & Login' : 'Send OTP', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
