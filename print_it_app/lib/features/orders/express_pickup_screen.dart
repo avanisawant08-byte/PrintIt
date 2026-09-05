@@ -109,12 +109,12 @@ class _ExpressPickupScreenState extends ConsumerState<ExpressPickupScreen> with 
           onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Velocity',
+          'Modes',
           style: TextStyle(
             color: Color(0xFF8AEBFF),
             fontWeight: FontWeight.bold,
-            fontSize: 24,
-            letterSpacing: -0.5,
+            fontSize: 20,
+            letterSpacing: -0.3,
           ),
         ),
         actions: [

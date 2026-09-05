@@ -261,7 +261,11 @@ class _LiveFilePreviewState extends State<LiveFilePreview> {
           ),
         );
       }
-      previewWidget = imageWidget;
+      previewWidget = _NUpImagePreview(
+        imageWidget: imageWidget,
+        pagesPerPaper: widget.pagesPerPaper,
+        orientation: widget.orientation,
+      );
     } else {
       previewWidget = const Center(
         child: Column(
@@ -305,21 +309,21 @@ class _LiveFilePreviewState extends State<LiveFilePreview> {
           ),
         ),
         if (totalPages > 1) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '$_currentPage/$totalPages',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -332,13 +336,13 @@ class _LiveFilePreviewState extends State<LiveFilePreview> {
                     final isActive = index == (_currentPage - 1);
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 2),
-                      width: 6,
-                      height: 6,
+                      width: 5,
+                      height: 5,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: isActive
-                            ? Colors.transparent
-                            : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                            ? const Color(0xFF22D3EE)
+                            : Colors.grey.withValues(alpha: 0.4),
                       ),
                     );
                   }),
@@ -348,6 +352,100 @@ class _LiveFilePreviewState extends State<LiveFilePreview> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// N-Up Image Preview renderer supporting 1, 2, 4, 6 pages/sheet
+class _NUpImagePreview extends StatelessWidget {
+  final Widget imageWidget;
+  final int pagesPerPaper;
+  final String orientation;
+
+  const _NUpImagePreview({
+    required this.imageWidget,
+    required this.pagesPerPaper,
+    required this.orientation,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (pagesPerPaper <= 1) {
+      return Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(8),
+        alignment: Alignment.center,
+        child: imageWidget,
+      );
+    }
+
+    int columns = 1;
+    int rows = 1;
+
+    if (orientation == 'portrait') {
+      if (pagesPerPaper == 2) { columns = 1; rows = 2; }
+      else if (pagesPerPaper == 4) { columns = 2; rows = 2; }
+      else if (pagesPerPaper == 6) { columns = 2; rows = 3; }
+      else { columns = 2; rows = 2; }
+    } else {
+      if (pagesPerPaper == 2) { columns = 2; rows = 1; }
+      else if (pagesPerPaper == 4) { columns = 2; rows = 2; }
+      else if (pagesPerPaper == 6) { columns = 3; rows = 2; }
+      else { columns = 2; rows = 2; }
+    }
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: List.generate(rows, (r) {
+          return Expanded(
+            child: Row(
+              children: List.generate(columns, (c) {
+                final cellIndex = r * columns + c;
+                return Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: cellIndex == 0 ? Colors.white : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: cellIndex == 0 ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0),
+                        style: BorderStyle.solid,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: cellIndex == 0
+                        ? Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: imageWidget,
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.crop_portrait,
+                                size: 16,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Empty',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  color: Colors.grey.shade400,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                );
+              }),
+            ),
+          );
+        }),
+      ),
     );
   }
 }
@@ -370,6 +468,7 @@ class _PaperSheetContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Widget content = child;
 
     // Apply Grayscale Filter for B&W print mode
@@ -394,7 +493,7 @@ class _PaperSheetContainer extends StatelessWidget {
             top: 4, left: 4, right: -4, bottom: -4,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFCBD5E1),
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
               ),
@@ -404,7 +503,7 @@ class _PaperSheetContainer extends StatelessWidget {
             top: 2, left: 2, right: -2, bottom: -2,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFE2E8F0),
+                color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -417,18 +516,21 @@ class _PaperSheetContainer extends StatelessWidget {
           height: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 14,
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
+                blurRadius: 16,
                 spreadRadius: 1,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             child: Stack(
               children: [
                 content,

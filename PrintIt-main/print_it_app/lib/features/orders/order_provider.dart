@@ -217,6 +217,32 @@ class OrderNotifier extends Notifier<OrderState> {
     }
   }
 
+  void addDemoFileIfEmpty() {
+    if (state.files.isEmpty) {
+      final demoFile = PlatformFile(
+        name: 'Testing_Workflow.pdf',
+        size: 245760,
+      );
+      final entry = FileEntry(
+        file: demoFile,
+        pages: 3,
+        colorMode: state.colorMode,
+        copies: state.copies,
+        binding: state.binding,
+        pagesPerPaper: state.pagesPerPaper,
+        orientation: state.orientation,
+        sides: state.sides,
+      );
+      state = state.copyWith(
+        files: [entry],
+        activeFileIndex: 0,
+        file: demoFile,
+        pages: 3,
+      );
+      _calculateTotal();
+    }
+  }
+
   void setActiveFileIndex(int index) {
     if (index >= 0 && index < state.files.length) {
       final entry = state.files[index];
