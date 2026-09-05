@@ -1,11 +1,11 @@
 {
-    "name": "print_it_app",
-    "short_name": "print_it_app",
+    "name": "PrintIt",
+    "short_name": "PrintIt",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#3BAFF2",
+    "theme_color": "#3BAFF2",
+    "description": "PrintIt - Quick and Easy Document Printing",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
