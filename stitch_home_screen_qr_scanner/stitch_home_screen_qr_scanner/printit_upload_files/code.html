@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Upload - PrintIt</title>
+<!-- Tailwind CSS v3 with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom styles for curved background decorative shapes and subtle effects -->
+<style data-purpose="background-shapes">
+    .bg-fluid-layer {
+      background-color: #dff2fe;
+      background-image: 
+        radial-gradient(circle at 10% 18%, rgba(186, 230, 253, 0.85) 0%, transparent 48%),
+        radial-gradient(circle at 90% 75%, rgba(186, 230, 253, 0.95) 0%, transparent 55%),
+        radial-gradient(circle at 50% 12%, rgba(224, 242, 254, 0.9) 0%, transparent 40%);
+    }
+    .shape-blob-1 {
+      position: absolute;
+      top: -40px;
+      right: -80px;
+      width: 280px;
+      height: 280px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(186, 230, 253, 0.6) 0%, rgba(224, 242, 254, 0) 70%);
+      pointer-events: none;
+    }
+    .shape-blob-2 {
+      position: absolute;
+      bottom: -60px;
+      right: -40px;
+      width: 320px;
+      height: 320px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(147, 197, 253, 0.45) 0%, rgba(186, 230, 253, 0) 70%);
+      pointer-events: none;
+    }
+    .shape-blob-3 {
+      position: absolute;
+      top: 240px;
+      left: -90px;
+      width: 220px;
+      height: 220px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(186, 230, 253, 0.5) 0%, rgba(224, 242, 254, 0) 70%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 flex justify-center items-center min-h-screen text-slate-900 antialiased selection:bg-sky-200">
+<!-- BEGIN: MobileContainer -->
+<!-- Constrained responsive mobile shell -->
+<main class="relative w-full max-w-md min-h-screen bg-fluid-layer overflow-hidden flex flex-col justify-between shadow-2xl">
+<!-- Background organic ambient circles -->
+<div aria-hidden="true" class="shape-blob-1"></div>
+<div aria-hidden="true" class="shape-blob-2"></div>
+<div aria-hidden="true" class="shape-blob-3"></div>
+<!-- Inner content wrapper -->
+<div class="relative z-10 flex flex-col flex-1 px-5 pt-7 pb-8">
+<!-- BEGIN: TopBar -->
+<header class="relative flex items-center justify-between h-12 mb-5">
+<!-- Back button -->
+<button aria-label="Go back" class="w-10 h-10 -ml-1 flex items-center justify-center text-sky-500 hover:text-sky-600 active:scale-95 transition-transform" type="button">
+<svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Centered title -->
+<h1 class="absolute left-1/2 -translate-x-1/2 text-2xl tracking-tight text-sky-500 font-sans font-semibold">
+          Upload
+        </h1>
+<!-- Spacer for balanced header grid -->
+<div aria-hidden="true" class="w-10 h-10"></div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: StoreBannerCard -->
+<!-- Store selection banner with subtle lighter border and crisp black typography -->
+<section class="bg-white/80 backdrop-blur-md rounded-2xl p-4 border border-sky-200/90 shadow-sm flex items-center justify-between gap-3 mb-6 transition hover:border-sky-300" data-purpose="store-banner">
+<div class="flex items-center gap-3 min-w-0">
+<!-- Shop icon -->
+<div class="w-10 h-10 rounded-xl bg-sky-100/90 border border-sky-200/70 flex items-center justify-center text-sky-500 shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.651V9.35m0 0a3.001 3.001 0 003.75-.614A2.996 2.996 0 009 9.35c.983-.94 2.517-.94 3.5 0a2.996 2.996 0 002.75-.614 3.001 3.001 0 003.75.614M3.75 9.35l1.042-4.168A2.25 2.25 0 016.974 3.5h10.052a2.25 2.25 0 012.182 1.682l1.042 4.168" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Store details -->
+<div class="truncate">
+<p class="text-xs text-slate-700 font-medium tracking-normal">Instant In-Store Print at:</p>
+<p class="text-base text-black truncate leading-tight font-medium">Pr xerox shop</p>
+</div>
+</div>
+<!-- Selected pill badge -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100/90 border border-emerald-300/80 text-emerald-700 text-xs shrink-0 font-medium">
+<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" fill-rule="evenodd"></path>
+</svg>
+          Selected
+        </span>
+</section>
+<!-- END: StoreBannerCard -->
+<!-- BEGIN: UploadCard -->
+<!-- Main interaction file upload card -->
+<section class="bg-white/95 backdrop-blur-md rounded-3xl p-7 border border-sky-200/90 shadow-[0_8px_30px_rgb(14,165,233,0.08)] flex flex-col items-center text-center my-auto transition hover:border-sky-300" data-purpose="upload-card">
+<!-- Cloud upload round icon badge -->
+<div class="w-20 h-20 rounded-full bg-sky-100/80 border border-sky-200/80 flex items-center justify-center text-sky-500 mb-6 shadow-inner">
+<svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Main Title in sharp black font -->
+<h2 class="text-2xl text-black tracking-tight mb-3 font-semibold">
+          Tap to Browse Files
+        </h2>
+<!-- File format support description in crisp black readable font -->
+<p class="text-sm font-normal text-black leading-relaxed max-w-[270px] mb-2">
+          Support for PDF, DOCX, PPTX, XLSX, JPG, PNG up to 50MB.
+        </p>
+<p class="text-sm text-black mb-7 font-normal">
+          Select multiple files at once.
+        </p>
+<!-- Hidden input for file selection -->
+<input accept=".pdf,.docx,.pptx,.xlsx,.jpg,.jpeg,.png" aria-label="Upload document files" class="hidden" id="file-upload-input" multiple="" type="file">
+<!-- Secondary Browse Files Button with pill border -->
+<button class="px-8 py-2.5 rounded-full border border-black/85 bg-white text-black text-sm hover:bg-slate-50 active:scale-95 transition-all shadow-sm font-medium" id="browse-btn" onclick="document.getElementById('file-upload-input').click()" type="button">
+          Browse Files
+        </button>
+<!-- File selection state indicator -->
+<p class="text-xs text-slate-800 font-medium mt-3.5 min-h-[1rem] hidden" id="file-status-text"></p>
+</section>
+<!-- END: UploadCard -->
+<!-- BEGIN: BottomNavigation -->
+<!-- Bottom CTA button -->
+<footer class="mt-8 pt-2">
+<button class="w-full h-14 rounded-2xl bg-gradient-to-r from-stone-700 via-stone-800 to-stone-700 border border-stone-600/60 shadow-lg text-white text-base flex items-center justify-center gap-2 hover:from-stone-800 hover:to-stone-800 active:scale-[0.99] transition-all font-medium" type="button">
+<span class="">Next: Print Options</span>
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</button>
+</footer>
+<!-- END: BottomNavigation -->
+</div>
+</main>
+<!-- END: MobileContainer -->
+<!-- Simple script for file input responsiveness -->
+<script data-purpose="file-input-handler">
+    const fileInput = document.getElementById('file-upload-input');
+    const statusText = document.getElementById('file-status-text');
+
+    fileInput.addEventListener('change', (event) => {
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        statusText.textContent = files.length === 1 
+          ? `Selected: ${files[0].name}` 
+          : `${files.length} files selected`;
+        statusText.classList.remove('hidden');
+      } else {
+        statusText.classList.add('hidden');
+      }
+    });
+  </script>
+
+
+</body></html>

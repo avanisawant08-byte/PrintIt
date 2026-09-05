@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/home/qr_scanner_screen.dart';
 import '../../features/orders/order_tracking_screen.dart';
 import '../../features/orders/upload_document_screen.dart';
 import '../../features/orders/document_config_screen.dart';
@@ -57,6 +58,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/home',
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/qr-scanner',
+      builder: (context, state) => const QRScannerScreen(),
     ),
 
     // In-Store QR Code Scan Routes - Auto Locks Vendor Shop & Opens Upload
@@ -218,7 +223,18 @@ final appRouter = GoRouter(
       builder: (context, state) => const MyTicketsScreen(),
     ),
     GoRoute(
+      path: '/support/my-tickets',
+      builder: (context, state) => const MyTicketsScreen(),
+    ),
+    GoRoute(
       path: '/create-ticket',
+      builder: (context, state) {
+        final orderId = state.uri.queryParameters['orderId'];
+        return CreateTicketScreen(initialOrderId: orderId);
+      },
+    ),
+    GoRoute(
+      path: '/support/create-ticket',
       builder: (context, state) {
         final orderId = state.uri.queryParameters['orderId'];
         return CreateTicketScreen(initialOrderId: orderId);
@@ -236,7 +252,15 @@ final appRouter = GoRouter(
       builder: (context, state) => const PrivacyPolicyScreen(),
     ),
     GoRoute(
+      path: '/privacy-policy',
+      builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
+    GoRoute(
       path: '/terms',
+      builder: (context, state) => const TermsScreen(),
+    ),
+    GoRoute(
+      path: '/terms-of-service',
       builder: (context, state) => const TermsScreen(),
     ),
     GoRoute(
@@ -248,8 +272,16 @@ final appRouter = GoRouter(
       builder: (context, state) => const SecurityPolicyScreen(),
     ),
     GoRoute(
+      path: '/security-policy',
+      builder: (context, state) => const SecurityPolicyScreen(),
+    ),
+    GoRoute(
       path: '/accessibility',
       builder: (context, state) => const AccessibilityScreen(),
+    ),
+    GoRoute(
+      path: '/help-support',
+      builder: (context, state) => const HelpSupportScreen(),
     ),
     GoRoute(
       path: '/not-found',

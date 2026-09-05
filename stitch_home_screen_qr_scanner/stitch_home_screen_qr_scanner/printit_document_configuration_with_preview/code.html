@@ -1,0 +1,451 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Document Configuration - PrintIt</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter with ultra-clean light and regular weights -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              cyan: '#22d3ee',
+              teal: '#06b6d4',
+              softCyan: '#e0f7fa',
+              dark: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Style: Ambient Glows & Glassmorphism -->
+<style data-purpose="ambient-glass">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #eaf6fc;
+      -webkit-tap-highlight-color: transparent;
+      color: #0f172a;
+      font-weight: 400;
+    }
+
+    /* Soft ambient background orbs */
+    .ambient-bg {
+      background: linear-gradient(180deg, #dcf3fb 0%, #edf7fc 40%, #e1f4fc 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .orb-1 {
+      position: fixed;
+      top: -60px;
+      right: -80px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(147, 222, 255, 0.45) 0%, rgba(220, 243, 251, 0) 70%);
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb-2 {
+      position: fixed;
+      top: 320px;
+      left: -90px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(165, 235, 247, 0.4) 0%, rgba(220, 243, 251, 0) 70%);
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb-3 {
+      position: fixed;
+      bottom: 80px;
+      right: -60px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(140, 225, 245, 0.35) 0%, rgba(220, 243, 251, 0) 70%);
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Modern Light Glassmorphic Card Classes */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 20px -2px rgba(160, 195, 215, 0.18), 0 1px 2px rgba(255, 255, 255, 0.8) inset;
+    }
+
+    .glass-card-unselected {
+      background: rgba(255, 255, 255, 0.62);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 2px 10px -1px rgba(180, 205, 220, 0.15);
+      transition: all 0.2s ease;
+    }
+
+    .glass-card-selected {
+      background: linear-gradient(135deg, rgba(207, 250, 254, 0.85) 0%, rgba(224, 247, 250, 0.7) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid #22d3ee;
+      box-shadow: 0 4px 18px -2px rgba(34, 211, 238, 0.28), 0 0 0 1px rgba(34, 211, 238, 0.2) inset;
+      transition: all 0.2s ease;
+    }
+
+    /* Minimalist typography overriding bold styling */
+    * {
+      font-weight: 400 !important;
+    }
+
+    .font-light-custom {
+      font-weight: 300 !important;
+    }
+
+    .font-medium-custom {
+      font-weight: 500 !important;
+    }
+  </style>
+</head>
+<body class="ambient-bg min-h-screen text-slate-900 flex justify-center selection:bg-cyan-200">
+<!-- Ambient Light Orbs -->
+<div aria-hidden="true" class="orb-1"></div>
+<div aria-hidden="true" class="orb-2"></div>
+<div aria-hidden="true" class="orb-3"></div>
+<!-- Main Mobile Container -->
+<div class="relative z-10 w-full max-w-md min-h-screen flex flex-col justify-between pb-28">
+<!-- BEGIN: TopBar -->
+<header class="sticky top-0 z-30 px-5 pt-4 pb-3 flex items-center justify-between glass-panel !rounded-none !border-t-0 !border-x-0 border-b border-white/60 bg-white/40">
+<!-- Back Navigation Button -->
+<button aria-label="Go Back" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-900 active:scale-95 transition-transform" type="button">
+<svg class="w-6 h-6 text-slate-900 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Screen Title with Solid Black Color and Minimal Boldness -->
+<h1 class="text-[17px] text-slate-900 tracking-tight select-none">
+        Document Configuration
+      </h1>
+<!-- More Options Button -->
+<button aria-label="More options" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-900 active:scale-95 transition-transform" type="button">
+<svg class="w-5 h-5 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
+<circle cx="12" cy="5" r="1.75"></circle>
+<circle cx="12" cy="12" r="1.75"></circle>
+<circle cx="12" cy="19" r="1.75"></circle>
+</svg>
+</button>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContent -->
+<main class="px-5 pt-4 space-y-5">
+<!-- BEGIN: CopiesSection -->
+<!-- Document Summary & Number of Copies Card -->
+<!-- BEGIN: DocumentPreviewModalSection -->
+<section class="glass-panel rounded-2xl p-4 relative shadow-sm flex flex-col items-center select-none" data-purpose="document-preview">
+<!-- Close button top-right -->
+<button aria-label="Close preview" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-900/80 text-white flex items-center justify-center text-xs active:scale-90 transition-transform z-20 shadow-sm" type="button">
+    ✕
+  </button>
+<!-- White Preview Sheet Container with Shadow -->
+<div class="w-full max-w-[290px] aspect-[1/1.28] bg-white rounded-xl shadow-md p-3 relative flex flex-col justify-between overflow-hidden border border-slate-200/80 mt-1">
+<!-- Multi-page grid preview inside sheet (showing 4 pages/sheet layout) -->
+<div class="grid grid-cols-2 gap-2 w-full h-full">
+<!-- Page 1 -->
+<div class="bg-slate-200/90 rounded p-1.5 flex flex-col gap-1 text-[5px] text-slate-800 leading-tight overflow-hidden">
+<span class="font-medium-custom text-[6px] tracking-tight border-b border-slate-300 pb-0.5">COMPLETE SOFTWARE TESTING WORKFLOW</span>
+<div class="flex flex-col gap-0.5 text-slate-600">
+<span class="">1. Understand the Application</span>
+<span class="pl-1">• Read documents &amp; specs</span>
+<span class="pl-1">• Clarify edge cases</span>
+<span class="">2. Define Test Strategy</span>
+<span class="pl-1">• Scope &amp; objectives</span>
+<span class="">3. Perform Manual Testing</span>
+<span class="pl-1">• Exploratory passes</span>
+<span class="">4. Automated Regression</span>
+</div>
+</div>
+<!-- Page 2 -->
+<div class="bg-slate-200/90 rounded p-1.5 flex flex-col gap-1 text-[5px] text-slate-800 leading-tight overflow-hidden">
+<span class="font-medium-custom text-[6px] tracking-tight border-b border-slate-300 pb-0.5">5. API Testing</span>
+<div class="flex flex-col gap-0.5 text-slate-600">
+<span class="">• Test backend responses</span>
+<span class="">• Boundary condition verification</span>
+<span class="">6. Security Verification</span>
+<span class="pl-1">• Role permission checks</span>
+<span class="">7. Performance Matrix</span>
+<span class="pl-1">• Load latency tracking</span>
+<span class="">8. Sign-off Readiness</span>
+</div>
+</div>
+<!-- Page 3 -->
+<div class="bg-slate-200/90 rounded p-1.5 flex flex-col gap-1 text-[5px] text-slate-800 leading-tight overflow-hidden">
+<span class="font-medium-custom text-[6px] tracking-tight border-b border-slate-300 pb-0.5">Deployment Checklist</span>
+<div class="flex flex-col gap-0.5 text-slate-600">
+<span class="">• Sanity verification</span>
+<span class="">• Staging health check</span>
+<span class="">• Rollback plan prepared</span>
+<span class="">• Monitoring activated</span>
+</div>
+</div>
+<!-- Page 4 (Empty placeholder / continuation) -->
+<div class="bg-slate-100/70 rounded p-1.5 border border-dashed border-slate-300 flex items-center justify-center text-[7px] text-slate-400">
+<span class="">Empty</span>
+</div>
+</div>
+<!-- Floating Pages per Sheet Toolbar Pill -->
+<div class="mt-3 bg-white/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 flex items-center gap-2 shadow-md border border-white/80 text-slate-900 z-10"><span class="text-[9px] tracking-wider text-slate-700 font-medium uppercase pr-0.5">PAGES / SHEET</span><div class="flex items-center gap-1 text-[11px]"><button class="w-6 h-6 rounded flex items-center justify-center text-slate-700 hover:bg-slate-100/70 active:scale-95 transition-all" type="button">1</button><button class="w-6 h-6 rounded flex items-center justify-center text-slate-700 hover:bg-slate-100/70 active:scale-95 transition-all" type="button">2</button><button class="w-6 h-6 rounded bg-cyan-400 text-slate-950 font-medium flex items-center justify-center shadow-sm active:scale-95 transition-all" type="button">4</button><button class="w-6 h-6 rounded flex items-center justify-center text-slate-700 hover:bg-slate-100/70 active:scale-95 transition-all" type="button">6</button></div></div>
+</div>
+<!-- File name & page count caption in solid black font with minimal boldness -->
+<div class="mt-3 text-center">
+<p class="text-[14px] text-slate-900 tracking-tight">
+      Testing_Workflow.pdf <span class="text-slate-500">•</span> 3 pages
+    </p>
+</div>
+</section>
+<!-- END: DocumentPreviewModalSection --><section class="glass-panel rounded-2xl p-4 flex items-center justify-between shadow-sm" data-purpose="copies-controller">
+<div class="flex flex-col">
+<span class="text-[15px] text-slate-900">Number of copies</span>
+<span class="text-xs text-slate-600 mt-0.5 font-light-custom">File 1 (3 pages)</span>
+</div>
+<!-- Stepper Controller -->
+<div class="flex items-center gap-4 bg-white/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/80 shadow-inner">
+<button aria-label="Decrease copies" class="w-7 h-7 flex items-center justify-center text-slate-900 active:scale-90 transition-transform text-lg" id="decrement-btn" type="button">
+            −
+          </button>
+<span class="text-base text-slate-900 min-w-[12px] text-center" id="copies-count">
+            1
+          </span>
+<button aria-label="Increase copies" class="w-7 h-7 flex items-center justify-center text-slate-900 active:scale-90 transition-transform text-lg" id="increment-btn" type="button">
+            +
+          </button>
+</div>
+</section>
+<!-- END: CopiesSection -->
+<!-- BEGIN: ColorSelection -->
+<!-- Choose Print Color Section -->
+<section data-purpose="print-color">
+<h2 class="text-[14px] text-slate-900 mb-2.5 px-0.5">Choose print color</h2>
+<div class="grid grid-cols-2 gap-3">
+<!-- Option: Coloured (Unselected) -->
+<button class="glass-card-unselected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all" id="color-coloured-btn" type="button">
+<!-- Coloured RGB Circles Icon -->
+<div class="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center shadow-sm relative shrink-0">
+<span class="absolute w-3.5 h-3.5 rounded-full bg-[#ef4444] top-2 left-2 opacity-90"></span>
+<span class="absolute w-3.5 h-3.5 rounded-full bg-[#3b82f6] bottom-2 left-2.5 opacity-90"></span>
+<span class="absolute w-3.5 h-3.5 rounded-full bg-[#10b981] right-2 top-3 opacity-90"></span>
+</div>
+<span class="text-[14px] text-slate-900">Coloured</span>
+</button>
+<!-- Option: B&W (Selected) -->
+<button class="glass-card-selected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all" id="color-bw-btn" type="button">
+<!-- B&W Half/Split Circle Icon -->
+<div class="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow-sm shrink-0">
+<svg class="w-6 h-6 text-slate-900" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"></circle>
+<path d="M12 3v18c4.97 0 9-4.03 9-9s-4.03-9-9-9z" fill="currentColor"></path>
+<!-- Slanted hatch line details -->
+<path d="M5 8h7M4 12h8M5 16h7" stroke="currentColor" stroke-linecap="round" stroke-width="1.2"></path>
+</svg>
+</div>
+<span class="text-[14px] text-slate-900">B &amp; W</span>
+</button>
+</div>
+</section>
+<!-- END: ColorSelection -->
+<!-- BEGIN: OrientationSelection -->
+<!-- Choose Print Orientation Section -->
+<section data-purpose="print-orientation">
+<h2 class="text-[14px] text-slate-900 mb-2.5 px-0.5">Choose print orientation</h2>
+<div class="grid grid-cols-2 gap-3">
+<!-- Option: Portrait (Selected) -->
+<button class="glass-card-selected rounded-2xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-all" id="orient-portrait-btn" type="button">
+<div class="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow-sm shrink-0">
+<!-- Portrait Document Icon -->
+<svg class="w-5 h-6 text-cyan-600 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M8 13h8M8 17h5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] text-slate-900">Portrait</span>
+<span class="text-[11px] text-slate-600 font-light-custom">8.3 × 11.7 in</span>
+</div>
+</button>
+<!-- Option: Landscape (Unselected) -->
+<button class="glass-card-unselected rounded-2xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-all" id="orient-landscape-btn" type="button">
+<div class="w-10 h-10 rounded-xl bg-white/70 flex items-center justify-center shadow-sm shrink-0">
+<!-- Landscape Document Icon -->
+<svg class="w-6 h-5 text-slate-700 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<rect height="14" rx="2" stroke-linecap="round" stroke-linejoin="round" width="20" x="2" y="5"></rect>
+<path d="M6 10h4M6 14h6M16 9v6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] text-slate-900">Landscape</span>
+<span class="text-[11px] text-slate-600 font-light-custom">11.7 × 8.3 in</span>
+</div>
+</button>
+</div>
+</section>
+<!-- END: OrientationSelection -->
+<!-- BEGIN: SidednessSelection -->
+<!-- Sidedness Section -->
+<section data-purpose="sidedness">
+<h2 class="text-[14px] text-slate-900 mb-2.5 px-0.5">Sidedness</h2>
+<div class="grid grid-cols-2 gap-3">
+<!-- Single Sided (Selected) -->
+<button class="glass-card-selected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all" id="sided-single-btn" type="button">
+<div class="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow-sm shrink-0">
+<!-- Single Page Icon (Numbered 1) -->
+<div class="relative w-5 h-6 border border-cyan-600 rounded-sm flex items-center justify-center">
+<span class="text-[11px] text-cyan-600">1</span>
+</div>
+</div>
+<span class="text-[14px] text-slate-900">Single Sided</span>
+</button>
+<!-- Back-to-Back (Unselected) -->
+<button class="glass-card-unselected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all" id="sided-double-btn" type="button">
+<div class="w-10 h-10 rounded-xl bg-white/70 flex items-center justify-center shadow-sm shrink-0 relative">
+<!-- Back to Back Layered Icon (Numbered 2) -->
+<div class="absolute top-2 left-2 w-4 h-5 border border-slate-400 rounded-sm"></div>
+<div class="relative z-10 w-4 h-5 border border-slate-700 bg-white/90 rounded-sm flex items-center justify-center">
+<span class="text-[10px] text-slate-800">2</span>
+</div>
+</div>
+<span class="text-[14px] text-slate-900">Back-to-Back</span>
+</button>
+</div>
+</section>
+<!-- END: SidednessSelection -->
+<!-- BEGIN: BindingOption -->
+<!-- Binding Option Section -->
+<section data-purpose="binding-option">
+<h2 class="text-[14px] text-slate-900 mb-2.5 px-0.5">Binding Option</h2>
+<div class="glass-panel rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:bg-white/80 transition-colors">
+<div class="flex items-center gap-3.5">
+<!-- Book / Spine Binding Icon -->
+<div class="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center shadow-sm text-slate-800">
+<svg class="w-5 h-5 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[14px] text-slate-900">No Binding</span>
+</div>
+<!-- Dropdown Chevron -->
+<svg class="w-5 h-5 text-slate-500 stroke-[1.5] mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19.5 8.25l-7.5 7.5-7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</section>
+<!-- END: BindingOption -->
+<!-- BEGIN: PrintInstructions -->
+<!-- Print Instructions (Optional) Section -->
+<section data-purpose="special-instructions">
+<h2 class="text-[14px] text-slate-900 mb-2.5 px-0.5">Print Instructions (Optional)</h2>
+<div class="glass-panel rounded-2xl p-1 shadow-sm">
+<textarea class="w-full bg-transparent border-0 rounded-xl text-[13px] text-slate-900 placeholder:text-slate-500 placeholder:font-light-custom focus:ring-0 resize-none p-3" placeholder="Add any specific instructions for printing..." rows="3"></textarea>
+</div>
+</section>
+<!-- END: PrintInstructions -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomStickyBar -->
+<!-- Sticky Footer Summary & Continue Action -->
+<footer class="fixed bottom-0 left-0 right-0 z-30 flex justify-center pointer-events-none">
+<div class="w-full max-w-md p-4 glass-panel !rounded-t-2xl !rounded-b-none border-b-0 pointer-events-auto flex items-center justify-between gap-4 bg-white/75 backdrop-blur-xl border-t border-white/90 shadow-lg">
+<!-- Total Pages Indicator in Clean Solid Black Font -->
+<div class="flex flex-col pl-1.5">
+<span class="text-[16px] text-slate-900 tracking-tight">
+            Total <span id="summary-pages" class="">1</span> pages
+          </span>
+</div>
+<!-- Action Button: Continue -->
+<button class="px-8 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 active:scale-[0.98] text-slate-950 text-[15px] shadow-sm transition-all flex items-center justify-center" id="continue-button" type="button">
+          Continue
+        </button>
+</div>
+</footer>
+<!-- END: BottomStickyBar -->
+</div>
+<!-- Interactive Controls JavaScript -->
+<script data-purpose="ui-interactions">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Counter controls
+      const countEl = document.getElementById('copies-count');
+      const decBtn = document.getElementById('decrement-btn');
+      const incBtn = document.getElementById('increment-btn');
+      const summaryPagesEl = document.getElementById('summary-pages');
+
+      let copies = 1;
+      const pagesPerFile = 1; // Base pages for current config
+
+      function updateSummary() {
+        countEl.textContent = copies;
+        summaryPagesEl.textContent = copies * pagesPerFile;
+      }
+
+      decBtn.addEventListener('click', () => {
+        if (copies > 1) {
+          copies--;
+          updateSummary();
+        }
+      });
+
+      incBtn.addEventListener('click', () => {
+        copies++;
+        updateSummary();
+      });
+
+      // Toggle helper for glass cards
+      function setupToggleGroup(btn1, btn2) {
+        btn1.addEventListener('click', () => {
+          btn1.className = 'glass-card-selected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all';
+          btn2.className = 'glass-card-unselected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all';
+        });
+
+        btn2.addEventListener('click', () => {
+          btn2.className = 'glass-card-selected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all';
+          btn1.className = 'glass-card-unselected rounded-2xl p-3.5 flex items-center gap-3.5 text-left active:scale-[0.98] transition-all';
+        });
+      }
+
+      // Initialize toggles for Color, Orientation, and Sidedness
+      const colorColoured = document.getElementById('color-coloured-btn');
+      const colorBW = document.getElementById('color-bw-btn');
+      if(colorColoured && colorBW) setupToggleGroup(colorBW, colorColoured);
+
+      const orientPortrait = document.getElementById('orient-portrait-btn');
+      const orientLandscape = document.getElementById('orient-landscape-btn');
+      if(orientPortrait && orientLandscape) {
+        orientPortrait.addEventListener('click', () => {
+          orientPortrait.className = 'glass-card-selected rounded-2xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-all';
+          orientLandscape.className = 'glass-card-unselected rounded-2xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-all';
+        });
+        orientLandscape.addEventListener('click', () => {
+          orientLandscape.className = 'glass-card-selected rounded-2xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-all';
+          orientPortrait.className = 'glass-card-unselected rounded-2xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-all';
+        });
+      }
+
+      const sideSingle = document.getElementById('sided-single-btn');
+      const sideDouble = document.getElementById('sided-double-btn');
+      if(sideSingle && sideDouble) setupToggleGroup(sideSingle, sideDouble);
+    });
+  </script>
+
+
+</body></html>

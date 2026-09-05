@@ -54,6 +54,7 @@ dependencies:
   firebase_auth: ^6.5.4
   pdfx: ^2.9.2
   archive: ^4.0.2
+  mobile_scanner: ^6.0.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

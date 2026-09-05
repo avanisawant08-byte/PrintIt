@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF3BAFF2); // Sky Blue from logo
-  static const Color lightBackground = Color(0xFFF4F9FF); // Soft blue-white
-  static const Color darkBackground = Color(0xFF0F172A); // Deep Navy
+  static const Color primaryCyan = Color(0xFF06B6D4); // Cyan from Stitch design
+  static const Color accentPurple = Color(0xFF7C3AED); // Purple from Stitch design
+  static const Color lightBackground = Color(0xFFF8FCFF); // Stitch Light background
+  static const Color darkBackground = Color(0xFF050811); // Stitch Dark background
 
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
-      primaryColor: primaryColor,
+      primaryColor: primaryCyan,
       scaffoldBackgroundColor: lightBackground,
       fontFamily: 'Inter',
       textTheme: const TextTheme(
-        displayLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-        displayMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-        displaySmall: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-        headlineMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-        bodyLarge: TextStyle(color: Color(0xFF334155)),
-        bodyMedium: TextStyle(color: Color(0xFF475569)),
+        displayLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Color(0xFF000000)),
+        displayMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Color(0xFF000000)),
+        displaySmall: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Color(0xFF000000)),
+        headlineMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: Color(0xFF000000)),
+        titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF000000)),
+        titleMedium: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+        bodyLarge: TextStyle(color: Color(0xFF0F172A)),
+        bodyMedium: TextStyle(color: Color(0xFF334155)),
+        bodySmall: TextStyle(color: Color(0xFF64748B)),
       ),
-      colorScheme: ColorScheme.light(
-        primary: primaryColor,
-        secondary: const Color(0xFF0284C7), // Deeper blue accent
+      colorScheme: const ColorScheme.light(
+        primary: primaryCyan,
+        secondary: accentPurple,
         surface: Colors.white,
-        onSurface: const Color(0xFF1E293B),
+        onSurface: Color(0xFF000000),
       ),
+      iconTheme: const IconThemeData(color: Color(0xFF000000)),
     );
   }
 
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      primaryColor: primaryColor,
+      primaryColor: primaryCyan,
       scaffoldBackgroundColor: darkBackground,
       fontFamily: 'Inter',
       textTheme: const TextTheme(
@@ -39,15 +44,19 @@ class AppTheme {
         displayMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Colors.white),
         displaySmall: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Colors.white),
         headlineMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: Colors.white),
-        bodyLarge: TextStyle(color: Colors.white70),
-        bodyMedium: TextStyle(color: Colors.white60),
+        titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        titleMedium: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFF1F5F9)),
+        bodyLarge: TextStyle(color: Color(0xFFE2E8F0)),
+        bodyMedium: TextStyle(color: Color(0xFF94A3B8)),
+        bodySmall: TextStyle(color: Color(0xFF64748B)),
       ),
-      colorScheme: ColorScheme.dark(
-        primary: primaryColor,
-        secondary: const Color(0xFF7DD3FC), // Light blue accent
-        surface: const Color(0xFF1E293B),
-        onSurface: const Color(0xFFF8FAFC),
+      colorScheme: const ColorScheme.dark(
+        primary: primaryCyan,
+        secondary: accentPurple,
+        surface: Color(0xFF111928),
+        onSurface: Colors.white,
       ),
+      iconTheme: const IconThemeData(color: Colors.white),
     );
   }
 }

@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Velocity - PrintIt</title>
+<!-- Tailwind CSS v3 CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              cyan: '#22d3ee',
+              teal: '#06b6d4',
+              softCyan: '#e0f7fa',
+              dark: '#0f172a'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Style Configurations -->
+<style data-purpose="custom-glassmorphism">
+    /* Subtle frosted glassmorphic card backgrounds */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+    .glass-card-active {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid #22d3ee;
+      box-shadow: 0 4px 16px -2px rgba(34, 211, 238, 0.2);
+    }
+  </style>
+<style data-purpose="typography-and-scroll">
+    /* Enforce light minimal bold typography constraint */
+    * {
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<!-- END: Style Configurations -->
+</head>
+<body class="bg-gradient-to-b from-[#e8f7fa] via-[#f3f9fb] to-[#ffffff] min-h-screen flex justify-center font-sans antialiased text-[#0f172a] selection:bg-cyan-200">
+<!-- BEGIN: Mobile App Container -->
+<div class="w-full max-w-md min-h-screen flex flex-col justify-between relative px-4 pb-28 pt-2">
+<!-- BEGIN: MainContent -->
+<main class="space-y-4">
+<!-- BEGIN: Navigation Header -->
+<header class="flex items-center justify-between py-3 pt-3" data-purpose="app-bar">
+<div class="flex items-center space-x-3">
+<!-- Back navigation button -->
+<button aria-label="Go back" class="w-9 h-9 flex items-center justify-center rounded-full glass-card hover:bg-white active:scale-95 transition-all" type="button">
+<svg class="w-5 h-5 stroke-[#0f172a]" fill="none" stroke-width="1.75" viewBox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<h1 class="text-xl font-normal tracking-tight" style="font-weight: 600;">Modes</h1>
+</div>
+<!-- Scheduled Mode Status Badge -->
+<div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full glass-card bg-cyan-50/60 border border-cyan-200/60 text-xs font-normal">
+<svg class="w-3.5 h-3.5 text-cyan-600 stroke-current" fill="none" stroke-width="1.75" viewBox="0 0 24 24">
+<path d="M6.75 3v2.25M17.25 3v2.253M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="tracking-wider uppercase text-[11px]">Scheduled</span>
+</div>
+</header>
+<!-- END: Navigation Header -->
+<!-- BEGIN: Mode Selector Pill Tabs -->
+<section aria-label="Mode Selector" class="p-1 glass-card rounded-2xl flex items-center gap-1" data-purpose="mode-toggle">
+<!-- Express Mode (Unselected) -->
+<button class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-normal text-[#0f172a]/70 hover:text-[#0f172a] hover:bg-white/50 transition-all" type="button">
+<svg class="w-4 h-4 stroke-[#0f172a]/80" fill="none" stroke-width="1.75" viewBox="0 0 24 24">
+<path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Express (Now)</span>
+</button>
+<!-- Scheduled Mode (Active) -->
+<button class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-normal bg-cyan-400 text-[#0f172a] shadow-sm transition-all" type="button">
+<svg class="w-4 h-4 stroke-[#0f172a]" fill="none" stroke-width="1.75" viewBox="0 0 24 24">
+<path d="M6.75 3v2.25M17.25 3v2.253M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Scheduled</span>
+</button>
+</section>
+<!-- END: Mode Selector Pill Tabs -->
+<!-- BEGIN: Date Picker Section -->
+<section class="space-y-2.5" data-purpose="date-picker">
+<!-- Month title -->
+<div class="text-sm font-normal tracking-tight px-1">September 2026</div>
+<!-- Horizontal Date Carousel -->
+<div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-0.5">
+<!-- Active Day (5 Sat) -->
+<button class="flex-1 min-w-[58px] py-3.5 flex flex-col items-center justify-center rounded-2xl bg-cyan-400 text-[#0f172a] shadow-[0_4px_14px_rgba(34,211,238,0.35)] transition-transform active:scale-95" type="button">
+<span class="text-lg font-normal leading-tight">5</span>
+<span class="text-xs font-normal mt-0.5 opacity-90">Sat</span>
+</button>
+<!-- Day 6 Sun -->
+<button class="flex-1 min-w-[58px] py-3.5 flex flex-col items-center justify-center rounded-2xl glass-card text-[#0f172a] hover:bg-white active:scale-95 transition-all" type="button">
+<span class="text-lg font-normal leading-tight">6</span>
+<span class="text-xs font-normal mt-0.5 opacity-70">Sun</span>
+</button>
+<!-- Day 7 Mon -->
+<button class="flex-1 min-w-[58px] py-3.5 flex flex-col items-center justify-center rounded-2xl glass-card text-[#0f172a] hover:bg-white active:scale-95 transition-all" type="button">
+<span class="text-lg font-normal leading-tight">7</span>
+<span class="text-xs font-normal mt-0.5 opacity-70">Mon</span>
+</button>
+<!-- Day 8 Tue -->
+<button class="flex-1 min-w-[58px] py-3.5 flex flex-col items-center justify-center rounded-2xl glass-card text-[#0f172a] hover:bg-white active:scale-95 transition-all" type="button">
+<span class="text-lg font-normal leading-tight">8</span>
+<span class="text-xs font-normal mt-0.5 opacity-70">Tue</span>
+</button>
+<!-- Day 9 Wed -->
+<button class="flex-1 min-w-[58px] py-3.5 flex flex-col items-center justify-center rounded-2xl glass-card text-[#0f172a] hover:bg-white active:scale-95 transition-all" type="button">
+<span class="text-lg font-normal leading-tight">9</span>
+<span class="text-xs font-normal mt-0.5 opacity-70">Wed</span>
+</button>
+</div>
+</section>
+<!-- END: Date Picker Section -->
+<!-- BEGIN: Time Slot Selection -->
+<section class="space-y-2.5 pt-1" data-purpose="time-slots">
+<label class="block text-xs font-normal tracking-wide text-[#0f172a]/70 uppercase px-1">Available Pickup Slots</label>
+<!-- Slot 1 (Selected) -->
+<label class="flex items-center justify-between p-4 rounded-2xl glass-card-active cursor-pointer transition-all">
+<span class="text-sm font-normal text-[#0f172a]">5:00 to 5:30 PM</span>
+<div class="relative flex items-center">
+<input checked="" class="sr-only" name="pickup_slot" type="radio" value="17:00-17:30">
+<!-- Custom Radio Visual -->
+<div class="w-5 h-5 rounded-full border-2 border-cyan-500 flex items-center justify-center bg-white">
+<div class="w-2.5 h-2.5 rounded-full bg-cyan-500"></div>
+</div>
+</div>
+</label>
+<!-- Slot 2 -->
+<label class="flex items-center justify-between p-4 rounded-2xl glass-card cursor-pointer hover:bg-white/80 transition-all">
+<span class="text-sm font-normal text-[#0f172a]">5:30 to 6:00 PM</span>
+<div class="relative flex items-center">
+<input class="sr-only" name="pickup_slot" type="radio" value="17:30-18:00">
+<!-- Custom Radio Visual -->
+<div class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center bg-white/60"></div>
+</div>
+</label>
+<!-- Slot 3 -->
+<label class="flex items-center justify-between p-4 rounded-2xl glass-card cursor-pointer hover:bg-white/80 transition-all">
+<span class="text-sm font-normal text-[#0f172a]">6:00 to 6:30 PM</span>
+<div class="relative flex items-center">
+<input class="sr-only" name="pickup_slot" type="radio" value="18:00-18:30">
+<!-- Custom Radio Visual -->
+<div class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center bg-white/60"></div>
+</div>
+</label>
+</section>
+<!-- END: Time Slot Selection -->
+<!-- BEGIN: Metrics Cards (Price & Queue Status) -->
+<section class="grid grid-cols-2 gap-3 pt-1" data-purpose="metrics">
+<!-- Total Price Card -->
+<div class="glass-card p-3.5 rounded-2xl">
+<span class="block text-[11px] font-normal tracking-wider text-[#0f172a]/60 uppercase">Total Price</span>
+<span class="text-lg font-normal text-[#0f172a] mt-1 block">₹2.11</span>
+</div>
+<!-- Queue Status Card -->
+<div class="glass-card p-3.5 rounded-2xl">
+<span class="block text-[11px] font-normal tracking-wider text-[#0f172a]/60 uppercase">Queue Status</span>
+<div class="flex items-center space-x-1.5 mt-1">
+<span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+<span class="text-sm font-normal text-[#0f172a]">Low Traffic</span>
+</div>
+</div>
+</section>
+<!-- END: Metrics Cards -->
+<!-- BEGIN: Ready To Print Section -->
+<section class="space-y-2 pt-1" data-purpose="documents-list">
+<!-- Section Header with count -->
+<div class="flex items-center justify-between px-1">
+<span class="text-xs font-normal tracking-wider text-[#0f172a]/60 uppercase">Ready To Print</span>
+<span class="text-xs font-normal text-[#0f172a]/60">1 Document</span>
+</div>
+<!-- Document Item Card -->
+<article class="glass-card p-3 rounded-2xl flex items-center justify-between" data-purpose="document-item">
+<div class="flex items-center space-x-3 truncate">
+<!-- Document Icon Container -->
+<div class="w-10 h-10 rounded-xl bg-cyan-100/70 border border-cyan-200/80 flex items-center justify-center flex-shrink-0">
+<svg class="w-5 h-5 text-cyan-700 stroke-current" fill="none" stroke-width="1.75" viewBox="0 0 24 24">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Filename and Details -->
+<div class="truncate">
+<p class="text-xs font-normal text-[#0f172a] truncate">IMG-20260905-WA0008.jpg</p>
+<p class="text-[11px] font-normal text-[#0f172a]/60 mt-0.5 tracking-tight">0.06 MB • READY</p>
+</div>
+</div>
+<!-- Completed Checkmark Badge -->
+<div class="flex-shrink-0 pl-2">
+<svg class="w-5 h-5 text-cyan-600 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</article>
+</section>
+<!-- END: Ready To Print Section -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Sticky Bottom Bar & Action Footer -->
+<footer class="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-4 pb-5 pt-3 bg-white/75 backdrop-blur-md border-t border-slate-200/70" data-purpose="checkout-bar">
+<!-- Total breakdown -->
+<div class="flex items-center justify-between mb-3 px-1">
+<span class="text-xs font-normal text-[#0f172a]/70">Estimated Total</span>
+<span class="text-lg font-normal text-[#0f172a]">₹2.11</span>
+</div>
+<!-- Action Button -->
+<button class="w-full py-3.5 px-4 bg-cyan-400 hover:bg-cyan-300 active:scale-[0.99] text-[#0f172a] font-normal text-sm rounded-2xl shadow-sm flex items-center justify-center gap-2 transition-all" type="button">
+<span class="">Proceed to Payment</span>
+<svg class="w-4 h-4 stroke-[#0f172a]" fill="none" stroke-width="1.75" viewBox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</footer>
+<!-- END: Sticky Bottom Bar & Action Footer -->
+</div>
+<!-- END: Mobile App Container -->
+<!-- Optional Interactivity Handling -->
+<script data-purpose="interaction-handlers">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Manage Radio Card selection styling
+      const radioLabels = document.querySelectorAll('[data-purpose="time-slots"] label');
+      radioLabels.forEach(label => {
+        label.addEventListener('click', () => {
+          radioLabels.forEach(l => {
+            l.classList.remove('glass-card-active');
+            l.classList.add('glass-card');
+            const dot = l.querySelector('.w-2\\.5');
+            if (dot) dot.remove();
+            const circle = l.querySelector('.w-5');
+            if (circle) {
+              circle.className = 'w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center bg-white/60';
+            }
+          });
+          label.classList.remove('glass-card');
+          label.classList.add('glass-card-active');
+          const circle = label.querySelector('.w-5');
+          if (circle) {
+            circle.className = 'w-5 h-5 rounded-full border-2 border-cyan-500 flex items-center justify-center bg-white';
+            const dot = document.createElement('div');
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-500';
+            circle.appendChild(dot);
+          }
+        });
+      });
+    });
+  </script>
+
+
+</body></html>
