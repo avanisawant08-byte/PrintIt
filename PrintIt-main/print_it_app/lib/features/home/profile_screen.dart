@@ -9,6 +9,7 @@ import '../auth/auth_provider.dart';
 import '../wallet/wallet_provider.dart';
 import '../orders/order_history_screen.dart';
 import 'notification_settings_provider.dart';
+import '../../core/api/api_client.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -325,6 +326,64 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
+          // Legal & Policies Section
+          const Padding(
+            padding: EdgeInsets.only(left: 8.0, bottom: 8.0),
+            child: Text(
+              'LEGAL & POLICIES',
+              style: TextStyle(
+                color: Color(0xFF00daf3),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+          GlassContainer(
+            borderRadius: 16,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _buildNavigationTile(
+                  context,
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy Policy',
+                  onTap: () => context.push('/privacy'),
+                ),
+                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                _buildNavigationTile(
+                  context,
+                  icon: Icons.gavel_outlined,
+                  title: 'Terms of Service',
+                  onTap: () => context.push('/terms'),
+                ),
+                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                _buildNavigationTile(
+                  context,
+                  icon: Icons.currency_rupee,
+                  title: 'Refund & Cancellation Policy',
+                  onTap: () => context.push('/refund-policy'),
+                ),
+                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                _buildNavigationTile(
+                  context,
+                  icon: Icons.security_outlined,
+                  title: 'Security Practices',
+                  onTap: () => context.push('/security'),
+                ),
+                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                _buildNavigationTile(
+                  context,
+                  icon: Icons.accessibility_new_outlined,
+                  title: 'Accessibility Statement',
+                  onTap: () => context.push('/accessibility'),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
           // Wallet History Section
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -414,6 +473,19 @@ class ProfileScreen extends ConsumerWidget {
               child: const Text(
                 'Sign Out',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Danger Zone - Delete Account
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: () => _confirmAccountDeletion(context, ref),
+              icon: const Icon(Icons.delete_forever_outlined, color: Colors.redAccent, size: 18),
+              label: const Text(
+                'Delete Account & Data',
+                style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -509,6 +581,58 @@ class ProfileScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmAccountDeletion(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Delete Account & Data?'),
+        content: const Text(
+          'This action is irreversible. Your profile, order records, and active credentials will be permanently erased from Print It.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text('Delete Permanently'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final api = ref.read(apiProvider);
+        final res = await api.delete('/auth/account');
+        if (context.mounted) {
+          if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! < 300) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Your account and data have been permanently deleted.')),
+            );
+            ref.read(authProvider.notifier).logout();
+            context.go('/home');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(res.data?['message'] ?? 'Failed to delete account.')),
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete account: $e')),
+          );
+        }
+      }
+    }
   }
 }
 

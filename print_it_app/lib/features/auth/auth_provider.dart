@@ -138,12 +138,13 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     final apiClient = ref.read(apiProvider);
     try {
-      final res = await apiClient.put('/auth/profile', data: {
+      final payload = <String, dynamic>{
         'full_name': fullName,
         'phone': phone,
         'email': email,
-        if (avatarUrl != null) 'avatar_url': avatarUrl,
-      });
+      };
+      if (avatarUrl != null) payload['avatar_url'] = avatarUrl;
+      final res = await apiClient.put('/auth/profile', data: payload);
 
       if (res.statusCode == 200) {
         final updatedUser = res.data['user'] ?? res.data;

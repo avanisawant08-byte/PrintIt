@@ -34,4 +34,26 @@ router.get('/test', (req, res) => {
   res.send('PrintIt API Working');
 });
 
+// GET /api/health — System health and maintenance status
+router.get('/health', async (req, res) => {
+  const isMaintenance = process.env.MAINTENANCE_MODE === 'true';
+  const pool = require('../config/db');
+  let dbStatus = 'connected';
+
+  try {
+    const client = await pool.connect();
+    client.release();
+  } catch (err) {
+    dbStatus = 'disconnected';
+  }
+
+  res.status(isMaintenance ? 503 : (dbStatus === 'connected' ? 200 : 500)).json({
+    status: isMaintenance ? 'maintenance' : (dbStatus === 'connected' ? 'ok' : 'degraded'),
+    maintenance: isMaintenance,
+    database: dbStatus,
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 module.exports = router;

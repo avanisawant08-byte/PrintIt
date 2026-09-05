@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import NewPrintJobModal from '../../components/NewPrintJobModal';
+import OfflineBanner from '../../components/ui/OfflineBanner';
 
 const DashboardLayout = () => {
   const { user, shopName, logout } = useAuth();
@@ -17,6 +18,7 @@ const DashboardLayout = () => {
     { name: 'Pricing', path: '/dashboard/pricing', icon: 'payments' },
     { name: 'Wallet & Payouts', path: '/dashboard/wallet', icon: 'account_balance_wallet' },
     { name: 'Analytics', path: '/dashboard/analytics', icon: 'analytics' },
+    { name: 'Support & FAQ', path: '/dashboard/support', icon: 'help_outline' },
   ];
 
   const handleLogout = () => {
@@ -86,11 +88,11 @@ const DashboardLayout = () => {
         </nav>
 
         {/* Footer Navigation */}
-        <div className="mt-auto px-3 pb-6 pt-4 border-t border-glass-edge/20">
+        <div className="mt-auto px-3 pb-6 pt-4 border-t border-glass-edge/20 space-y-2">
           <NavLink
             to="/dashboard/settings"
             className={({ isActive }) =>
-              `flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              `flex items-center gap-3.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 isActive ? 'text-primary font-semibold bg-primary/10' : 'text-on-surface-variant/80 hover:text-on-surface hover:bg-glass-edge/20'
               }`
             }
@@ -98,11 +100,19 @@ const DashboardLayout = () => {
             <span className="material-symbols-outlined text-[21px]">settings</span>
             <span className="text-sm font-medium">Settings</span>
           </NavLink>
+
+          <div className="pt-2 border-t border-glass-edge/10 px-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-on-surface-variant/60">
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link to="/refund-policy" className="hover:text-primary transition-colors">Refunds</Link>
+            <Link to="/accessibility" className="hover:text-primary transition-colors">A11y</Link>
+          </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 ml-0 md:ml-64 h-screen overflow-y-auto scroll-smooth flex flex-col">
+        <OfflineBanner />
         {/* TopAppBar */}
         <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-glass-edge/20 px-6 md:px-10 h-16 flex items-center justify-between shrink-0">
           {/* Search Input on Left */}

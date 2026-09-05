@@ -8,6 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const isSessionExpired = typeof window !== 'undefined' && window.location.search.includes('expired=true');
   
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -62,8 +63,15 @@ const Login = () => {
           <p className="text-on-surface-variant font-body-sm">Sign in to manage your print queue</p>
         </div>
         
+        {isSessionExpired && (
+          <div role="status" aria-live="polite" className="bg-amber-500/20 text-amber-300 p-3 rounded-lg mb-6 text-sm border border-amber-500/30 text-center flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-base">info</span>
+            <span>Your session has expired. Please sign in again.</span>
+          </div>
+        )}
+
         {error && (
-          <div className="bg-error-container/20 text-error p-3 rounded-lg mb-6 text-sm border border-error/30 text-center">
+          <div role="alert" className="bg-error-container/20 text-error p-3 rounded-lg mb-6 text-sm border border-error/30 text-center">
             {error}
           </div>
         )}
@@ -101,9 +109,16 @@ const Login = () => {
           </button>
         </form>
         
-        <p className="text-center text-on-surface-variant font-body-sm mt-8">
-          <Link to="/" className="hover:text-primary transition-colors">← Back to Home</Link>
-        </p>
+        <div className="mt-8 pt-6 border-t border-outline-variant/20 text-center">
+          <p className="text-on-surface-variant font-body-sm mb-3">
+            <Link to="/" className="hover:text-primary transition-colors">← Back to Home</Link>
+          </p>
+          <div className="flex items-center justify-center gap-4 text-xs text-on-surface-variant">
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+          </div>
+        </div>
       </div>
     </div>
   );

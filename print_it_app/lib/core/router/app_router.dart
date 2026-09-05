@@ -31,9 +31,16 @@ import '../../features/marketplace/post_order_screen.dart';
 import '../../features/support/my_tickets_screen.dart';
 import '../../features/support/create_ticket_screen.dart';
 import '../../features/support/ticket_detail_screen.dart';
+import '../../features/navigation/not_found_screen.dart';
+import '../../features/legal/privacy_policy_screen.dart';
+import '../../features/legal/terms_screen.dart';
+import '../../features/legal/refund_policy_screen.dart';
+import '../../features/legal/security_policy_screen.dart';
+import '../../features/legal/accessibility_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/login',
+  errorBuilder: (context, state) => NotFoundScreen(uri: state.uri.toString()),
   routes: [
     GoRoute(
       path: '/notifications',
@@ -220,6 +227,30 @@ final appRouter = GoRouter(
         final id = state.pathParameters['id']!;
         return TicketDetailScreen(ticketId: id);
       },
+    ),
+    GoRoute(
+      path: '/privacy',
+      builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
+    GoRoute(
+      path: '/terms',
+      builder: (context, state) => const TermsScreen(),
+    ),
+    GoRoute(
+      path: '/refund-policy',
+      builder: (context, state) => const RefundPolicyScreen(),
+    ),
+    GoRoute(
+      path: '/security',
+      builder: (context, state) => const SecurityPolicyScreen(),
+    ),
+    GoRoute(
+      path: '/accessibility',
+      builder: (context, state) => const AccessibilityScreen(),
+    ),
+    GoRoute(
+      path: '/not-found',
+      builder: (context, state) => const NotFoundScreen(),
     ),
   ],
 );

@@ -398,4 +398,53 @@ router.put('/profile', auth, async (req, res) => {
     }
 });
 
+// DELETE /api/auth/account — Permanently delete / anonymize user account and purge PII
+router.delete('/account', auth, async (req, res) => {
+    const userId = req.user.user_id;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Check if user exists
+        const userRes = await client.query('SELECT user_id, role FROM users WHERE user_id = $1', [userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'User account not found' });
+        }
+
+        // Try direct deletion if no restrictive relations exist
+        let deleted = false;
+        try {
+            await client.query('DELETE FROM users WHERE user_id = $1', [userId]);
+            deleted = true;
+        } catch (fkErr) {
+            // If historical foreign keys exist (orders, financial ledger), anonymize and purge all personal PII
+            const anonymousEmail = `deleted_${userId}_${Date.now()}@purged.printit.in`;
+            await client.query(
+                `UPDATE users 
+                 SET full_name = 'Deleted User',
+                     email = $1,
+                     phone = NULL,
+                     avatar_url = NULL,
+                     password_hash = NULL,
+                     google_id = NULL,
+                     fcm_token = NULL,
+                     wallet_balance = 0.00
+                 WHERE user_id = $2`,
+                [anonymousEmail, userId]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: 'Account and personal data successfully deleted' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Account deletion error:', err);
+        res.status(500).json({ error: 'Failed to delete account' });
+    } finally {
+        client.release();
+    }
+});
+
 module.exports = router;
+

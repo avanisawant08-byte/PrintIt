@@ -103,10 +103,17 @@ const Register = () => {
             </div>
           </div>
 
+          <p className="text-xs text-on-surface-variant text-center my-2">
+            By completing registration, you agree to PrintIt's{' '}
+            <Link to="/terms" className="text-primary underline hover:no-underline">Terms of Service</Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="text-primary underline hover:no-underline">Privacy Policy</Link>.
+          </p>
+
           <button 
             type="submit" 
             disabled={isLoading}
-            className="w-full bg-primary text-on-primary font-label-md py-4 rounded-lg mt-4 shadow-lg hover:-translate-y-0.5 transition-transform disabled:opacity-50"
+            className="w-full bg-primary text-on-primary font-label-md py-4 rounded-lg mt-2 shadow-lg hover:-translate-y-0.5 transition-transform disabled:opacity-50"
           >
             {isLoading ? 'Registering...' : 'Complete Registration'}
           </button>

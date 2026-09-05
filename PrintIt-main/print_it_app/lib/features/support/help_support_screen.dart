@@ -85,6 +85,51 @@ class HelpSupportScreen extends ConsumerWidget {
                     ),
                   ),
 
+                  const SizedBox(height: 32),
+                  _buildSectionTitle(context, 'Legal & Platform Policies'),
+                  const SizedBox(height: 16),
+                  GlassContainer(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: Icon(Icons.privacy_tip_outlined, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Privacy Policy', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface),
+                          onTap: () => context.push('/privacy'),
+                        ),
+                        Divider(color: Theme.of(context).colorScheme.outlineVariant),
+                        ListTile(
+                          leading: Icon(Icons.gavel_outlined, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Terms of Service', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface),
+                          onTap: () => context.push('/terms'),
+                        ),
+                        Divider(color: Theme.of(context).colorScheme.outlineVariant),
+                        ListTile(
+                          leading: Icon(Icons.currency_rupee, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Refund & Cancellation Policy', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface),
+                          onTap: () => context.push('/refund-policy'),
+                        ),
+                        Divider(color: Theme.of(context).colorScheme.outlineVariant),
+                        ListTile(
+                          leading: Icon(Icons.security_outlined, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Security Practices & Disclosure', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface),
+                          onTap: () => context.push('/security'),
+                        ),
+                        Divider(color: Theme.of(context).colorScheme.outlineVariant),
+                        ListTile(
+                          leading: Icon(Icons.accessibility_new_outlined, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Accessibility Statement', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface),
+                          onTap: () => context.push('/accessibility'),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 40),
                   Center(
                     child: Text(

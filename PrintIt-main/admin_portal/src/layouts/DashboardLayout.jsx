@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import OfflineBanner from '../components/ui/OfflineBanner';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -10,6 +11,7 @@ const DashboardLayout = () => {
     { name: 'Add Shop', path: '/dashboard/shops/add', icon: 'add_business' },
     { name: 'Payout Management', path: '/dashboard/payouts', icon: 'payments' },
     { name: 'Support Tickets', path: '/dashboard/support', icon: 'support_agent' },
+    { name: 'Compliance & Legal', path: '/dashboard/legal', icon: 'policy' },
   ];
 
   const handleLogout = () => {
@@ -19,6 +21,7 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background font-body-md">
+      <OfflineBanner />
       {/* Top Navigation Bar */}
       <header className="bg-surface-dim text-on-surface flex justify-between items-center px-container-padding py-md w-full sticky top-0 z-50 border-b border-outline-variant/30">
         <div className="flex items-center gap-md">

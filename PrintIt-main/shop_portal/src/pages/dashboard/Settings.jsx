@@ -34,6 +34,27 @@ const Settings = () => {
   const [closingTime, setClosingTime] = useState('21:00');
   const [isOpen, setIsOpen] = useState(true);
 
+  // Account deletion states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setIsDeletingAccount(true);
+    try {
+      await api.delete('/auth/account');
+      alert('Your vendor account and personal data have been deleted.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('shopName');
+      window.location.href = '/';
+    } catch (err) {
+      alert('Failed to delete account: ' + (err.response?.data?.error || err.message));
+      setIsDeletingAccount(false);
+    }
+  };
+
   const fetchShopProfile = async () => {
     setIsLoading(true);
     try {
@@ -427,6 +448,70 @@ const Settings = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-data-mono">
                 <div>Shop ID: <span className="text-on-surface">{profile.shop_id || profile.id || 'N/A'}</span></div>
                 <div>Owner ID: <span className="text-on-surface">{profile.owner_id || 'N/A'}</span></div>
+              </div>
+            </div>
+          )}
+
+          {/* Section 6: Account Actions & Data Deletion */}
+          <div className="bg-error-container/10 border border-error/30 p-6 rounded-2xl flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-error">
+              <span className="material-symbols-outlined text-2xl">warning</span>
+              <h2 className="text-lg font-bold">Danger Zone: Account & Data Deletion</h2>
+            </div>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              In accordance with privacy rights and store guidelines, you can request permanent deletion of your vendor account. This will anonymize your profile, purge personal identity credentials, and disable shop visibility. Historical completed orders and tax invoices remain preserved for accounting compliance.
+            </p>
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-error/20 border border-error/40 text-error font-medium text-sm hover:bg-error/30 transition-colors inline-flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-base">delete_forever</span>
+                <span>Delete Vendor Account</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Account Deletion Confirmation Modal */}
+          {showDeleteModal && (
+            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-surface-container border border-error/40 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-error/20 text-error flex items-center justify-center mx-auto">
+                  <span className="material-symbols-outlined text-3xl">delete_forever</span>
+                </div>
+                <h3 className="text-xl font-bold text-center text-on-surface">Confirm Account Deletion</h3>
+                <p className="text-xs text-on-surface-variant text-center leading-relaxed">
+                  This action cannot be undone. To confirm, please type <strong className="text-error">DELETE</strong> in the box below.
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE to confirm"
+                  className="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-on-surface text-center font-bold tracking-widest text-sm outline-none focus:border-error"
+                />
+                <div className="flex gap-3 justify-center pt-2">
+                  <button
+                    type="button"
+                    disabled={isDeletingAccount}
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setDeleteConfirmText('');
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-surface-container-highest border border-outline-variant text-on-surface text-sm font-medium hover:bg-surface-variant transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deleteConfirmText !== 'DELETE' || isDeletingAccount}
+                    onClick={handleDeleteAccount}
+                    className="px-5 py-2.5 rounded-xl bg-error text-on-error text-sm font-bold hover:opacity-90 disabled:opacity-40 transition-opacity flex items-center gap-1.5"
+                  >
+                    {isDeletingAccount ? 'Deleting...' : 'Permanently Delete'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
