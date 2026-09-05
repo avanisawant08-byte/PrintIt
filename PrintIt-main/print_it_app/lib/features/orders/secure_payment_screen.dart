@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
@@ -160,10 +162,30 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
     var authState = ref.read(authProvider);
     var isLoggedIn = authState.user != null;
 
-    // If customer is not logged in, prompt phone number & OTP so the order is saved to their account history
+    // Double check SharedPreferences in case state hydration was delayed
+    if (!isLoggedIn) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('token');
+        final userDataStr = prefs.getString('user_data');
+        if (token != null && userDataStr != null && userDataStr.isNotEmpty) {
+          final decoded = jsonDecode(userDataStr);
+          if (decoded is Map) {
+            final userMap = Map<String, dynamic>.from(decoded);
+            ref.read(authProvider.notifier).setUser(userMap);
+            authState = ref.read(authProvider);
+            isLoggedIn = true;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+
+    // Only prompt phone number & OTP if customer is truly NOT logged in
     if (!isLoggedIn) {
       final authResult = await _promptPhoneAuthSheet(context);
-      if (authResult == null) return; // Cancelled
+      if (!mounted || authResult == null) return; // User closed the dialog
       authState = ref.read(authProvider);
       isLoggedIn = authState.user != null;
     }

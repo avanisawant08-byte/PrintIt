@@ -22,6 +22,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
+    if (authState.user != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final lockedShopId = ref.read(orderProvider).shopId;
+          if (lockedShopId != null && lockedShopId.isNotEmpty) {
+            context.go('/upload-document/$lockedShopId');
+          } else {
+            context.go('/home');
+          }
+        }
+      });
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(

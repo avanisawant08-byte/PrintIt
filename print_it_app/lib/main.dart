@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'features/auth/auth_provider.dart';
 import 'firebase_options.dart';
 
 // Global key to show Snackbars without context
@@ -106,6 +109,22 @@ void main() async {
     } catch (e) {
       debugPrint('Web Firebase initialization skipped/failed: $e');
     }
+  }
+
+  // Pre-hydrate persistent user session from local storage before rendering first frame
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userDataStr = prefs.getString('user_data');
+    if (token != null && userDataStr != null && userDataStr.isNotEmpty) {
+      final decoded = jsonDecode(userDataStr);
+      if (decoded is Map) {
+        AuthNotifier.initialCachedUser = Map<String, dynamic>.from(decoded);
+        debugPrint('✅ Initial session hydrated for user: ${AuthNotifier.initialCachedUser?['phone'] ?? AuthNotifier.initialCachedUser?['email']}');
+      }
+    }
+  } catch (e) {
+    debugPrint('Session pre-hydration notice: $e');
   }
 
   runApp(

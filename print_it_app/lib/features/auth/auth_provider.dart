@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -29,28 +30,97 @@ class AuthState {
 }
 
 class AuthNotifier extends Notifier<AuthState> {
+  static Map<String, dynamic>? initialCachedUser;
+
   @override
   AuthState build() {
+    // Instantly hydrate session if initialCachedUser was loaded at app startup
+    if (initialCachedUser != null) {
+      Future.microtask(() => checkAuth());
+      return AuthState(user: initialCachedUser);
+    }
+
+    // Schedule eager checkAuth to restore session from local storage immediately
+    Future.microtask(() => checkAuth());
     return AuthState();
   }
 
-  Future<void> checkAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token != null) {
-      final apiClient = ref.read(apiProvider);
-      try {
-        final res = await apiClient.get('/auth/profile');
-        if (res.statusCode == 200) {
-          state = state.copyWith(user: res.data['user'] ?? res.data);
-          ref.read(notificationServiceProvider).initialize();
-        } else {
-          await prefs.remove('token');
-          state = AuthState();
-        }
-      } catch (e) {
-        // Leave token intact or handle offline
+  Future<void> _saveSession(String token, Map<String, dynamic>? user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', token);
+      if (user != null) {
+        await prefs.setString('user_data', jsonEncode(user));
+        initialCachedUser = user;
       }
+    } catch (e) {
+      debugPrint('Error saving auth session: $e');
+    }
+  }
+
+  Future<void> _clearSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('token');
+      await prefs.remove('user_data');
+      initialCachedUser = null;
+    } catch (e) {
+      debugPrint('Error clearing auth session: $e');
+    }
+  }
+
+  void setUser(Map<String, dynamic> user) {
+    state = state.copyWith(user: user);
+    initialCachedUser = user;
+  }
+
+  Future<void> checkAuth() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final cachedUserJson = prefs.getString('user_data');
+
+      // 1. Immediately hydrate local user if not already populated in state
+      if (token != null && cachedUserJson != null && state.user == null) {
+        try {
+          final localUser = jsonDecode(cachedUserJson) as Map<String, dynamic>;
+          state = state.copyWith(user: localUser);
+          initialCachedUser = localUser;
+        } catch (_) {}
+      }
+
+      // 2. Validate token and refresh profile against server in background
+      if (token != null) {
+        final apiClient = ref.read(apiProvider);
+        try {
+          var res = await apiClient.get('/auth/profile');
+          if (res.statusCode != 200) {
+            res = await apiClient.get('/auth/me');
+          }
+
+          if (res.statusCode == 200) {
+            final rawData = res.data;
+            final Map<String, dynamic>? userData = (rawData is Map
+                ? (rawData['user'] is Map ? rawData['user'] : rawData)
+                : null) as Map<String, dynamic>?;
+            if (userData != null) {
+              state = state.copyWith(user: userData);
+              await prefs.setString('user_data', jsonEncode(userData));
+              initialCachedUser = userData;
+              ref.read(notificationServiceProvider).initialize();
+            }
+          } else if (res.statusCode == 401 || res.statusCode == 403) {
+            // Only wipe token if backend explicitly rejected authentication
+            await _clearSession();
+            state = AuthState();
+          }
+        } catch (e) {
+          // Offline or network error - keep token and existing cached session!
+          debugPrint('Server session validation skipped (offline/error): $e');
+        }
+      }
+    } catch (err) {
+      debugPrint('checkAuth error: $err');
     }
   }
 
@@ -65,9 +135,11 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (res.statusCode == 200) {
         final token = res.data['token'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
-        state = state.copyWith(isLoading: false, user: res.data['user']);
+        final user = (res.data['user'] is Map ? Map<String, dynamic>.from(res.data['user']) : null);
+        if (token != null) {
+          await _saveSession(token, user);
+        }
+        state = state.copyWith(isLoading: false, user: user);
         ref.read(notificationServiceProvider).initialize();
         return true;
       } else {
@@ -105,11 +177,11 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (res.statusCode == 201 || res.statusCode == 200) {
         final token = res.data['token'];
+        final user = (res.data['user'] is Map ? Map<String, dynamic>.from(res.data['user']) : null);
         if (token != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
+          await _saveSession(token, user);
         }
-        state = state.copyWith(isLoading: false, user: res.data['user']);
+        state = state.copyWith(isLoading: false, user: user);
         ref.read(notificationServiceProvider).initialize();
         return true;
       } else {
@@ -147,8 +219,16 @@ class AuthNotifier extends Notifier<AuthState> {
       final res = await apiClient.put('/auth/profile', data: payload);
 
       if (res.statusCode == 200) {
-        final updatedUser = res.data['user'] ?? res.data;
-        state = state.copyWith(isLoading: false, user: updatedUser);
+        final rawUser = res.data['user'] ?? res.data;
+        final updatedUser = rawUser is Map ? Map<String, dynamic>.from(rawUser) : null;
+        if (updatedUser != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('user_data', jsonEncode(updatedUser));
+          initialCachedUser = updatedUser;
+          state = state.copyWith(isLoading: false, user: updatedUser);
+        } else {
+          state = state.copyWith(isLoading: false);
+        }
         return true;
       } else {
         state = state.copyWith(
@@ -192,9 +272,11 @@ class AuthNotifier extends Notifier<AuthState> {
       });
       if (res.statusCode == 200) {
         final token = res.data['token'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
-        state = state.copyWith(isLoading: false, user: res.data['user']);
+        final user = (res.data['user'] is Map ? Map<String, dynamic>.from(res.data['user']) : null);
+        if (token != null) {
+          await _saveSession(token, user);
+        }
+        state = state.copyWith(isLoading: false, user: user);
         ref.read(notificationServiceProvider).initialize();
         return true;
       }
@@ -210,8 +292,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+    await _clearSession();
     try {
       final googleSignIn = GoogleSignIn(
         clientId: kIsWeb ? _kGoogleClientId : null,
@@ -255,9 +336,11 @@ class AuthNotifier extends Notifier<AuthState> {
 
         if (res.statusCode == 200) {
           final token = res.data['token'];
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
-          state = state.copyWith(isLoading: false, user: res.data['user']);
+          final user = (res.data['user'] is Map ? Map<String, dynamic>.from(res.data['user']) : null);
+          if (token != null) {
+            await _saveSession(token, user);
+          }
+          state = state.copyWith(isLoading: false, user: user);
           ref.read(notificationServiceProvider).initialize();
           return true;
         } else {
@@ -364,9 +447,11 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (res.statusCode == 200) {
         final token = res.data['token'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
-        state = state.copyWith(isLoading: false, user: res.data['user']);
+        final user = (res.data['user'] is Map ? Map<String, dynamic>.from(res.data['user']) : null);
+        if (token != null) {
+          await _saveSession(token, user);
+        }
+        state = state.copyWith(isLoading: false, user: user);
         ref.read(notificationServiceProvider).initialize();
         return true;
       } else {
@@ -397,9 +482,11 @@ class AuthNotifier extends Notifier<AuthState> {
         });
         if (res.statusCode == 200) {
           final token = res.data['token'];
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
-          state = state.copyWith(isLoading: false, user: res.data['user']);
+          final user = (res.data['user'] is Map ? Map<String, dynamic>.from(res.data['user']) : null);
+          if (token != null) {
+            await _saveSession(token, user);
+          }
+          state = state.copyWith(isLoading: false, user: user);
           ref.read(notificationServiceProvider).initialize();
         }
       }

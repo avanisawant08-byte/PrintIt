@@ -323,6 +323,20 @@ router.get('/me', auth, async (req, res) => {
     }
 });
 
+// GET /api/auth/profile — Get current user profile (with user wrapper for customer app consistency)
+router.get('/profile', auth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT user_id, email, full_name, phone, avatar_url, role, default_print_options FROM users WHERE user_id = $1', [req.user.user_id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ user: result.rows[0], ...result.rows[0] });
+    } catch (err) {
+        console.error('Fetch profile error:', err);
+        res.status(500).json({ error: 'Failed to fetch user profile' });
+    }
+});
+
 // PATCH /api/auth/preferences — Update user default print options
 router.patch('/preferences', auth, async (req, res) => {
     const { default_print_options } = req.body;
