@@ -76,7 +76,19 @@ const TicketDetail = () => {
           <button onClick={() => navigate('/dashboard/support')} className="text-on-surface-variant hover:text-primary flex items-center gap-2 text-sm font-semibold mb-4 transition-colors">
             ← Back to Tickets
           </button>
-          <h2 className="text-2xl font-bold text-on-surface mb-1">{ticket.subject}</h2>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <h2 className="text-2xl font-bold text-on-surface">{ticket.subject}</h2>
+            {ticket.issue_type && (
+              <span className="text-xs bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">
+                {ticket.issue_type}
+              </span>
+            )}
+            {ticket.order_id && (
+              <span className="text-xs bg-surface-container-highest text-tertiary border border-outline-variant/40 px-2.5 py-0.5 rounded-full font-mono font-bold">
+                Order #{ticket.order_id}
+              </span>
+            )}
+          </div>
           <p className="text-on-surface-variant text-sm">
             Ticket <span className="font-data-mono text-tertiary">#{ticket.ticket_id}</span> • Customer: <span className="font-semibold text-primary">{ticket.customer_name}</span>
           </p>
@@ -101,7 +113,14 @@ const TicketDetail = () => {
         
         {/* Original Description */}
         <div className="p-6 bg-surface-container-low border-b border-outline-variant/20">
-          <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Original Description</h3>
+          <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
+            <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Original Description</h3>
+            {ticket.order_id && (
+              <span className="text-xs font-mono font-bold text-tertiary bg-surface-container-highest px-2 py-0.5 rounded">
+                Linked Order: #{ticket.order_id}
+              </span>
+            )}
+          </div>
           <p className="text-on-surface whitespace-pre-wrap">{ticket.description}</p>
         </div>
 

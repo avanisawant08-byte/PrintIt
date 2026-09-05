@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../shared/widgets/ambient_background.dart';
 import 'support_provider.dart';
@@ -86,9 +87,56 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Subject: ${data['subject']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 8),
-                          Text(data['description']),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (data['issue_type'] != null && data['issue_type'].toString().isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    data['issue_type'],
+                                    style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 11),
+                                  ),
+                                )
+                              else
+                                const SizedBox.shrink(),
+                              if (data['shop_name'] != null)
+                                Text('Shop: ${data['shop_name']}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(data['subject'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          if (data['order_id'] != null && data['order_id'].toString().isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () => context.push('/order-tracking/${data['order_id']}'),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.receipt_long, size: 14, color: Color(0xFF00daf3)),
+                                    const SizedBox(width: 6),
+                                    Text('Linked Order: ${data['order_id']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF00daf3))),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.arrow_forward_ios, size: 10, color: Color(0xFF00daf3)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 10),
+                          Text(data['description'], style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.8), height: 1.4)),
                         ],
                       ),
                     ),

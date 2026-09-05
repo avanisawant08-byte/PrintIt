@@ -70,7 +70,21 @@ const TicketList = () => {
                       <div className="font-semibold text-on-surface">{ticket.customer_name}</div>
                       <div className="text-xs text-on-surface-variant">{ticket.customer_email}</div>
                     </td>
-                    <td className="p-4 font-medium text-on-surface">{ticket.subject}</td>
+                    <td className="p-4">
+                      <div className="font-medium text-on-surface">{ticket.subject}</div>
+                      <div className="flex gap-2 items-center mt-1 flex-wrap">
+                        {ticket.issue_type && (
+                          <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded font-semibold">
+                            {ticket.issue_type}
+                          </span>
+                        )}
+                        {ticket.order_id && (
+                          <span className="text-[10px] bg-surface-container-highest text-on-surface-variant border border-outline-variant/30 px-2 py-0.5 rounded font-mono">
+                            Order: #{ticket.order_id}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(ticket.status)} uppercase tracking-wider`}>
                         {ticket.status.replace('_', ' ')}

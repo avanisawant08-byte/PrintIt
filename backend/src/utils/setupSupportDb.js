@@ -22,6 +22,8 @@ async function setupSupportDb() {
         ticket_token VARCHAR(20) UNIQUE NOT NULL,
         user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
         shop_id UUID REFERENCES shops(shop_id) ON DELETE CASCADE NULL,
+        order_id VARCHAR(100) NULL,
+        issue_type VARCHAR(100) NULL,
         subject VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         status ticket_status DEFAULT 'open',

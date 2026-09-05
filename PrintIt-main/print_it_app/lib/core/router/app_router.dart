@@ -219,7 +219,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/create-ticket',
-      builder: (context, state) => const CreateTicketScreen(),
+      builder: (context, state) {
+        final orderId = state.uri.queryParameters['orderId'];
+        return CreateTicketScreen(initialOrderId: orderId);
+      },
     ),
     GoRoute(
       path: '/ticket/:id',

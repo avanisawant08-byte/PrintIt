@@ -70,6 +70,40 @@ class MyTicketsScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 4),
+                              if ((ticket['issue_type'] != null && ticket['issue_type'].toString().isNotEmpty) ||
+                                  (ticket['order_id'] != null && ticket['order_id'].toString().isNotEmpty)) ...[
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: [
+                                    if (ticket['issue_type'] != null && ticket['issue_type'].toString().isNotEmpty)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          ticket['issue_type'],
+                                          style: TextStyle(fontSize: 10, color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    if (ticket['order_id'] != null && ticket['order_id'].toString().isNotEmpty)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          'Order: ${ticket['order_id']}',
+                                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                              ],
                               Text('ID: ${ticket['ticket_token']} • ${ticket['shop_name'] ?? 'Platform'}', 
                                 style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                               const SizedBox(height: 4),

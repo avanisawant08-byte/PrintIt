@@ -42,20 +42,37 @@ router.use(auth);
  * @desc    Create a new support ticket
  */
 router.post('/tickets', async (req, res) => {
-    const { subject, description, shop_id } = req.body;
+    let { subject, description, shop_id, order_id, issue_type } = req.body;
 
     if (!subject || !description) {
         return res.status(400).json({ error: 'Subject and description are required' });
     }
 
+    // Auto-resolve shop_id from order if order_id is given and shop_id is not
+    if (order_id && !shop_id) {
+        try {
+            const orderRes = await pool.query('SELECT shop_id FROM orders WHERE order_id = $1 LIMIT 1', [order_id]);
+            if (orderRes.rows.length > 0 && orderRes.rows[0].shop_id) {
+                shop_id = orderRes.rows[0].shop_id;
+            }
+        } catch (_) {}
+    }
+
     const ticketToken = generateTicketToken();
 
     try {
+        // Ensure optional columns exist
+        await pool.query(`
+            ALTER TABLE support_tickets 
+            ADD COLUMN IF NOT EXISTS order_id VARCHAR(100),
+            ADD COLUMN IF NOT EXISTS issue_type VARCHAR(100);
+        `).catch(() => {});
+
         const result = await pool.query(
-            `INSERT INTO support_tickets (ticket_token, user_id, shop_id, subject, description)
-             VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO support_tickets (ticket_token, user_id, shop_id, order_id, issue_type, subject, description)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [ticketToken, req.user.user_id, shop_id || null, subject, description]
+            [ticketToken, req.user.user_id, shop_id || null, order_id || null, issue_type || null, subject, description]
         );
 
         res.status(201).json({
@@ -63,8 +80,22 @@ router.post('/tickets', async (req, res) => {
             ticket: result.rows[0]
         });
     } catch (err) {
-        console.error('Create ticket error:', err);
-        res.status(500).json({ error: 'Failed to create ticket' });
+        // Fallback for legacy schema
+        try {
+            const fallbackResult = await pool.query(
+                `INSERT INTO support_tickets (ticket_token, user_id, shop_id, subject, description)
+                 VALUES ($1, $2, $3, $4, $5)
+                 RETURNING *`,
+                [ticketToken, req.user.user_id, shop_id || null, subject, description]
+            );
+            return res.status(201).json({
+                message: 'Ticket created successfully',
+                ticket: fallbackResult.rows[0]
+            });
+        } catch (innerErr) {
+            console.error('Create ticket error:', innerErr);
+            res.status(500).json({ error: 'Failed to create ticket' });
+        }
     }
 });
 
