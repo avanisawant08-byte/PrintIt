@@ -191,8 +191,8 @@ const ProductCatalog = () => {
           <p className="font-semibold text-sm">No catalog products found</p>
         </div>
       ) : (
-        <div className="bg-surface-container border border-outline-variant/30 rounded-2xl overflow-hidden">
-          <table className="w-full text-left border-collapse text-xs">
+        <div className="bg-surface-container border border-outline-variant/30 rounded-2xl overflow-x-auto shadow-sm">
+          <table className="w-full text-left border-collapse text-xs min-w-[850px]">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant/30 text-[0.75rem] uppercase tracking-wider text-on-surface-variant font-bold">
                 <th className="p-4">Item Details</th>
@@ -292,7 +292,10 @@ const ProductCatalog = () => {
       {/* Add / Edit Product Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-3xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div 
+            className="bg-surface border border-outline-variant/40 rounded-3xl p-6 w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+            style={{ maxWidth: '640px' }}
+          >
             <div className="flex justify-between items-center pb-4 border-b border-outline-variant/30 mb-4">
               <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">edit_note</span>

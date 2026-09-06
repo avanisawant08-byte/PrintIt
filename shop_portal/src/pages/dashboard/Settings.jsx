@@ -203,15 +203,15 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col max-w-[900px] mx-auto w-full gap-8 overflow-y-auto">
+    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6">
       {/* Header */}
-      <div className="flex justify-between items-start border-b border-outline-variant/30 pb-6">
+      <div className="flex justify-between items-start border-b border-outline-variant/30 pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-on-surface">Shop Settings</h1>
-          <p className="text-sm text-on-surface-variant mt-1">Manage counter QR stands, operating hours, store status, and pricing</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-on-surface">Shop Settings</h1>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1">Manage counter QR stands, operating hours, store status, and pricing</p>
         </div>
         {successMsg && (
-          <div className="bg-green-500/15 border border-green-500/30 text-green-300 px-4 py-2 rounded-xl text-sm font-medium animate-fade-in">
+          <div className="bg-green-500/15 border border-green-500/30 text-green-300 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium animate-fade-in">
             ✓ {successMsg}
           </div>
         )}
@@ -222,12 +222,12 @@ const Settings = () => {
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
 
           {/* Section 1: In-Store Counter QR Stand & Manual Shop Code */}
-          <div className="bg-gradient-to-br from-primary/10 via-surface-container to-surface-container border border-primary/30 p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-8">
+          <div className="bg-gradient-to-br from-primary/10 via-surface-container to-surface-container border border-primary/30 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-6 lg:gap-8">
             {/* QR Visual */}
-            <div className="bg-white p-4 rounded-2xl shadow-2xl flex flex-col items-center justify-center shrink-0 border-4 border-primary">
+            <div className="bg-white p-4 rounded-2xl shadow-2xl flex flex-col items-center justify-center shrink-0 border-4 border-primary w-52">
               <QRCodeSVG
                 value={qrDirectUrl}
                 size={160}
@@ -250,12 +250,12 @@ const Settings = () => {
             </div>
 
             {/* QR Details & Action */}
-            <div className="flex-1 space-y-4 text-center md:text-left w-full">
+            <div className="flex-1 space-y-4 text-center md:text-left w-full min-w-0">
               <div>
-                <span className="text-xs font-bold text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                   Counter QR Code Stand
                 </span>
-                <h2 className="text-2xl font-black text-on-surface mt-2">Instant File Upload QR</h2>
+                <h2 className="text-xl sm:text-2xl font-black text-on-surface mt-2">Instant File Upload QR</h2>
                 <p className="text-xs text-on-surface-variant leading-relaxed mt-1">
                   Customers scan this QR code with their camera to open the web app directly on your shop's upload page — bypassing shop selection.
                 </p>
@@ -265,10 +265,10 @@ const Settings = () => {
               <div className="bg-surface-container-highest/90 border border-primary/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-center sm:text-left">
                   <div className="flex items-center gap-2 justify-center sm:justify-start">
-                    <span className="material-symbols-outlined text-primary text-[20px]">pin</span>
+                    <span className="material-symbols-outlined text-primary text-[18px]">pin</span>
                     <span className="text-xs font-bold uppercase tracking-wider text-primary">Counter Shop Code</span>
                   </div>
-                  <p className="text-xs text-on-surface-variant mt-1">
+                  <p className="text-xs text-on-surface-variant mt-0.5">
                     Customers can manually type this short code in the PrintIt app if camera scan is unavailable.
                   </p>
                 </div>
@@ -287,15 +287,22 @@ const Settings = () => {
                 </div>
               </div>
 
-              {/* URL Link Fallback */}
-              <div className="bg-black/30 border border-outline-variant/30 rounded-xl p-2.5 flex items-center justify-between text-xs text-on-surface-variant font-mono break-all">
-                <span className="truncate pr-2">{qrDirectUrl}</span>
+              {/* URL Link Group */}
+              <div className="flex items-center gap-2 bg-black/40 border border-outline-variant/40 rounded-xl p-1.5 pl-3">
+                <span className="material-symbols-outlined text-primary text-[18px] shrink-0">link</span>
+                <input
+                  readOnly
+                  type="text"
+                  value={qrDirectUrl}
+                  className="bg-transparent border-none outline-none font-mono text-xs text-on-surface-variant w-full select-all truncate"
+                />
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant/40 font-bold rounded-lg text-xs shrink-0 cursor-pointer transition-colors"
+                  className="px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant/40 font-bold rounded-lg text-xs shrink-0 cursor-pointer transition-colors flex items-center gap-1"
                 >
-                  {copied ? 'Copied!' : 'Copy Link'}
+                  <span className="material-symbols-outlined text-[14px]">{copied ? 'check' : 'content_copy'}</span>
+                  <span>{copied ? 'Copied!' : 'Copy Link'}</span>
                 </button>
               </div>
 

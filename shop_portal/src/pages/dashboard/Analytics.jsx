@@ -74,7 +74,7 @@ const Analytics = () => {
   const COLOR_PALETTE = ['#00E5FF', '#FFC107', '#DDB7FF', '#FF5252', '#4CAF50', '#FF9800'];
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col gap-6 overflow-y-auto">
+    <div className="w-full flex flex-col gap-6">
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

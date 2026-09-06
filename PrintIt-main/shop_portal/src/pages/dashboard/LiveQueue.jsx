@@ -152,12 +152,12 @@ const LiveQueue = () => {
   const ready = sortOrders(filteredOrders.filter(o => o.status === 'ready'));
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden bg-background relative z-0">
+    <div className="w-full flex-1 flex flex-col min-h-[calc(100vh-8.5rem)] bg-background relative z-0">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between md:items-end mb-6 shrink-0 gap-4">
+      <div className="flex flex-col md:flex-row justify-between md:items-end mb-4 sm:mb-6 shrink-0 gap-4">
         <div>
-          <h2 className="font-display font-extrabold text-on-surface mb-1 text-3xl md:text-4xl tracking-tight">Order Workflow</h2>
-          <p className="text-xs md:text-sm text-on-surface-variant/80 font-normal">Manage incoming and processing print jobs.</p>
+          <h2 className="font-display font-extrabold text-on-surface mb-1 text-2xl sm:text-3xl lg:text-4xl tracking-tight">Order Workflow</h2>
+          <p className="text-xs sm:text-sm text-on-surface-variant/80 font-normal">Manage incoming and processing print jobs.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -201,7 +201,7 @@ const LiveQueue = () => {
           <div className="relative">
             <button 
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex items-center gap-2 px-4 py-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-xs font-semibold text-on-surface hover:border-primary transition-colors ${colorFilter !== 'all' ? 'border-primary text-primary' : ''}`}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-xs font-semibold text-on-surface hover:border-primary transition-colors ${colorFilter !== 'all' ? 'border-primary text-primary' : ''}`}
             >
               <span className="material-symbols-outlined text-[18px]">tune</span>
               Filter {colorFilter !== 'all' ? `(${colorFilter.toUpperCase()})` : ''}
@@ -242,7 +242,7 @@ const LiveQueue = () => {
           </button>
 
           {/* Queue Live Indicator */}
-          <div className="px-4 py-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-xs font-semibold text-on-surface flex items-center gap-2">
+          <div className="px-3 sm:px-4 py-2 bg-surface-container-high border border-glass-edge/40 rounded-xl text-xs font-semibold text-on-surface flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
             Queue Live
           </div>
@@ -250,22 +250,22 @@ const LiveQueue = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+        <div className="flex-1 flex items-center justify-center text-on-surface-variant py-20">
           <div className="flex flex-col items-center gap-2">
             <span className="material-symbols-outlined text-primary text-3xl animate-spin">autorenew</span>
             <span className="text-sm">Loading Order Workflow...</span>
           </div>
         </div>
       ) : (
-        /* Kanban Board Area */
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden pb-2">
+        /* Kanban Board Area - Fills desktop view height seamlessly */
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 pb-2">
           {/* Column 1: New Orders */}
-          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
+          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden h-[calc(100vh-190px)] min-h-[460px]">
             {/* Column Header */}
-            <div className="p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2.5">
+            <div className="p-3.5 sm:p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl">post_add</span>
-                <h3 className="font-title-md text-on-surface font-semibold text-base tracking-tight">New Orders</h3>
+                <h3 className="font-title-md text-on-surface font-semibold text-sm sm:text-base tracking-tight">New Orders</h3>
               </div>
               <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center font-bold border border-primary/30">
                 {queued.length}
@@ -273,7 +273,7 @@ const LiveQueue = () => {
             </div>
 
             {/* Column Content */}
-            <div className="flex-1 p-4 overflow-y-auto kanban-col flex flex-col gap-4">
+            <div className="flex-1 p-3 overflow-y-auto kanban-col flex flex-col gap-3">
               {queued.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60 py-16">
                   <div className="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 border border-glass-edge/20">
@@ -299,12 +299,12 @@ const LiveQueue = () => {
           </div>
 
           {/* Column 2: Processing */}
-          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden">
+          <div className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 shadow-[inset_0_0_20px_rgba(13,28,45,0.5)] overflow-hidden h-[calc(100vh-190px)] min-h-[460px]">
             {/* Column Header */}
-            <div className="p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2.5">
+            <div className="p-3.5 sm:p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-on-surface-variant text-xl">sync</span>
-                <h3 className="font-title-md text-on-surface font-semibold text-base tracking-tight">Processing</h3>
+                <h3 className="font-title-md text-on-surface font-semibold text-sm sm:text-base tracking-tight">Processing</h3>
               </div>
               <span className="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant text-xs flex items-center justify-center font-bold border border-glass-edge/30">
                 {processing.length}

@@ -105,9 +105,9 @@ const Orders = () => {
   });
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden bg-background">
+    <div className="w-full flex flex-col gap-6">
       {/* Top Header & Tab Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
           <h1 className="text-2xl font-bold text-on-surface mb-1">Orders & Pickups</h1>
           <p className="text-xs text-on-surface-variant">Manage in-store customer pickups and document print orders</p>
@@ -142,14 +142,14 @@ const Orders = () => {
 
       {/* Store Pickups Tab */}
       {activeTab === 'store' && (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="w-full flex flex-col">
           {isStoreLoading ? (
-            <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+            <div className="py-20 flex items-center justify-center text-on-surface-variant">
               <span className="material-symbols-outlined text-primary text-2xl animate-spin mr-2">autorenew</span>
               <span>Loading store pickup orders...</span>
             </div>
           ) : filteredStoreOrders.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center bg-surface-container border border-outline-variant rounded-2xl text-on-surface-variant p-8 text-center">
+            <div className="flex items-center justify-center bg-surface-container border border-outline-variant rounded-2xl text-on-surface-variant p-12 text-center">
               <div>
                 <span className="material-symbols-outlined text-4xl mb-2 opacity-50">shopping_basket</span>
                 <p className="font-semibold text-sm">No store orders found.</p>
@@ -157,8 +157,8 @@ const Orders = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-surface-container border border-outline-variant rounded-2xl overflow-y-auto flex-1">
-              <table className="w-full text-left border-collapse font-body-sm text-sm">
+            <div className="bg-surface-container border border-outline-variant rounded-2xl overflow-x-auto shadow-sm">
+              <table className="w-full text-left border-collapse font-body-sm text-sm min-w-[780px]">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-[0.75rem] uppercase tracking-wider text-on-surface-variant font-bold">
                     <th className="p-4">Order Details</th>
@@ -253,19 +253,19 @@ const Orders = () => {
 
       {/* Print Orders Tab */}
       {activeTab === 'print' && (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="w-full flex flex-col">
           {isPrintLoading ? (
-            <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+            <div className="py-20 flex items-center justify-center text-on-surface-variant">
               <span className="material-symbols-outlined text-primary text-2xl animate-spin mr-2">autorenew</span>
               <span>Loading print orders...</span>
             </div>
           ) : filteredPrintOrders.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center bg-surface-container border border-outline-variant rounded-xl text-on-surface-variant">
+            <div className="p-12 flex items-center justify-center bg-surface-container border border-outline-variant rounded-xl text-on-surface-variant">
               No print orders match your search.
             </div>
           ) : (
-            <div className="bg-surface-container border border-outline-variant rounded-xl overflow-y-auto flex-1">
-              <table className="w-full text-left border-collapse font-body-sm text-sm">
+            <div className="bg-surface-container border border-outline-variant rounded-xl overflow-x-auto shadow-sm">
+              <table className="w-full text-left border-collapse font-body-sm text-sm min-w-[720px]">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-[0.75rem] uppercase tracking-wider text-on-surface-variant font-bold">
                     <th className="p-4">Order ID</th>

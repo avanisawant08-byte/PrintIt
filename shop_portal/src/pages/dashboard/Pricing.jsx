@@ -55,12 +55,16 @@ const Pricing = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-4">Pricing Rules</h1>
+    <div className="w-full flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-bold mb-1 text-on-surface">Pricing Rules</h1>
+        <p className="text-xs text-on-surface-variant mb-6">Define base rates for single/double side, color modes, and binding addons</p>
         
-        <div className="bg-surface-container border border-outline-variant/30 p-6 rounded-xl mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-primary">➕ Add Custom Pricing Rule</h2>
+        <div className="bg-surface-container border border-outline-variant/30 p-6 rounded-2xl mb-6 shadow-sm">
+          <h2 className="text-base font-bold mb-4 text-primary flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            Add Custom Pricing Rule
+          </h2>
           <form onSubmit={handleAdd} className="flex flex-col gap-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
@@ -113,8 +117,8 @@ const Pricing = () => {
             No custom pricing rules defined.
           </div>
         ) : (
-          <div className="bg-surface-container border border-outline-variant/30 rounded-xl overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="bg-surface-container border border-outline-variant/30 rounded-2xl overflow-x-auto shadow-sm">
+            <table className="w-full text-left border-collapse min-w-[640px]">
               <thead>
                 <tr className="bg-black/30 border-b border-outline-variant/30 text-[0.75rem] uppercase tracking-wider text-on-surface-variant">
                   <th className="p-4">Mode</th>

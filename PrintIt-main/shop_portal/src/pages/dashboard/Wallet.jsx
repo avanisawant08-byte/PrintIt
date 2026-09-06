@@ -319,7 +319,7 @@ const Wallet = () => {
               </div>
             ) : (
               <div className="bg-surface-container/40 border border-glass-edge/30 rounded-xl overflow-x-auto">
-                <table className="w-full text-left border-collapse font-label-md text-xs">
+                <table className="w-full text-left border-collapse font-label-md text-xs min-w-[760px]">
                   <thead>
                     <tr className="bg-black/30 border-b border-glass-edge/20 uppercase tracking-wider text-on-surface-variant font-bold">
                       <th className="p-4">Date & Time</th>
@@ -396,7 +396,7 @@ const Wallet = () => {
               </div>
             ) : (
               <div className="bg-surface-container/40 border border-glass-edge/30 rounded-xl overflow-x-auto">
-                <table className="w-full text-left border-collapse font-label-md text-xs">
+                <table className="w-full text-left border-collapse font-label-md text-xs min-w-[700px]">
                   <thead>
                     <tr className="bg-black/30 border-b border-glass-edge/20 uppercase tracking-wider text-on-surface-variant font-bold">
                       <th className="p-4">Requested At</th>

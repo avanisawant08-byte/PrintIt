@@ -128,9 +128,9 @@ const MyListings = () => {
   const outOfStockItems = inventory.filter(i => i.stock_count === 0).length;
 
   return (
-    <div className="p-lg max-w-[1280px] mx-auto min-h-screen">
+    <div className="w-full flex flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-lg">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
           <h1 className="font-display-sm text-display-sm font-bold text-on-surface flex items-center gap-3">
             <span className="material-symbols-outlined text-primary text-3xl">storefront</span>
@@ -363,7 +363,10 @@ const MyListings = () => {
       {/* Master Catalog Browser Modal */}
       {showCatalogModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-3xl p-6 w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl">
+          <div 
+            className="bg-surface border border-outline-variant/40 rounded-3xl p-6 w-full max-h-[88vh] flex flex-col shadow-2xl"
+            style={{ maxWidth: '780px' }}
+          >
             <div className="flex justify-between items-center pb-4 border-b border-outline-variant/30 shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
