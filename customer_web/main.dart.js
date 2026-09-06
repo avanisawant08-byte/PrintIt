@@ -120583,7 +120583,7 @@ s=A.b([new A.aT(0,B.z,b?B.ox.u(0.15):B.vs.u(0.1),B.hz,14)],t.V)
 r=b?B.vd.u(0.12):B.i.u(0.7)
 q=A.W(16)
 o=A.S(p,A.bu(A.S(p,A.at(B.hm,b?B.QB:B.vs,p,30),B.k,p,p,new A.T(r,p,p,q,p,p,B.n),p,52,p,p,p,p,52),p,p),B.k,p,p,new A.T(n,p,l,m,s,o,B.n),p,p,p,p,p,p,p)
-return A.cL(p,A.a1(A.b([new A.Bc(1.05,o,p),B.ab,A.l("Campus Store",p,p,p,A.B(p,p,b?B.d5:B.r,p,p,p,p,p,p,p,p,12,p,p,B.D,p,p,!0,p,p,p,p,p,p,p,p),p,p)],t.p),B.l,B.j,B.f),B.A,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p,new A.aXO(a),p,p,p,p,p,p)},
+return A.cL(p,A.a1(A.b([new A.Bc(1.05,o,p),B.ab,A.l("Store",p,p,p,A.B(p,p,b?B.d5:B.r,p,p,p,p,p,p,p,p,12,p,p,B.D,p,p,!0,p,p,p,p,p,p,p,p),p,p)],t.p),B.l,B.j,B.f),B.A,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p,new A.aXO(a),p,p,p,p,p,p)},
 aDE(a,b,c,d){var s,r,q,p,o,n,m,l,k,j,i,h,g=null,f=J.Y(c),e=f.h(c,"is_open")
 if(e==null)e=!0
 s=f.h(c,"rating")
@@ -125457,7 +125457,7 @@ e=e.b
 s=e.u(0.15)
 r=A.W(10)
 r=A.S(g,A.at(B.hm,e,g,20),B.k,g,g,new A.T(s,g,g,r,g,g,B.n),g,g,g,B.wC,g,g,g)
-s=A.l("Campus Store",g,g,g,A.B(g,g,d?B.i:B.T,g,g,g,g,g,g,g,g,18,g,g,B.o,g,g,!0,g,g,g,g,g,g,g,g),g,g)
+s=A.l("Store",g,g,g,A.B(g,g,d?B.i:B.T,g,g,g,g,g,g,g,g,18,g,g,B.o,g,g,!0,g,g,g,g,g,g,g,g),g,g)
 q=t.p
 s=A.a7(A.b([r,B.dh,A.a1(A.b([s,A.l("Manuals, Books & Stationery",g,g,g,A.B(g,g,d?B.cE:B.V,g,g,g,g,g,g,g,g,11,g,g,g,g,g,!0,g,g,g,g,g,g,g,g),g,g)],q),B.w,B.j,B.f)],q),B.l,B.j,B.f,0,g)
 c=A.dC(A.b([A.cA(g,g,A.bK(B.K,A.b([A.at(B.xE,d?B.i:B.T,g,g)],q),B.k,B.F,g),g,g,new A.b5p(a0),g,g,g,"My Store Orders",g),B.b5],q),!0,c,!1,0,g,g,s)

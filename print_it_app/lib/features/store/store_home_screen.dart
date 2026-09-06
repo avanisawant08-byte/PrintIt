@@ -99,7 +99,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Campus Store',
+                  'Store',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

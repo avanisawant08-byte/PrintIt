@@ -673,7 +673,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Campus Store',
+            'Store',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
