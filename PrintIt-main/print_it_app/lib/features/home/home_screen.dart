@@ -247,7 +247,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Quick Actions Grid (2 Cards: Scan QR, Shops)
+                        // Quick Actions Grid (2 Cards: Scan QR, Campus Store)
                         Row(
                           children: [
                             // Card 1: Scan QR (First Position!)
@@ -255,90 +255,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: _buildScanQrCard(context, isDark),
                             ),
                             const SizedBox(width: 14),
-                            // Card 2: Shops (Second Position!)
+                            // Card 2: Campus Store (Second Position!)
                             Expanded(
-                              child: _buildShopsCard(context, isDark),
+                              child: _buildStoreCard(context, isDark),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Campus Store Feature Card
-                        GestureDetector(
-                          onTap: () => context.push('/store'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: isDark
-                                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                                    : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF334155).withValues(alpha: 0.8)
-                                    : const Color(0xFFBFDBFE),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0284C7).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: const Icon(Icons.storefront_rounded, color: Color(0xFF0284C7), size: 24),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'Campus Store',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              color: isDark ? Colors.white : Colors.black87,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF0284C7),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: const Text(
-                                              'NEW',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Buy Lab Manuals, Books & Notes from nearby shops',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.chevron_right_rounded, color: Color(0xFF0284C7), size: 22),
-                              ],
-                            ),
-                          ),
                         ),
                         const SizedBox(height: 24),
 
@@ -691,11 +612,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // Quick Action: Shops Card (Strictly matches Stitch designs)
-  Widget _buildShopsCard(BuildContext context, bool isDark) {
+  // Quick Action: Campus Store Card (Replaces redundant shops card)
+  Widget _buildStoreCard(BuildContext context, bool isDark) {
     return GestureDetector(
       onTap: () {
-        context.push('/shop-list/all?name=All%20Shops');
+        context.push('/store');
       },
       child: Column(
         children: [
@@ -752,7 +673,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Shops',
+            'Campus Store',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
