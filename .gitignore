@@ -45,3 +45,9 @@ ehthumbs.db
 *.tar.gz
 *.mp4
 *.mov
+
+# Test output & Playwright reports
+.playwright-cli/
+playwright-report/
+test-results/
+

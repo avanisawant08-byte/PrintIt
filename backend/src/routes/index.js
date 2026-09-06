@@ -14,6 +14,10 @@ const supportRoutes = require('./supportRoutes');
 const shopWalletRoutes = require('./shopWalletRoutes');
 const shopAnalyticsRoutes = require('./shopAnalyticsRoutes');
 const adminPayoutRoutes = require('./adminPayoutRoutes');
+const { apiLimiter } = require('../middleware/rateLimiter');
+
+// Mount global API rate limiter
+router.use(apiLimiter);
 
 // Mount routes
 router.use('/auth', authRoutes);

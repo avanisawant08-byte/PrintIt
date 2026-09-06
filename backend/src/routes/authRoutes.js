@@ -5,11 +5,19 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { getAuth } = require('../config/firebase');
 const auth = require('../middleware/auth');
+const { authLimiter } = require('../middleware/rateLimiter');
 
 // POST /api/auth/register — Create a new user
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
     const { email, password, full_name, phone } = req.body;
-    const role = email === 'printitsupport@gmail.com' ? 'admin' : 'customer';
+    let role = 'customer';
+    if (email && email.toLowerCase() === 'printitsupport@gmail.com') {
+        if (process.env.ADMIN_SIGNUP_TOKEN && req.body.admin_token === process.env.ADMIN_SIGNUP_TOKEN) {
+            role = 'admin';
+        } else {
+            return res.status(403).json({ error: 'Administrative registration requires valid administrator authorization.' });
+        }
+    }
 
     if (!email || !password || !full_name) {
         return res.status(400).json({ error: 'Email, password, and full name are required' });
@@ -56,7 +64,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login — User login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -103,12 +111,12 @@ router.post('/login', async (req, res) => {
 
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ error: 'Failed to login', details: err.message, stack: err.stack });
+        res.status(500).json({ error: 'Failed to login' });
     }
 });
 
 // POST /api/auth/register-shop — Register a new shopkeeper + create their shop
-router.post('/register-shop', async (req, res) => {
+router.post('/register-shop', authLimiter, async (req, res) => {
     const { email, password, full_name, phone, shop_name, address, price_bw, price_color } = req.body;
 
     if (!email || !password || !full_name || !shop_name || price_bw == null || price_color == null) {
@@ -180,7 +188,7 @@ router.post('/register-shop', async (req, res) => {
 });
 
 // POST /api/auth/google — Google Login via Firebase Token
-router.post('/google', async (req, res) => {
+router.post('/google', authLimiter, async (req, res) => {
     const { firebase_token } = req.body;
 
     if (!firebase_token) {
@@ -230,12 +238,12 @@ router.post('/google', async (req, res) => {
 
     } catch (err) {
         console.error('Google login error detailed:', err);
-        res.status(401).json({ error: 'Invalid Firebase token: ' + err.message });
+        res.status(401).json({ error: 'Invalid or expired Firebase authentication token' });
     }
 });
 
 // POST /api/auth/phone — Phone OTP Login via Firebase Token
-router.post('/phone', async (req, res) => {
+router.post('/phone', authLimiter, async (req, res) => {
     const { firebase_token } = req.body;
 
     if (!firebase_token) {
@@ -304,7 +312,7 @@ router.post('/phone', async (req, res) => {
         });
     } catch (err) {
         console.error('Phone login error:', err);
-        res.status(401).json({ error: 'Phone verification failed: ' + err.message });
+        res.status(401).json({ error: 'Phone authentication verification failed' });
     }
 });
 

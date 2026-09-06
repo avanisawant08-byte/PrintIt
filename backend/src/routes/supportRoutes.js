@@ -165,8 +165,13 @@ router.get('/tickets/:id', async (req, res) => {
         // Ensure user has permission to view
         if (req.user.role === 'customer' && ticket.user_id !== req.user.user_id) {
             return res.status(403).json({ error: 'Unauthorized to view this ticket' });
+        } else if (req.user.role === 'shopkeeper') {
+            const shopResult = await pool.query('SELECT shop_id FROM shops WHERE owner_id = $1', [req.user.user_id]);
+            const shopId = shopResult.rows[0]?.shop_id;
+            if (!shopId || ticket.shop_id !== shopId) {
+                return res.status(403).json({ error: 'Unauthorized to view this ticket' });
+            }
         }
-
 
         // Fetch messages
         const msgResult = await pool.query(
@@ -210,6 +215,19 @@ router.post('/tickets/:id/messages', async (req, res) => {
         }
 
         const ticket = ticketResult.rows[0];
+
+        // Authorization: Verify user owns or is assigned to this ticket
+        if (req.user.role === 'customer' && ticket.user_id !== req.user.user_id) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'Unauthorized: Cannot message on another user’s ticket' });
+        } else if (req.user.role === 'shopkeeper') {
+            const shopResult = await client.query('SELECT shop_id FROM shops WHERE owner_id = $1', [req.user.user_id]);
+            const shopId = shopResult.rows[0]?.shop_id;
+            if (!shopId || ticket.shop_id !== shopId) {
+                await client.query('ROLLBACK');
+                return res.status(403).json({ error: 'Unauthorized: Ticket belongs to another shop' });
+            }
+        }
 
         // Insert message
         const msgResult = await client.query(

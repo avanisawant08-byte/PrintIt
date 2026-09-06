@@ -6,10 +6,17 @@ const { getStorage } = require('../config/firebase');
 
 const bucket = getStorage().bucket();
 
+const sanitizeFileName = (name) => {
+    return (name || 'document')
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .replace(/\.{2,}/g, '_');
+};
+
 const uploadToFirebase = (fileBuffer, originalName, mimeType) => {
     return new Promise((resolve, reject) => {
         const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const fileName = `printit/uploads/${uniqueId}_${originalName}`;
+        const safeName = sanitizeFileName(originalName);
+        const fileName = `printit/uploads/${uniqueId}_${safeName}`;
         const blob = bucket.file(fileName);
         
         const blobStream = blob.createWriteStream({
