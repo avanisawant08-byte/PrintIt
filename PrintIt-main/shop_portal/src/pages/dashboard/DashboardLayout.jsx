@@ -51,7 +51,7 @@ const DashboardLayout = () => {
       </div>
 
       {/* SideNavBar - Optimized for all desktop ratios (1366x768, 1080p, 1440p) */}
-      <aside className="hidden md:flex flex-col h-full fixed left-0 top-0 w-60 lg:w-64 bg-glass-surface backdrop-blur-xl border-r border-glass-edge shadow-xl z-50">
+      <aside className="hidden md:flex flex-col h-screen fixed left-0 top-0 bottom-0 w-60 lg:w-64 bg-glass-surface backdrop-blur-xl border-r border-glass-edge shadow-xl z-50">
         {/* Header */}
         <div className="px-5 py-4 border-b border-glass-edge/20 flex items-center gap-3 shrink-0">
           <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 shrink-0 flex items-center justify-center">
@@ -171,7 +171,7 @@ const DashboardLayout = () => {
         </header>
 
         {/* Router View Container - Responsive across 1366x768 & 1080p */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto flex flex-col min-w-0">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 sm:pb-28 w-full max-w-7xl mx-auto flex flex-col min-w-0">
           <Outlet context={{ searchQuery, setSearchQuery, onOpenNewJobModal: () => setShowNewJobModal(true) }} />
         </main>
       </div>

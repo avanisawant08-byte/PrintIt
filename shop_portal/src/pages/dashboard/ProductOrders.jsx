@@ -40,12 +40,12 @@ const ProductOrders = () => {
   if (loading) return <div className="p-lg">Loading...</div>;
 
   return (
-    <div className="p-lg max-w-[1152px] mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-md">
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
+      <div className="flex justify-between items-center mb-2">
         <h1 className="font-display-sm text-display-sm text-on-surface">Product Orders</h1>
       </div>
 
-      <div className="flex gap-4 border-b border-outline-variant/30 mb-lg">
+      <div className="flex gap-4 border-b border-outline-variant/30 mb-2">
         <button 
           onClick={() => setActiveTab('confirmed')}
           className={`pb-2 font-label-md transition-colors ${activeTab === 'confirmed' ? 'border-b-2 border-primary text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
@@ -60,7 +60,7 @@ const ProductOrders = () => {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-md">
+      <div className="flex flex-col gap-4">
         {filteredOrders.map(order => (
           <div key={order.order_id} className="bg-surface-container rounded-2xl p-md border border-outline-variant/30 flex flex-col sm:flex-row gap-md items-start sm:items-center">
             {order.cover_photo_url ? (
