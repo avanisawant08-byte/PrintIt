@@ -13,6 +13,7 @@ const walletRoutes = require('./routes/walletRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const { startCleanupJob } = require('./utils/firebaseCleanup');
 const { setupShopCodeDb } = require('./utils/setupShopCodeDb');
+const { setupStoreDb } = require('./utils/setupStoreDb');
 
 // Connect to DB immediately after import
 pool.connect()
@@ -20,6 +21,7 @@ pool.connect()
       console.log("Database connected");
       client.release();
       setupShopCodeDb();
+      setupStoreDb();
       startCleanupJob();
   })
   .catch(err => console.error("DB connection error:", err));

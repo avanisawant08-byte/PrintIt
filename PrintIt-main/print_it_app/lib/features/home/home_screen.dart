@@ -261,7 +261,86 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 14),
+
+                        // Campus Store Feature Card
+                        GestureDetector(
+                          onTap: () => context.push('/store'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isDark
+                                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                                    : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155).withValues(alpha: 0.8)
+                                    : const Color(0xFFBFDBFE),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(Icons.storefront_rounded, color: Color(0xFF0284C7), size: 24),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Campus Store',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                              color: isDark ? Colors.white : Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF0284C7),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: const Text(
+                                              'NEW',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Buy Lab Manuals, Books & Notes from nearby shops',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.chevron_right_rounded, color: Color(0xFF0284C7), size: 22),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
 
                         // Nearby Shops Section Header
                         Row(
@@ -974,7 +1053,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isDark: isDark,
               onTap: () {},
             ),
-            // Tab 2: Orders
+            // Tab 2: Store
+            _buildNavItem(
+              context,
+              icon: Icons.storefront_rounded,
+              label: 'Store',
+              isActive: false,
+              isDark: isDark,
+              onTap: () => context.push('/store'),
+            ),
+            // Tab 3: Orders
             _buildNavItem(
               context,
               icon: Icons.description_outlined,
@@ -983,7 +1071,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isDark: isDark,
               onTap: () => context.push('/orders'),
             ),
-            // Tab 3: Profile
+            // Tab 4: Profile
             _buildNavItem(
               context,
               icon: Icons.person_outline_rounded,

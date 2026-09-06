@@ -4,136 +4,382 @@ import api from '../../core/api';
 
 const Orders = () => {
   const { searchQuery } = useOutletContext() || { searchQuery: '' };
-  const [orders, setOrders] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, limit: 50, total_pages: 1 });
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('store'); // 'store' | 'print'
 
-  const fetchOrders = async (page = 1) => {
-    setIsLoading(true);
+  // Print orders state
+  const [printOrders, setPrintOrders] = useState([]);
+  const [printPagination, setPrintPagination] = useState({ page: 1, limit: 50, total_pages: 1 });
+  const [isPrintLoading, setIsPrintLoading] = useState(true);
+
+  // Store orders state
+  const [storeOrders, setStoreOrders] = useState([]);
+  const [isStoreLoading, setIsStoreLoading] = useState(true);
+  
+  // Verification modal state
+  const [verifyingOrder, setVerifyingOrder] = useState(null);
+  const [enteredPickupCode, setEnteredPickupCode] = useState('');
+  const [verificationError, setVerificationError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'print') {
+      fetchPrintOrders(1);
+    } else {
+      fetchStoreOrders();
+    }
+  }, [activeTab]);
+
+  const fetchPrintOrders = async (page = 1) => {
+    setIsPrintLoading(true);
     try {
       const res = await api.get(`/shop/orders?page=${page}&limit=50`);
-      setOrders(res.data.data || res.data);
-      if (res.data.pagination) setPagination(res.data.pagination);
+      setPrintOrders(res.data.data || res.data);
+      if (res.data.pagination) setPrintPagination(res.data.pagination);
     } catch (err) {
-      alert('Failed to load orders: ' + err.message);
+      console.error('Failed to load print orders:', err);
     } finally {
-      setIsLoading(false);
+      setIsPrintLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchOrders(1);
-  }, []);
+  const fetchStoreOrders = async () => {
+    setIsStoreLoading(true);
+    try {
+      const res = await api.get('/shop/inventory/orders');
+      setStoreOrders(res.data.orders || []);
+    } catch (err) {
+      console.error('Failed to load store orders:', err);
+    } finally {
+      setIsStoreLoading(false);
+    }
+  };
 
-  const filteredOrders = orders.filter(o => {
-    if (!searchQuery || searchQuery.trim() === '') return true;
+  const handleVerifyCode = async (e) => {
+    e.preventDefault();
+    if (!verifyingOrder || !enteredPickupCode.trim()) return;
+
+    setIsVerifying(true);
+    setVerificationError('');
+
+    try {
+      await api.patch(`/shop/inventory/orders/${verifyingOrder.order_id}/collect`, {
+        pickup_code: enteredPickupCode.trim()
+      });
+
+      // Update locally
+      setStoreOrders(prev => prev.map(o => 
+        o.order_id === verifyingOrder.order_id ? { ...o, status: 'collected', collected_at: new Date().toISOString() } : o
+      ));
+      setVerifyingOrder(null);
+      setEnteredPickupCode('');
+      alert('Order successfully verified and handed over!');
+    } catch (err) {
+      setVerificationError(err.response?.data?.error || 'Invalid pickup code. Please check with customer.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // Filter Print Orders
+  const filteredPrintOrders = printOrders.filter(o => {
+    if (!searchQuery || !searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
-      o.order_id.toLowerCase().includes(q) ||
+      (o.order_id || '').toLowerCase().includes(q) ||
       (o.customer_phone || '').toLowerCase().includes(q) ||
+      (o.status || '').toLowerCase().includes(q)
+    );
+  });
+
+  // Filter Store Orders
+  const filteredStoreOrders = storeOrders.filter(o => {
+    if (!searchQuery || !searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      (o.order_id || '').toLowerCase().includes(q) ||
+      (o.customer_name || '').toLowerCase().includes(q) ||
+      (o.customer_phone || '').toLowerCase().includes(q) ||
+      (o.pickup_code || '').toLowerCase().includes(q) ||
       (o.status || '').toLowerCase().includes(q)
     );
   });
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden bg-background">
-      <div className="flex justify-between items-center mb-6 shrink-0">
+      {/* Top Header & Tab Controls */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface mb-1">Order History</h1>
-          <p className="text-xs text-on-surface-variant">View and track historical print orders</p>
+          <h1 className="text-2xl font-bold text-on-surface mb-1">Orders & Pickups</h1>
+          <p className="text-xs text-on-surface-variant">Manage in-store customer pickups and document print orders</p>
         </div>
-        <div className="flex items-center gap-4">
-          {pagination.total_pages > 1 && (
-            <div className="flex items-center gap-2 text-xs">
-              <button 
-                onClick={() => fetchOrders(pagination.page - 1)} 
-                disabled={pagination.page <= 1}
-                className="px-3 py-1 bg-surface-container border border-outline-variant rounded text-on-surface disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span className="text-on-surface-variant">Page {pagination.page} of {pagination.total_pages}</span>
-              <button 
-                onClick={() => fetchOrders(pagination.page + 1)} 
-                disabled={pagination.page >= pagination.total_pages}
-                className="px-3 py-1 bg-surface-container border border-outline-variant rounded text-on-surface disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-          <button 
-            onClick={() => fetchOrders(pagination.page)} 
-            className="bg-surface-container-high border border-outline-variant text-on-surface px-4 py-2 rounded-lg text-xs hover:border-primary transition-colors flex items-center gap-1.5"
+
+        {/* Tab switch */}
+        <div className="flex items-center gap-2 bg-surface-container border border-outline-variant/30 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveTab('store')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              activeTab === 'store'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
           >
-            <span className="material-symbols-outlined text-[16px]">refresh</span>
-            Refresh
+            <span className="material-symbols-outlined text-[16px]">shopping_bag</span>
+            Store Pickups ({storeOrders.filter(o => o.status === 'placed').length} Pending)
+          </button>
+          <button
+            onClick={() => setActiveTab('print')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              activeTab === 'print'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">print</span>
+            Print Orders
           </button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center text-on-surface-variant">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-2xl animate-spin">autorenew</span>
-            <span>Loading Orders...</span>
-          </div>
-        </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center bg-surface-container border border-outline-variant rounded-xl text-on-surface-variant">
-          No orders match your search or filter.
-        </div>
-      ) : (
-        <div className="bg-surface-container border border-outline-variant rounded-xl overflow-x-auto">
-          <table className="w-full text-left border-collapse font-body-sm text-sm">
-            <thead>
-              <tr className="bg-surface-container-low border-b border-outline-variant text-[0.75rem] uppercase tracking-wider text-on-surface-variant font-bold">
-                <th className="p-4">Order ID</th>
-                <th className="p-4">Type</th>
-                <th className="p-4">Placed At</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Amount</th>
-                <th className="p-4">Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map(o => {
-                let opts = {};
-                try { opts = typeof o.print_options === 'string' ? JSON.parse(o.print_options) : (o.print_options || {}); } catch(e) {}
-                const isScheduled = opts.pickup_type === 'scheduled' || o.order_id?.startsWith('S');
-
-                return (
-                  <tr key={o.order_id} className="border-b border-outline-variant/30 hover:bg-surface-bright/50 transition-colors">
-                    <td className="p-4 font-mono font-semibold text-primary">#{o.order_id.split('-')[0]}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-[0.7rem] font-bold ${
-                        isScheduled ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                      }`}>
-                        {isScheduled ? '🗓️ Scheduled' : '⚡ Express'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-on-surface-variant">{new Date(o.created_at).toLocaleString()}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-[0.7rem] font-bold uppercase ${
-                        o.status === 'ready' ? 'bg-green-500/15 text-green-400' :
-                        o.status === 'processing' ? 'bg-yellow-500/15 text-yellow-400' :
-                        o.status === 'queued' ? 'bg-blue-500/15 text-blue-400' :
-                        'bg-surface-container-highest text-on-surface-variant'
-                      }`}>
-                        {o.status}
-                      </span>
-                    </td>
-                    <td className="p-4 font-bold text-on-surface">₹{o.amount_total}</td>
-                    <td className="p-4">
-                      <span className={`text-[11px] font-bold ${o.payment_status === 'captured' ? 'text-green-400' : 'text-amber-400'}`}>
-                        {o.payment_status === 'captured' ? 'Paid' : 'Pending'}
-                      </span>
-                    </td>
+      {/* Store Pickups Tab */}
+      {activeTab === 'store' && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {isStoreLoading ? (
+            <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+              <span className="material-symbols-outlined text-primary text-2xl animate-spin mr-2">autorenew</span>
+              <span>Loading store pickup orders...</span>
+            </div>
+          ) : filteredStoreOrders.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center bg-surface-container border border-outline-variant rounded-2xl text-on-surface-variant p-8 text-center">
+              <div>
+                <span className="material-symbols-outlined text-4xl mb-2 opacity-50">shopping_basket</span>
+                <p className="font-semibold text-sm">No store orders found.</p>
+                <p className="text-xs opacity-70 mt-1">When students purchase books or manuals from your shop, they appear here.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-surface-container border border-outline-variant rounded-2xl overflow-y-auto flex-1">
+              <table className="w-full text-left border-collapse font-body-sm text-sm">
+                <thead>
+                  <tr className="bg-surface-container-low border-b border-outline-variant text-[0.75rem] uppercase tracking-wider text-on-surface-variant font-bold">
+                    <th className="p-4">Order Details</th>
+                    <th className="p-4">Customer</th>
+                    <th className="p-4">Items Ordered</th>
+                    <th className="p-4">Total Amount</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right">Action</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/30">
+                  {filteredStoreOrders.map(order => {
+                    const isCollected = order.status === 'collected';
+                    const isCancelled = order.status === 'cancelled';
+                    const isPending = order.status === 'placed';
+
+                    return (
+                      <tr key={order.order_id} className="hover:bg-surface-bright/50 transition-colors">
+                        <td className="p-4">
+                          <span className="font-mono font-bold text-primary block">
+                            #{order.order_id.split('-')[0].toUpperCase()}
+                          </span>
+                          <span className="text-[11px] text-on-surface-variant">
+                            {new Date(order.created_at).toLocaleString()}
+                          </span>
+                        </td>
+
+                        <td className="p-4">
+                          <p className="font-bold text-on-surface text-xs">{order.customer_name || 'Student'}</p>
+                          <p className="text-[11px] text-on-surface-variant font-mono">{order.customer_phone || '—'}</p>
+                        </td>
+
+                        <td className="p-4">
+                          <div className="space-y-1">
+                            {order.items?.map((it, idx) => (
+                              <div key={idx} className="flex items-center gap-2 text-xs">
+                                <span className="font-bold text-primary">{it.quantity}x</span>
+                                <span className="text-on-surface font-medium truncate max-w-[200px]">{it.title}</span>
+                                <span className="text-[10px] text-on-surface-variant">(₹{it.unit_price} each)</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+
+                        <td className="p-4 font-black text-base text-on-surface">
+                          ₹{order.total_amount}
+                          <span className="block text-[10px] font-normal text-emerald-500 uppercase">Prepaid ({order.payment_method})</span>
+                        </td>
+
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                            isCollected
+                              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                              : isCancelled
+                              ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                              : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                          }`}>
+                            {isCollected ? 'Collected' : isCancelled ? 'Cancelled' : 'Ready for Pickup'}
+                          </span>
+                        </td>
+
+                        <td className="p-4 text-right">
+                          {isPending && (
+                            <button
+                              onClick={() => {
+                                setVerifyingOrder(order);
+                                setEnteredPickupCode('');
+                                setVerificationError('');
+                              }}
+                              className="bg-primary hover:bg-primary/90 text-on-primary px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-1"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">pin</span>
+                              Verify Code
+                            </button>
+                          )}
+                          {isCollected && (
+                            <span className="text-[11px] text-emerald-500 font-semibold flex items-center justify-end gap-1">
+                              <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                              Handed Over
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Print Orders Tab */}
+      {activeTab === 'print' && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {isPrintLoading ? (
+            <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+              <span className="material-symbols-outlined text-primary text-2xl animate-spin mr-2">autorenew</span>
+              <span>Loading print orders...</span>
+            </div>
+          ) : filteredPrintOrders.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center bg-surface-container border border-outline-variant rounded-xl text-on-surface-variant">
+              No print orders match your search.
+            </div>
+          ) : (
+            <div className="bg-surface-container border border-outline-variant rounded-xl overflow-y-auto flex-1">
+              <table className="w-full text-left border-collapse font-body-sm text-sm">
+                <thead>
+                  <tr className="bg-surface-container-low border-b border-outline-variant text-[0.75rem] uppercase tracking-wider text-on-surface-variant font-bold">
+                    <th className="p-4">Order ID</th>
+                    <th className="p-4">Type</th>
+                    <th className="p-4">Placed At</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Amount</th>
+                    <th className="p-4">Payment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPrintOrders.map(o => {
+                    let opts = {};
+                    try { opts = typeof o.print_options === 'string' ? JSON.parse(o.print_options) : (o.print_options || {}); } catch(e) {}
+                    const isScheduled = opts.pickup_type === 'scheduled' || o.order_id?.startsWith('S');
+
+                    return (
+                      <tr key={o.order_id} className="border-b border-outline-variant/30 hover:bg-surface-bright/50 transition-colors">
+                        <td className="p-4 font-mono font-semibold text-primary">#{o.order_id.split('-')[0]}</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-1 rounded text-[0.7rem] font-bold ${
+                            isScheduled ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            {isScheduled ? '🗓️ Scheduled' : '⚡ Express'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-on-surface-variant">{new Date(o.created_at).toLocaleString()}</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-1 rounded text-[0.7rem] font-bold uppercase ${
+                            o.status === 'ready' ? 'bg-green-500/15 text-green-400' :
+                            o.status === 'processing' ? 'bg-yellow-500/15 text-yellow-400' :
+                            o.status === 'queued' ? 'bg-blue-500/15 text-blue-400' :
+                            'bg-surface-container-highest text-on-surface-variant'
+                          }`}>
+                            {o.status}
+                          </span>
+                        </td>
+                        <td className="p-4 font-bold text-on-surface">₹{o.amount_total}</td>
+                        <td className="p-4">
+                          <span className={`text-[11px] font-bold ${o.payment_status === 'captured' ? 'text-green-400' : 'text-amber-400'}`}>
+                            {o.payment_status === 'captured' ? 'Paid' : 'Pending'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 4-Digit Pickup Verification Modal */}
+      {verifyingOrder && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-surface border border-outline-variant/40 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="text-center mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center mb-2">
+                <span className="material-symbols-outlined text-2xl">pin</span>
+              </div>
+              <h3 className="font-bold text-lg text-on-surface">Verify In-Store Pickup</h3>
+              <p className="text-xs text-on-surface-variant">
+                Ask student for the 4-digit code shown in their PrintIt app.
+              </p>
+            </div>
+
+            <div className="bg-surface-container p-3 rounded-xl mb-4 text-xs">
+              <p className="text-on-surface-variant">Order: <strong className="text-on-surface">#{verifyingOrder.order_id.split('-')[0].toUpperCase()}</strong></p>
+              <p className="text-on-surface-variant">Student: <strong className="text-on-surface">{verifyingOrder.customer_name || 'Customer'}</strong></p>
+              <p className="text-on-surface-variant">Total: <strong className="text-primary font-bold">₹{verifyingOrder.total_amount}</strong></p>
+            </div>
+
+            {verificationError && (
+              <div className="bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs p-3 rounded-xl mb-4 text-center font-medium">
+                {verificationError}
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyCode} className="space-y-4">
+              <div>
+                <label className="block text-center text-xs font-bold text-on-surface-variant mb-2">
+                  ENTER 4-DIGIT CODE
+                </label>
+                <input
+                  type="text"
+                  maxLength={4}
+                  required
+                  autoFocus
+                  placeholder="••••"
+                  value={enteredPickupCode}
+                  onChange={(e) => setEnteredPickupCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-full text-center tracking-[0.5em] font-mono text-2xl font-black bg-surface-container py-3 rounded-xl border border-outline-variant/40 focus:border-primary outline-none text-primary"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVerifyingOrder(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-surface-container hover:bg-outline-variant/20 text-xs font-bold text-on-surface"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isVerifying || enteredPickupCode.length !== 4}
+                  className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-xs font-bold shadow disabled:opacity-50"
+                >
+                  {isVerifying ? 'Verifying...' : 'Handover Order'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

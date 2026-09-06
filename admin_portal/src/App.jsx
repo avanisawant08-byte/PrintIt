@@ -10,6 +10,7 @@ import TicketList from './pages/support/TicketList';
 import TicketDetail from './pages/support/TicketDetail';
 import PayoutManagement from './pages/PayoutManagement';
 import LegalDocuments from './pages/legal/LegalDocuments';
+import ProductCatalog from './pages/catalog/ProductCatalog';
 import NotFound from './pages/NotFound';
 import Forbidden from './pages/Forbidden';
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard/shops/add" replace />} />
           <Route path="shops/add" element={<AddShop />} />
+          <Route path="catalog" element={<ProductCatalog />} />
           <Route path="payouts" element={<PayoutManagement />} />
           <Route path="support" element={<TicketList />} />
           <Route path="support/:id" element={<TicketDetail />} />

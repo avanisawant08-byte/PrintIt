@@ -25,9 +25,12 @@ import '../../features/shops/shop_list_screen.dart';
 import '../../features/shops/shop_detail_screen.dart';
 import '../../features/shops/manage_shop_services_screen.dart';
 import '../../features/shops/express_dashboard_screen.dart';
-import '../../features/marketplace/browse_manuals_screen.dart';
 import '../../features/marketplace/product_detail_screen.dart';
 import '../../features/marketplace/post_order_screen.dart';
+import '../../features/store/store_home_screen.dart';
+import '../../features/store/store_product_detail_screen.dart';
+import '../../features/store/store_orders_screen.dart';
+import '../../features/store/store_models.dart';
 
 import '../../features/support/my_tickets_screen.dart';
 import '../../features/support/create_ticket_screen.dart';
@@ -201,8 +204,24 @@ final appRouter = GoRouter(
       builder: (context, state) => const ExpressDashboardScreen(),
     ),
     GoRoute(
+      path: '/store',
+      builder: (context, state) => const StoreHomeScreen(),
+    ),
+    GoRoute(
+      path: '/store/orders',
+      builder: (context, state) => const StoreOrdersScreen(),
+    ),
+    GoRoute(
+      path: '/store/product/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        final product = state.extra as CatalogProduct?;
+        return StoreProductDetailScreen(productId: id, product: product);
+      },
+    ),
+    GoRoute(
       path: '/browse-manuals',
-      builder: (context, state) => const BrowseManualsScreen(),
+      builder: (context, state) => const StoreHomeScreen(),
     ),
     GoRoute(
       path: '/manual-detail',

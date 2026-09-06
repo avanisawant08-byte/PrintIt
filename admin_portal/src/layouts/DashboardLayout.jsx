@@ -9,6 +9,7 @@ const DashboardLayout = () => {
 
   const navItems = [
     { name: 'Add Shop', path: '/dashboard/shops/add', icon: 'add_business' },
+    { name: 'Master Catalog', path: '/dashboard/catalog', icon: 'menu_book' },
     { name: 'Payout Management', path: '/dashboard/payouts', icon: 'payments' },
     { name: 'Support Tickets', path: '/dashboard/support', icon: 'support_agent' },
     { name: 'Compliance & Legal', path: '/dashboard/legal', icon: 'policy' },
