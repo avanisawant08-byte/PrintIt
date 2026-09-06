@@ -94,9 +94,10 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
       }
     }
 
-    // If string has no slashes, assume raw shop ID / UUID
-    if (!input.contains('/') && !input.contains(':') && input.length >= 3) {
-      return input;
+    // If string has no slashes, assume raw shop code or UUID
+    final trimmed = input.trim();
+    if (!trimmed.contains('/') && !trimmed.contains(':') && trimmed.length >= 3) {
+      return trimmed.replaceAll('#', '').replaceAll(' ', '').toUpperCase();
     }
 
     // Fallback: last segment of URL path
@@ -127,12 +128,16 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
     // Lock shop in order provider
     ref.read(orderProvider.notifier).setShopId(shopId);
 
-    // Fetch shop details for price and name
+    // Fetch shop details for price and name (supports short shop_code or UUID)
+    String targetShopId = shopId;
     try {
       final dio = ref.read(apiProvider);
       final res = await dio.get('/public/shops/$shopId');
       if (res.data != null) {
         final data = res.data is Map ? res.data : {};
+        if (data['shop_id'] != null) {
+          targetShopId = data['shop_id'].toString();
+        }
         final name = (data['name'] ?? data['shop_name'] ?? 'Print Shop').toString();
         final bw = double.tryParse(data['price_bw']?.toString() ?? '') ?? 0.10;
         final color = double.tryParse(data['price_color']?.toString() ?? '') ?? 0.45;
@@ -142,11 +147,28 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
           _detectedShopName = name;
         });
 
-        ref.read(orderProvider.notifier).setShop(shopId, name);
+        ref.read(orderProvider.notifier).setShopId(targetShopId);
+        ref.read(orderProvider.notifier).setShop(targetShopId, name);
         ref.read(orderProvider.notifier).setPrices(bw, color, rules);
       }
-    } catch (_) {
-      // Still proceed even if public endpoint is cached or fails
+    } catch (err) {
+      // If user typed a manual code that was not found, show user-friendly error
+      if (shopId.length <= 16 && !rawCode.contains('/')) {
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Shop code "$shopId" not found. Please verify and try again.'),
+              backgroundColor: const Color(0xFFEF4444),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          );
+        }
+        return;
+      }
     }
 
     if (!mounted) return;
@@ -162,7 +184,7 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
               child: Text(
                 _detectedShopName != null
                     ? 'Connected to $_detectedShopName'
-                    : 'Shop QR Verified! Opening Upload...',
+                    : 'Shop Verified! Opening Upload...',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -175,8 +197,8 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
       ),
     );
 
-    // Navigate to upload-document with shopId preselected
-    context.pushReplacement('/upload-document/$shopId');
+    // Navigate to upload-document with targetShopId preselected
+    context.pushReplacement('/upload-document/$targetShopId');
   }
 
   void _showManualEntryDialog(bool isDark) {
@@ -209,7 +231,7 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Type or paste the Shop ID or full QR URL printed on the counter stand:',
+                'Type the 6-character Shop Code or QR URL printed on the counter stand:',
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark ? Colors.white70 : Colors.black87,
@@ -219,10 +241,19 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
               TextField(
                 controller: textController,
                 autofocus: true,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                textCapitalization: TextCapitalization.characters,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
                 decoration: InputDecoration(
-                  hintText: 'e.g. 8473b134... or URL',
-                  hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+                  hintText: 'e.g. PR8473 or link',
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                    letterSpacing: 0,
+                    fontWeight: FontWeight.normal,
+                  ),
                   filled: true,
                   fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                   border: OutlineInputBorder(

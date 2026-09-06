@@ -794,7 +794,14 @@ router.get('/profile', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Shop not found' });
         }
-        res.json(result.rows[0]);
+        let shop = result.rows[0];
+        if (!shop.shop_code) {
+            const { generateUniqueShopCode } = require('../utils/setupShopCodeDb');
+            const newCode = await generateUniqueShopCode(pool, shop.name || shop.shop_id);
+            await pool.query('UPDATE shops SET shop_code = $1 WHERE shop_id = $2', [newCode, req.shop_id]);
+            shop.shop_code = newCode;
+        }
+        res.json(shop);
     } catch (err) {
         console.error('Error fetching shop profile:', err);
         res.status(500).json({ error: 'Failed to fetch shop profile' });
@@ -843,7 +850,7 @@ router.patch('/profile', async (req, res) => {
 router.get('/status', async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT is_open, opening_time, closing_time FROM shops WHERE shop_id = $1',
+            'SELECT is_open, opening_time, closing_time, shop_code FROM shops WHERE shop_id = $1',
             [req.shop_id]
         );
         if (result.rows.length === 0) {

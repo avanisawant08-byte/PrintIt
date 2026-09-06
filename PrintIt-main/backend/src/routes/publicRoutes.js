@@ -14,7 +14,7 @@ router.get('/shops', async (req, res) => {
 
         let shopsQuery = `
              SELECT 
-                 s.shop_id, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
+                 s.shop_id, s.shop_code, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
                  COALESCE(
                      (SELECT json_agg(
                          json_build_object(
@@ -40,7 +40,7 @@ router.get('/shops', async (req, res) => {
         if (capability) {
             shopsQuery = `
                  SELECT 
-                     s.shop_id, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
+                     s.shop_id, s.shop_code, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
                      COALESCE(
                          (SELECT json_agg(
                              json_build_object(
@@ -84,11 +84,11 @@ router.get('/shops', async (req, res) => {
  */
 router.get('/shops/:shop_id', async (req, res) => {
     try {
-        const { shop_id } = req.params;
+        const identifier = (req.params.shop_id || '').trim();
 
         const shopResult = await pool.query(
             `SELECT 
-                 s.shop_id, s.owner_id, s.name, s.address, s.phone, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time, s.is_active,
+                 s.shop_id, s.shop_code, s.owner_id, s.name, s.address, s.phone, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time, s.is_active,
                  COALESCE(
                      (SELECT json_agg(
                          json_build_object(
@@ -107,8 +107,8 @@ router.get('/shops/:shop_id', async (req, res) => {
                      '[]'::json
                  ) AS capabilities
              FROM shops s
-             WHERE s.shop_id = $1`,
-            [shop_id]
+             WHERE s.shop_code = UPPER($1) OR s.shop_id::text = $1`,
+            [identifier]
         );
 
         if (shopResult.rows.length === 0) {
@@ -143,12 +143,15 @@ router.get('/capabilities', (req, res) => {
     res.json(capabilities);
 });
 
+const crypto = require('crypto');
+const { publicOrderLimiter } = require('../middleware/rateLimiter');
+
 /**
  * @route   GET /api/public/orders/:id
- * @desc    Get order details by UUID (public for tracking)
+ * @desc    Get order details by order_id (public for tracking)
  * @access  Public
  */
-router.get('/orders/:id', async (req, res) => {
+router.get('/orders/:id', publicOrderLimiter, async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(
@@ -162,7 +165,38 @@ router.get('/orders/:id', async (req, res) => {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        res.json(result.rows[0]);
+        const order = result.rows[0];
+
+        // VULN-05 Fix: Strip s3_key, url, and public_id from public tracking output
+        let sanitizedFiles = [];
+        if (order.files) {
+            let parsedFiles = order.files;
+            if (typeof parsedFiles === 'string') {
+                try { parsedFiles = JSON.parse(parsedFiles); } catch (_) { parsedFiles = []; }
+            }
+            if (Array.isArray(parsedFiles)) {
+                sanitizedFiles = parsedFiles.map(f => {
+                    const info = (f && f.file_info) ? f.file_info : (f || {});
+                    return {
+                        original_name: info.original_name || 'Document',
+                        format: info.format || 'pdf',
+                        size: info.size || 0,
+                        print_options: f.print_options || info.print_options || {}
+                    };
+                });
+            }
+        }
+
+        res.json({
+            order_id: order.order_id,
+            shop_id: order.shop_id,
+            status: order.status,
+            queue_position: order.queue_position,
+            amount_total: order.amount_total,
+            payment_status: order.payment_status,
+            created_at: order.created_at,
+            files: sanitizedFiles
+        });
     } catch (err) {
         console.error('Error fetching public order:', err);
         res.status(500).json({ error: 'Failed to fetch order details' });
@@ -171,10 +205,10 @@ router.get('/orders/:id', async (req, res) => {
 
 /**
  * @route   PATCH /api/public/orders/:id/cancel
- * @desc    Cancel a guest order and trigger refund
- * @access  Public
+ * @desc    Cancel a guest order and trigger refund (requires secret cancel_token)
+ * @access  Public (Protected via Token)
  */
-router.patch('/orders/:id/cancel', async (req, res) => {
+router.patch('/orders/:id/cancel', publicOrderLimiter, async (req, res) => {
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -183,7 +217,7 @@ router.patch('/orders/:id/cancel', async (req, res) => {
 
         // 1. Fetch order and verify ownership & status
         const orderResult = await client.query(
-            'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id FROM orders WHERE order_id = $1 FOR UPDATE',
+            'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id, cancel_token FROM orders WHERE order_id = $1 FOR UPDATE',
             [id]
         );
 
@@ -202,6 +236,30 @@ router.patch('/orders/:id/cancel', async (req, res) => {
         if (order.status !== 'queued') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'Order already in progress, cannot cancel' });
+        }
+
+        // VULN-04 Fix: Require and verify secret cancel_token to prevent unauthenticated mass cancellations
+        const providedToken = req.body.cancel_token || req.headers['x-cancel-token'];
+        let expectedToken = order.cancel_token;
+        if (!expectedToken && order.print_options) {
+            try {
+                const opts = typeof order.print_options === 'string' ? JSON.parse(order.print_options) : order.print_options;
+                expectedToken = opts.cancel_token;
+            } catch (_) {}
+        }
+
+        if (!providedToken) {
+            await client.query('ROLLBACK');
+            return res.status(401).json({ 
+                error: 'Cancellation token required. Please provide the secret cancel_token provided when the order was placed.' 
+            });
+        }
+
+        const providedBuf = Buffer.from(providedToken.toString(), 'utf8');
+        const expectedBuf = Buffer.from((expectedToken || '').toString(), 'utf8');
+        if (providedBuf.length === 0 || expectedBuf.length === 0 || providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'Invalid cancellation token.' });
         }
 
         // 2. Trigger Razorpay Refund

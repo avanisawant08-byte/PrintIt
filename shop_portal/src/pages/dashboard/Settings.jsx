@@ -15,13 +15,14 @@ const MASTER_CAPABILITIES = [
 ];
 
 const Settings = () => {
-  const { shopName } = useAuth();
+  const { shopName, shopCode, setShopCode } = useAuth();
   const [profile, setProfile] = useState(null);
   const [capabilities, setCapabilities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const qrCanvasRef = useRef(null);
 
   // Form states
@@ -61,6 +62,9 @@ const Settings = () => {
       const res = await api.get('/shop/profile');
       const data = res.data;
       setProfile(data);
+      if (data.shop_code && setShopCode) {
+        setShopCode(data.shop_code);
+      }
       setName(data.name || '');
       setPhone(data.phone || '');
       setAddress(data.address || '');
@@ -169,11 +173,18 @@ const Settings = () => {
 
   const customerBaseUrl = import.meta.env.VITE_CUSTOMER_APP_URL || defaultCustomerUrl;
   const qrDirectUrl = `${customerBaseUrl}/#/upload-document/${shopId}`;
+  const currentShopCode = profile?.shop_code || shopCode || 'PR8473';
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(qrDirectUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(currentShopCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
   };
 
   const handleDownloadQR = () => {
@@ -213,7 +224,7 @@ const Settings = () => {
       ) : (
         <div className="flex flex-col gap-8">
 
-          {/* Section 1: In-Store Counter QR Stand */}
+          {/* Section 1: In-Store Counter QR Stand & Manual Shop Code */}
           <div className="bg-gradient-to-br from-primary/10 via-surface-container to-surface-container border border-primary/30 p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-8">
             {/* QR Visual */}
             <div className="bg-white p-4 rounded-2xl shadow-2xl flex flex-col items-center justify-center shrink-0 border-4 border-primary">
@@ -233,32 +244,62 @@ const Settings = () => {
                 />
               </div>
               <span className="text-[10px] font-extrabold text-black uppercase tracking-wider mt-2">Scan & Print Direct</span>
+              <div className="mt-1 px-2.5 py-0.5 rounded bg-black/10 text-[11px] font-mono font-black text-black">
+                CODE: {currentShopCode}
+              </div>
             </div>
 
             {/* QR Details & Action */}
-            <div className="flex-1 space-y-4 text-center md:text-left">
+            <div className="flex-1 space-y-4 text-center md:text-left w-full">
               <div>
                 <span className="text-xs font-bold text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                   Counter QR Code Stand
                 </span>
                 <h2 className="text-2xl font-black text-on-surface mt-2">Instant File Upload QR</h2>
                 <p className="text-xs text-on-surface-variant leading-relaxed mt-1">
-                  Customers scan this QR code with their phone camera to open the web app directly on your shop's upload page — bypassing shop selection.
+                  Customers scan this QR code with their camera to open the web app directly on your shop's upload page — bypassing shop selection.
                 </p>
               </div>
 
+              {/* Short Counter Shop Code Card */}
+              <div className="bg-surface-container-highest/90 border border-primary/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-center sm:text-left">
+                  <div className="flex items-center gap-2 justify-center sm:justify-start">
+                    <span className="material-symbols-outlined text-primary text-[20px]">pin</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">Counter Shop Code</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Customers can manually type this short code in the PrintIt app if camera scan is unavailable.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="bg-surface-container px-4 py-2 rounded-xl border border-primary/40 text-primary font-mono font-black text-xl tracking-widest shadow-inner select-all">
+                    {currentShopCode}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="px-3.5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/90 flex items-center gap-1.5 cursor-pointer shadow-md shadow-primary/20 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-sm">{codeCopied ? 'check' : 'content_copy'}</span>
+                    <span>{codeCopied ? 'Copied!' : 'Copy Code'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* URL Link Fallback */}
               <div className="bg-black/30 border border-outline-variant/30 rounded-xl p-2.5 flex items-center justify-between text-xs text-on-surface-variant font-mono break-all">
                 <span className="truncate pr-2">{qrDirectUrl}</span>
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="px-3 py-1.5 bg-primary text-on-primary font-bold rounded-lg text-xs hover:bg-primary/90 shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant/40 font-bold rounded-lg text-xs shrink-0 cursor-pointer transition-colors"
                 >
-                  {copied ? 'Copied!' : 'Copy'}
+                  {copied ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <div className="flex flex-wrap gap-3 justify-center md:justify-start pt-1">
                 <button
                   type="button"
                   onClick={handleDownloadQR}
@@ -276,6 +317,24 @@ const Settings = () => {
                   <span>Print Stand Card</span>
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Printable Counter Stand Card (Visible only when printing via window.print) */}
+          <div className="hidden print:flex print:fixed print:inset-0 print:bg-white print:z-[9999] print:flex-col print:items-center print:justify-center p-12 text-center text-black font-sans">
+            <div className="border-8 border-black rounded-3xl p-10 max-w-md w-full flex flex-col items-center shadow-2xl">
+              <h1 className="text-3xl font-black uppercase tracking-tight">{name || 'Print Shop'}</h1>
+              <p className="text-sm font-bold uppercase tracking-widest text-neutral-600 mt-1">PrintIt Fast Counter Pickup</p>
+              <div className="my-8 p-4 bg-white border-4 border-black rounded-2xl">
+                <QRCodeSVG value={qrDirectUrl} size={240} level="H" includeMargin={true} />
+              </div>
+              <p className="text-base font-black uppercase tracking-wider text-black">Scan QR to Upload Documents</p>
+              <div className="my-4 w-full border-t-2 border-dashed border-neutral-400"></div>
+              <p className="text-xs font-bold text-neutral-600">Camera not working? Enter Shop Code manually in app:</p>
+              <div className="mt-2 px-8 py-3 bg-neutral-100 border-2 border-black rounded-2xl font-mono text-3xl font-black tracking-widest text-black">
+                {currentShopCode}
+              </div>
+              <p className="text-[11px] text-neutral-500 mt-6">Powered by PrintIt • Document & Stationery Network</p>
             </div>
           </div>
 

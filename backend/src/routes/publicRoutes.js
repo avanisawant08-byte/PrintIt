@@ -14,7 +14,7 @@ router.get('/shops', async (req, res) => {
 
         let shopsQuery = `
              SELECT 
-                 s.shop_id, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
+                 s.shop_id, s.shop_code, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
                  COALESCE(
                      (SELECT json_agg(
                          json_build_object(
@@ -40,7 +40,7 @@ router.get('/shops', async (req, res) => {
         if (capability) {
             shopsQuery = `
                  SELECT 
-                     s.shop_id, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
+                     s.shop_id, s.shop_code, s.owner_id, s.name, s.address, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time,
                      COALESCE(
                          (SELECT json_agg(
                              json_build_object(
@@ -84,11 +84,11 @@ router.get('/shops', async (req, res) => {
  */
 router.get('/shops/:shop_id', async (req, res) => {
     try {
-        const { shop_id } = req.params;
+        const identifier = (req.params.shop_id || '').trim();
 
         const shopResult = await pool.query(
             `SELECT 
-                 s.shop_id, s.owner_id, s.name, s.address, s.phone, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time, s.is_active,
+                 s.shop_id, s.shop_code, s.owner_id, s.name, s.address, s.phone, s.price_bw, s.price_color, s.is_open, s.opening_time, s.closing_time, s.is_active,
                  COALESCE(
                      (SELECT json_agg(
                          json_build_object(
@@ -107,8 +107,8 @@ router.get('/shops/:shop_id', async (req, res) => {
                      '[]'::json
                  ) AS capabilities
              FROM shops s
-             WHERE s.shop_id = $1`,
-            [shop_id]
+             WHERE s.shop_code = UPPER($1) OR s.shop_id::text = $1`,
+            [identifier]
         );
 
         if (shopResult.rows.length === 0) {

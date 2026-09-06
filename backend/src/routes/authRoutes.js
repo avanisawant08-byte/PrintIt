@@ -6,6 +6,7 @@ const pool = require('../config/db');
 const { getAuth } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
+const { generateUniqueShopCode } = require('../utils/setupShopCodeDb');
 
 // POST /api/auth/register — Create a new user
 router.post('/register', authLimiter, async (req, res) => {
@@ -153,12 +154,15 @@ router.post('/register-shop', authLimiter, async (req, res) => {
         );
         const user = userResult.rows[0];
 
-        // Create the shop with pricing
+        // Generate a unique 6-character shop code (e.g. PR8473)
+        const shop_code = await generateUniqueShopCode(client, shop_name);
+
+        // Create the shop with pricing and short shop code
         const shopResult = await client.query(
-            `INSERT INTO shops (owner_id, name, address, price_bw, price_color)
-             VALUES ($1, $2, $3, $4, $5)
-             RETURNING shop_id, name, address, price_bw, price_color`,
-            [user.user_id, shop_name, address || null, parseFloat(price_bw), parseFloat(price_color)]
+            `INSERT INTO shops (owner_id, name, address, price_bw, price_color, shop_code)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING shop_id, name, address, price_bw, price_color, shop_code`,
+            [user.user_id, shop_name, address || null, parseFloat(price_bw), parseFloat(price_color), shop_code]
         );
         const shop = shopResult.rows[0];
 

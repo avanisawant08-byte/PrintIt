@@ -54,14 +54,16 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
           final res = await dio.get('/public/shops/${widget.shopId}');
           if (res.data != null && mounted) {
             final data = res.data is Map ? res.data : {};
+            final realId = data['shop_id']?.toString() ?? widget.shopId!;
             final sName = data['name'] ?? data['shop_name'];
             final bw = double.tryParse(data['price_bw']?.toString() ?? '') ?? 2.00;
             final color = double.tryParse(data['price_color']?.toString() ?? '') ?? 10.00;
             final rules = data['pricing_rules'] as List<dynamic>? ?? [];
 
+            ref.read(orderProvider.notifier).setShopId(realId);
             if (sName != null) {
               setState(() => _shopName = sName.toString());
-              ref.read(orderProvider.notifier).setShop(widget.shopId!, sName.toString());
+              ref.read(orderProvider.notifier).setShop(realId, sName.toString());
             }
             ref.read(orderProvider.notifier).setPrices(bw, color, rules);
           }

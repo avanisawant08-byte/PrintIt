@@ -5,11 +5,23 @@ import NewPrintJobModal from '../../components/NewPrintJobModal';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 
 const DashboardLayout = () => {
-  const { user, shopName, logout } = useAuth();
+  const { user, shopName, shopCode, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewJobModal, setShowNewJobModal] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const displayCode = shopCode || 'PR8473';
+
+  const handleCopyShopCode = (e) => {
+    e?.stopPropagation();
+    if (displayCode) {
+      navigator.clipboard.writeText(displayCode);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    }
+  };
 
   const navItems = [
     { name: 'Live Queue', path: '/dashboard/queue', icon: 'post_add' },
@@ -42,18 +54,41 @@ const DashboardLayout = () => {
       {/* SideNavBar */}
       <aside className="hidden md:flex flex-col h-full fixed left-0 top-0 w-64 rounded-r-xl bg-glass-surface backdrop-blur-xl border-r border-glass-edge shadow-xl shadow-primary/10 z-50">
         {/* Header */}
-        <div className="px-5 py-6 border-b border-glass-edge/20 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-surface-container/80 border border-glass-edge shrink-0 flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
+        <div className="px-5 py-6 border-b border-glass-edge/20 flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-surface-container/80 border border-glass-edge shrink-0 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
+            </div>
+            <div className="overflow-hidden">
+              <h1 className="font-display font-bold text-on-surface text-sm leading-tight tracking-tight truncate">
+                PrintIt Shopkeeper
+              </h1>
+              <p className="text-[11px] text-on-surface-variant/80 font-medium mt-0.5 truncate">
+                {shopName || user?.name || user?.owner_name || user?.shop_name || 'PrintTech'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display font-bold text-on-surface text-sm leading-tight tracking-tight">
-              PrintIt Shopkeepers Portal
-            </h1>
-            <p className="text-[11px] text-on-surface-variant/80 font-medium mt-0.5">
-              {shopName || user?.name || user?.owner_name || user?.shop_name || 'PrintTech'}
-            </p>
-          </div>
+
+          {/* Shop Code Badge in Sidebar */}
+          {displayCode && (
+            <div className="mt-1 flex items-center justify-between px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-primary text-[15px]">pin</span>
+                <span className="text-[10px] uppercase font-bold text-on-surface-variant">Code:</span>
+                <span className="font-mono font-extrabold text-primary text-xs tracking-wider">{displayCode}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyShopCode}
+                title="Copy Shop Code"
+                className="text-primary hover:text-white p-0.5 rounded transition-colors cursor-pointer flex items-center"
+              >
+                <span className="material-symbols-outlined text-[15px]">
+                  {copiedCode ? 'check' : 'content_copy'}
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Main Navigation */}
@@ -127,8 +162,26 @@ const DashboardLayout = () => {
             />
           </div>
 
-          {/* Right Header Actions: Bell, LOGOUT button, Profile Avatar */}
-          <div className="flex items-center gap-5">
+          {/* Right Header Actions: Shop Code Pill, Bell, LOGOUT button, Profile Avatar */}
+          <div className="flex items-center gap-3 sm:gap-5">
+            {displayCode && (
+              <div 
+                onClick={handleCopyShopCode}
+                title="Click to copy Shop Code for customers"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container border border-primary/30 hover:border-primary/60 cursor-pointer shadow-sm transition-all group"
+              >
+                <span className="material-symbols-outlined text-primary text-[17px] group-hover:scale-110 transition-transform">pin</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase font-bold text-on-surface-variant hidden sm:inline">Counter Code:</span>
+                  <span className="font-mono font-black text-primary text-xs tracking-wider">{displayCode}</span>
+                </div>
+                <span className="text-[10px] text-on-surface-variant group-hover:text-primary font-medium ml-0.5 flex items-center gap-0.5">
+                  <span className="material-symbols-outlined text-[13px]">{copiedCode ? 'check' : 'content_copy'}</span>
+                  <span className="hidden md:inline">{copiedCode ? 'Copied!' : 'Copy'}</span>
+                </span>
+              </div>
+            )}
+
             <button className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors focus:ring-2 focus:ring-primary/50 outline-none cursor-pointer">
               <span className="material-symbols-outlined text-[20px]">notifications</span>
             </button>

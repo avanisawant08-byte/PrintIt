@@ -1,9 +1,10 @@
+// Server startup configuration
 require('dotenv').config();
-
-console.log("ENV FILE CHECK:", process.env);
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
 const routes = require('./routes');
 const pool = require('./config/db');
 const paymentRoutes = require('./routes/paymentRoutes');
@@ -11,27 +12,57 @@ const publicRoutes = require('./routes/publicRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const { startCleanupJob } = require('./utils/firebaseCleanup');
+const { setupShopCodeDb } = require('./utils/setupShopCodeDb');
 
-// ✅ Connect to DB immediately after import
+// Connect to DB immediately after import
 pool.connect()
   .then((client) => {
-      console.log("✅ Database connected");
+      console.log("Database connected");
       client.release();
+      setupShopCodeDb();
       startCleanupJob();
   })
-  .catch(err => console.error("❌ DB connection error:", err));
+  .catch(err => console.error("DB connection error:", err));
 
 const app = express();
 
-// Middleware
-app.use(cors({ exposedHeaders: ['Content-Disposition'] }));
+// Security Middleware: Set HTTP security headers
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : null;
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile Flutter app, CLI, server-to-server)
+        if (!origin) return callback(null, true);
+        if (!allowedOrigins || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('CORS policy: Not allowed by CORS origin restriction'));
+    },
+    exposedHeaders: ['Content-Disposition']
+}));
 app.use(express.json());
-const path = require('path');
-// Serve static files — disable browser caching so HTML/JS changes load immediately
-app.use(express.static(path.join(__dirname, '../'), {
+
+// Serve only dedicated public static files with optimal caching headers
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath, {
+    dotfiles: 'ignore',
     setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.html')) {
+        const normalized = filePath.replace(/\\/g, '/');
+        if (normalized.endsWith('.html') || normalized.includes('service_worker') || normalized.endsWith('manifest.json')) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+        } else if (normalized.includes('/assets/') || /[.-][a-zA-Z0-9_-]{8,}\.(js|css|wasm)$/.test(normalized)) {
+            // Fingerprinted / hashed bundles can be cached immutably for 1 year
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        } else {
+            // General static media & icons
+            res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
         }
     }
 }));

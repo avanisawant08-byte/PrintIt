@@ -31,13 +31,13 @@ const Login = () => {
       // Immediately save token and user state
       login(token, user, '');
 
-      // Attempt to fetch shop details to display shop name
+      // Attempt to fetch shop details to display shop name & short shop code
       try {
         const shopsRes = await api.get('/public/shops');
         const shopsList = Array.isArray(shopsRes.data) ? shopsRes.data : (shopsRes.data?.data || []);
         const myShop = shopsList.find(s => s.owner_id === user.user_id);
         if (myShop?.name) {
-          login(token, user, myShop.name);
+          login(token, user, myShop.name, myShop.shop_code || '');
         }
       } catch (e) {
         console.warn('Could not fetch shop name for header:', e.message);
