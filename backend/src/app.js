@@ -28,6 +28,9 @@ pool.connect()
 
 const app = express();
 
+// Trust reverse proxy headers (Render, Cloudflare, load balancers)
+app.set('trust proxy', 1);
+
 // Security Middleware: Set HTTP security headers
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }

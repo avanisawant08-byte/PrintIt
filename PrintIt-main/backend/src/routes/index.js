@@ -19,32 +19,11 @@ const shopInventoryRoutes = require('./shopInventoryRoutes');
 const adminProductRoutes = require('./adminProductRoutes');
 const { apiLimiter } = require('../middleware/rateLimiter');
 
-// Mount global API rate limiter
-router.use(apiLimiter);
-
-// Mount routes
-router.use('/auth', authRoutes);
-router.use('/orders', orderRoutes);
-router.use('/payments', paymentRoutes);
-router.use('/upload', uploadRoutes);
-router.use('/shop/analytics', shopAnalyticsRoutes);
-router.use('/shop/inventory', shopInventoryRoutes);
-router.use('/shop', shopRoutes);
-router.use('/shop', shopWalletRoutes);
-router.use('/admin/payouts', adminPayoutRoutes);
-router.use('/admin/products', adminProductRoutes);
-router.use('/public', publicRoutes);
-router.use('/wallet', walletRoutes);
-router.use('/products', productRoutes);
-router.use('/product-orders', productOrderRoutes);
-router.use('/store', storeRoutes);
-router.use('/support', supportRoutes);
-
 router.get('/test', (req, res) => {
   res.send('PrintIt API Working');
 });
 
-// GET /api/health — System health and maintenance status
+// GET /api/health — System health and maintenance status (exempt from rate limiter for uptime monitors)
 router.get('/health', async (req, res) => {
   const isMaintenance = process.env.MAINTENANCE_MODE === 'true';
   const pool = require('../config/db');
@@ -65,5 +44,26 @@ router.get('/health', async (req, res) => {
     version: '1.0.0'
   });
 });
+
+// Mount global API rate limiter
+router.use(apiLimiter);
+
+// Mount routes
+router.use('/auth', authRoutes);
+router.use('/orders', orderRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/upload', uploadRoutes);
+router.use('/shop/analytics', shopAnalyticsRoutes);
+router.use('/shop/inventory', shopInventoryRoutes);
+router.use('/shop', shopRoutes);
+router.use('/shop', shopWalletRoutes);
+router.use('/admin/payouts', adminPayoutRoutes);
+router.use('/admin/products', adminProductRoutes);
+router.use('/public', publicRoutes);
+router.use('/wallet', walletRoutes);
+router.use('/products', productRoutes);
+router.use('/product-orders', productOrderRoutes);
+router.use('/store', storeRoutes);
+router.use('/support', supportRoutes);
 
 module.exports = router;

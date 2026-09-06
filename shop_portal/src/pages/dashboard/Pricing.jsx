@@ -4,17 +4,20 @@ import api from '../../core/api';
 const Pricing = () => {
   const [rules, setRules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [formData, setFormData] = useState({
     color: 'bw', size: 'A4', sides: 'single', price_per_page: '', binding_staple_price: 5, binding_spiral_price: 30
   });
 
   const fetchRules = async () => {
     setIsLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/shop/pricing');
       setRules(res.data);
     } catch (err) {
-      alert('Failed to load pricing rules: ' + err.message);
+      console.error('Failed to load pricing rules:', err);
+      setLoadError(err.response?.data?.error || err.message || 'Failed to load pricing rules');
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +111,21 @@ const Pricing = () => {
           </form>
         </div>
       </div>
+
+      {loadError && (
+        <div className="bg-rose-500/15 border border-rose-500/30 text-rose-300 p-4 rounded-xl flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <span className="material-symbols-outlined text-lg">error</span>
+            <span>{loadError}</span>
+          </div>
+          <button
+            onClick={fetchRules}
+            className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-lg text-xs font-bold transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="flex-1 overflow-x-auto">
         {isLoading ? (
