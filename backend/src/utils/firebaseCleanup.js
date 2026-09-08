@@ -53,12 +53,9 @@ async function cleanupExpiredFiles() {
 
                     try {
                         await bucket.file(publicId).delete();
-                        console.log(`  ✅ Deleted from Firebase: ${publicId}`);
                     } catch (delErr) {
-                        if (delErr.code === 404) {
-                            console.log(`  ✅ File already deleted from Firebase: ${publicId}`);
-                        } else {
-                            console.error(`  ❌ Failed to delete ${publicId}:`, delErr.message);
+                        if (delErr.code !== 404) {
+                            console.error(`  ❌ Failed to delete storage file for order ${order.order_id}:`, delErr.message);
                         }
                     }
                 }
@@ -69,14 +66,12 @@ async function cleanupExpiredFiles() {
                     [order.order_id]
                 );
 
-                console.log(`  📋 Order ${order.order_id}: files_deleted = true`);
-
             } catch (orderErr) {
-                console.error(`  ❌ Error processing order ${order.order_id}:`, orderErr.message);
+                console.error(`  ❌ Error processing order cleanup:`, orderErr.message);
             }
         }
 
-        console.log('🗑️  Firebase cleanup cycle complete.');
+        console.log('🗑️  Firebase storage cleanup cycle completed.');
     } catch (err) {
         console.error('❌ Firebase cleanup job error:', err.message);
     }

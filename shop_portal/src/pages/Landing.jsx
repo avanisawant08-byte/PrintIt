@@ -5,16 +5,16 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-[90vh] justify-between">
+    <div className="flex flex-col min-h-screen min-h-[100dvh] justify-between">
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="max-w-[640px] text-center p-8 sm:p-12 bg-surface-container rounded-2xl border border-outline-variant/30 shadow-2xl">
-          <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-label-md uppercase tracking-wider mb-6">
+          <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-label-md uppercase tracking-wider mb-6 min-h-[26px]">
             Vendor Operations & Queue Management
           </div>
-          <h1 className="font-display-lg text-4xl sm:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-br from-tertiary to-primary">
+          <h1 className="font-display-lg text-4xl sm:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-br from-tertiary to-primary leading-[1.15] min-h-[44px] sm:min-h-[56px]">
             Partner Portal
           </h1>
-          <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed mb-8 max-w-md mx-auto">
+          <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed mb-8 max-w-md mx-auto min-h-[56px]">
             Manage your live print queue, set custom pricing rules, verify customer pickups, and track your revenue.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

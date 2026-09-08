@@ -67,6 +67,38 @@
   --font-data-mono: "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace";
 }
 
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body, input, button, select, textarea {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    width: 1em;
+    height: 1em;
+    overflow: hidden;
+    vertical-align: middle;
+    box-sizing: content-box;
+  }
+}
+
 @layer utilities {
   .status-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

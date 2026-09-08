@@ -3,10 +3,17 @@
 .env.*
 *.env
 !.env.example
-serviceaccountkey.json
-serviceAccountKey.json
-*serviceAccountKey*.json
+!*.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt
 *serviceaccountkey*.json
+*serviceAccountKey*.json
+!*serviceaccountkey*.json.example
+!*serviceAccountKey*.json.example
 
 # Node.js / Dependencies
 **/node_modules/
@@ -50,4 +57,5 @@ ehthumbs.db
 .playwright-cli/
 playwright-report/
 test-results/
-
+tests/load/assets/
+*.exe

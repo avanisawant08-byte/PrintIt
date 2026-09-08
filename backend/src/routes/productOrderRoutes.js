@@ -152,13 +152,13 @@ router.post('/', async (req, res) => {
         const shop_id = stockResult.rows[0].shop_id;
         const remainingStock = stockResult.rows[0].stock_count;
 
-        // 2. Insert Order
+        // 2. Insert Order (Enforcing server-side computed price totalExpectedAmount)
         const orderResult = await client.query(
             `INSERT INTO product_orders (
                 product_id, shop_id, customer_id, quantity, amount_total, payment_id, payment_status, status
             ) VALUES ($1, $2, $3, $4, $5, $6, 'captured', 'confirmed')
             RETURNING *`,
-            [product_id, shop_id, req.user.user_id, quantity, amount_total, targetPaymentId]
+            [product_id, shop_id, req.user.user_id, quantity, totalExpectedAmount, targetPaymentId]
         );
 
         await client.query('COMMIT');
@@ -281,18 +281,32 @@ router.patch('/:id/cancel', async (req, res) => {
             return res.status(400).json({ error: 'Order cannot be cancelled at this stage' });
         }
 
-        // Refund via Wallet
+        // Refund via Wallet (Verifying payment amount against actual captured payment record)
         let paymentStatus = order.payment_status;
         if (order.payment_status === 'captured') {
             try {
-                const amount = parseFloat(order.amount_total);
+                let verifiedRefundAmount = parseFloat(order.amount_total);
+                if (order.payment_id) {
+                    const payCheck = await client.query(
+                        "SELECT amount FROM payments WHERE razorpay_payment_id = $1 AND status = 'captured'",
+                        [order.payment_id]
+                    );
+                    if (payCheck.rows.length > 0) {
+                        verifiedRefundAmount = Math.min(verifiedRefundAmount, parseFloat(payCheck.rows[0].amount));
+                    }
+                }
+
+                if (isNaN(verifiedRefundAmount) || verifiedRefundAmount <= 0) {
+                    throw new Error('Invalid refund amount calculation');
+                }
+
                 await client.query(
                     `UPDATE users SET wallet_balance = wallet_balance + $1 WHERE user_id = $2`,
-                    [amount, req.user.user_id]
+                    [verifiedRefundAmount, req.user.user_id]
                 );
                 await client.query(
                     `INSERT INTO wallet_transactions (user_id, amount, type, reference_id) VALUES ($1, $2, 'refund', $3)`,
-                    [req.user.user_id, amount, order.order_id]
+                    [req.user.user_id, verifiedRefundAmount, order.order_id]
                 );
                 paymentStatus = 'refunded';
             } catch (refundError) {

@@ -24,74 +24,94 @@ router.post('/guest', async (req, res) => {
     }
 
     const {
-        customer_id, // Could be null for guests
+        customer_id = null,
         shop_id,
         files,
         print_options,
         amount_total,
         payment_id = null,
+        razorpay_payment_id = null,
         print_instructions = null
     } = value;
 
-    // 2. Server-side Pricing Validation
+    const targetPaymentId = razorpay_payment_id || payment_id;
+    if (!targetPaymentId) {
+        return res.status(400).json({ 
+            error: 'Payment ID is required. Please verify payment via /api/payments/guest/verify before order creation.' 
+        });
+    }
+
+    const client = await pool.connect();
     try {
-        const { minRequiredAmount } = await calculatePrintSubtotal(pool, shop_id, files);
+        await client.query('BEGIN');
+
+        // 2. Verify payment exists and is captured
+        const paymentCheck = await client.query(
+            "SELECT payment_id, razorpay_order_id, razorpay_payment_id, amount, status FROM payments WHERE razorpay_payment_id = $1 AND status = 'captured'",
+            [targetPaymentId]
+        );
+
+        if (paymentCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Invalid or uncaptured payment. Order cannot be queued.' });
+        }
+
+        // 3. Prevent Double-Spending: Check if payment is already used
+        const existingUsage = await client.query(
+            `SELECT 1 FROM orders WHERE payment_id = $1
+             UNION ALL
+             SELECT 1 FROM product_orders WHERE payment_id = $1`,
+            [targetPaymentId]
+        );
+        if (existingUsage.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'This payment has already been associated with an existing order.' });
+        }
+
+        // 4. Server-side Pricing Validation
+        const { minRequiredAmount } = await calculatePrintSubtotal(client, shop_id, files);
         if (parseFloat(amount_total) < minRequiredAmount) {
+            await client.query('ROLLBACK');
             return res.status(400).json({
                 error: `Order amount insufficient. Minimum required ₹${minRequiredAmount}, received ₹${amount_total}`
             });
         }
-    } catch (pricingErr) {
-        console.error('Pricing calculation error:', pricingErr);
-        return res.status(400).json({ error: 'Failed to validate order pricing: ' + pricingErr.message });
-    }
 
-    // 3. Get current queue position for this shop
-    let queue_position = null;
-    try {
-        const queueResult = await pool.query(
+        const recordedPaid = parseFloat(paymentCheck.rows[0].amount);
+        if (recordedPaid < minRequiredAmount) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                error: `Attached payment amount ₹${recordedPaid} is less than required print cost ₹${minRequiredAmount}`
+            });
+        }
+
+        // 5. Get current queue position for this shop
+        const queueResult = await client.query(
             `SELECT COUNT(*) FROM orders 
-       WHERE shop_id = $1 AND status = 'queued'`,
+             WHERE shop_id = $1 AND status = 'queued'`,
             [shop_id]
         );
-        queue_position = parseInt(queueResult.rows[0].count) + 1;
-    } catch (err) {
-        console.error('Queue position error:', err);
-        return res.status(500).json({ error: 'Failed to calculate queue position' });
-    }
-
-    // 3. Insert order into DB
-    try {
-        if (payment_id) {
-            const existingUsage = await pool.query(
-                `SELECT 1 FROM orders WHERE payment_id = $1
-                 UNION ALL
-                 SELECT 1 FROM product_orders WHERE payment_id = $1`,
-                [payment_id]
-            );
-            if (existingUsage.rows.length > 0) {
-                return res.status(409).json({ error: 'This payment has already been associated with an existing order.' });
-            }
-        }
+        const queue_position = parseInt(queueResult.rows[0].count) + 1;
 
         const cancelToken = crypto.randomBytes(16).toString('hex');
         const order_id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
-        const result = await pool.query(
+
+        const result = await client.query(
             `INSERT INTO orders (
-        order_id,
-        customer_id,
-        shop_id,
-        files,
-        print_options,
-        status,
-        queue_position,
-        amount_total,
-        payment_status,
-        payment_id,
-        print_instructions,
-        cancel_token
-      ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'pending', $8, $9, $10)
-      RETURNING *`,
+                order_id,
+                customer_id,
+                shop_id,
+                files,
+                print_options,
+                status,
+                queue_position,
+                amount_total,
+                payment_status,
+                payment_id,
+                print_instructions,
+                cancel_token
+            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, $9, $10)
+            RETURNING *`,
             [
                 order_id,
                 customer_id,
@@ -100,11 +120,13 @@ router.post('/guest', async (req, res) => {
                 JSON.stringify(print_options),
                 queue_position,
                 amount_total,
-                payment_id,
+                targetPaymentId,
                 print_instructions,
                 cancelToken
             ]
         );
+
+        await client.query('COMMIT');
 
         return res.status(201).json({
             message: 'Guest order created successfully',
@@ -113,6 +135,7 @@ router.post('/guest', async (req, res) => {
         });
 
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('DB insert error:', err);
         if (err.code === '23505') {
             return res.status(409).json({ error: 'Duplicate order or payment ID already in use' });
@@ -121,6 +144,8 @@ router.post('/guest', async (req, res) => {
             return res.status(400).json({ error: 'Invalid customer_id or shop_id' });
         }
         return res.status(500).json({ error: 'Failed to create guest order' });
+    } finally {
+        client.release();
     }
 });
 

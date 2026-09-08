@@ -19,10 +19,6 @@ const shopInventoryRoutes = require('./shopInventoryRoutes');
 const adminProductRoutes = require('./adminProductRoutes');
 const { apiLimiter } = require('../middleware/rateLimiter');
 
-router.get('/test', (req, res) => {
-  res.send('PrintIt API Working');
-});
-
 // GET /api/health — System health and maintenance status (exempt from rate limiter for uptime monitors)
 router.get('/health', async (req, res) => {
   const isMaintenance = process.env.MAINTENANCE_MODE === 'true';

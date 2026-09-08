@@ -28,10 +28,10 @@ const sendPushNotification = async (userId, title, body) => {
                     type: 'support_ticket'
                 }
             });
-            console.log(`Support push sent to ${userId}`);
+            console.log('Support push notification dispatched');
         }
     } catch (err) {
-        console.error('Failed to send push notification:', err);
+        console.error('Failed to send push notification:', err.message);
     }
 };
 
@@ -284,6 +284,23 @@ router.patch('/tickets/:id/status', async (req, res) => {
     }
 
     try {
+        // Authorization: Verify user is an authorized admin or the shopkeeper assigned to this ticket
+        if (req.user.role === 'customer') {
+            return res.status(403).json({ error: 'Forbidden: Customers cannot change ticket status' });
+        } else if (req.user.role === 'shopkeeper') {
+            const shopResult = await pool.query('SELECT shop_id FROM shops WHERE owner_id = $1', [req.user.user_id]);
+            const shopId = shopResult.rows[0]?.shop_id;
+            const ticketCheck = await pool.query('SELECT ticket_id, shop_id FROM support_tickets WHERE ticket_id = $1', [id]);
+            if (ticketCheck.rows.length === 0) {
+                return res.status(404).json({ error: 'Ticket not found' });
+            }
+            if (!shopId || ticketCheck.rows[0].shop_id !== shopId) {
+                return res.status(403).json({ error: 'Unauthorized: Ticket does not belong to your shop' });
+            }
+        } else if (req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: Unauthorized role' });
+        }
+
         const result = await pool.query(
             `UPDATE support_tickets SET status = $1::ticket_status, updated_at = NOW() WHERE ticket_id = $2 RETURNING *`,
             [status, id]

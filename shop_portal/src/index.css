@@ -75,12 +75,34 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body, input, button, select, textarea {
     font-family: "Hanken Grotesk", "Manrope", system-ui, sans-serif;
   }
 
   .material-symbols-outlined {
     font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    width: 1em;
+    height: 1em;
+    overflow: hidden;
+    vertical-align: middle;
+    box-sizing: content-box;
   }
 }
 

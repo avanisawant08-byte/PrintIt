@@ -167,6 +167,18 @@ const DashboardLayout = () => {
               <span className="hidden sm:inline">LOGOUT</span>
               <span className="material-symbols-outlined text-[18px]">logout</span>
             </button>
+
+            <div className="w-9 h-9 rounded-full bg-surface-container overflow-hidden border border-glass-edge shrink-0">
+              <img
+                alt="User Avatar"
+                width="36"
+                height="36"
+                loading="eager"
+                decoding="async"
+                className="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnOR0laNrpSOZQsExvk0rVxT_PFmJFukviA6Vgm9OGL6Y1JAkhl36GswjuFEUrvH0A_DnCy4cb0yp9PweO76qFa28BJrCyVMCXoc2XwPPkpvf_Oh3iAXaQbiRxBqJ743bn6My5qxCTW8MHh9mIPxTgQdpFz_HlMMybfgSelqyoc45D1GdeMCwrk7jQrXi8EhrbE3yyG6FeMG_LbF1Pn1TfsrNkvJArrP4eRhtjnlqRx7WMlXUVHBTBAA"
+              />
+            </div>
           </div>
         </header>
 

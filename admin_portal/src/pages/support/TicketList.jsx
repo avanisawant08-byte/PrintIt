@@ -46,7 +46,32 @@ const TicketList = () => {
 
       <div className="bg-surface-container-highest border border-outline-variant/30 rounded-2xl overflow-hidden shadow-xl">
         {isLoading ? (
-          <div className="p-12 text-center text-on-surface-variant">Loading tickets...</div>
+          <div className="overflow-x-auto animate-pulse">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-surface-container-high border-b border-outline-variant/30 text-on-surface-variant text-sm uppercase tracking-wider">
+                  <th className="p-4 font-semibold">Ticket ID</th>
+                  <th className="p-4 font-semibold">Customer</th>
+                  <th className="p-4 font-semibold">Subject</th>
+                  <th className="p-4 font-semibold">Status</th>
+                  <th className="p-4 font-semibold">Last Updated</th>
+                  <th className="p-4 font-semibold text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/20">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <tr key={i} className="h-16">
+                    <td className="p-4"><div className="h-4 w-16 bg-surface-container rounded"></div></td>
+                    <td className="p-4"><div className="h-4 w-28 bg-surface-container rounded mb-1"></div><div className="h-3 w-36 bg-surface-container/60 rounded"></div></td>
+                    <td className="p-4"><div className="h-4 w-48 bg-surface-container rounded"></div></td>
+                    <td className="p-4"><div className="h-6 w-20 bg-surface-container rounded-full"></div></td>
+                    <td className="p-4"><div className="h-4 w-24 bg-surface-container rounded"></div></td>
+                    <td className="p-4 text-right"><div className="h-8 w-16 bg-surface-container rounded ml-auto"></div></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : tickets.length === 0 ? (
           <div className="p-12 text-center text-on-surface-variant">No support tickets found.</div>
         ) : (

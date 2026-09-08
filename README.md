@@ -4,6 +4,19 @@
 
 ---
 
+> [!CAUTION]
+> ### 🚨 CRITICAL SECURITY NOTICE: MANDATORY SECRET ROTATION BEFORE DEPLOYMENT
+> If any API keys, database connection strings (Supabase PostgreSQL password), Razorpay merchant credentials, Firebase Admin SDK private keys, or JWT secrets were previously committed to Git history, **THEY MUST BE IMMEDIATELY REVOKED AND ROTATED IN YOUR CLOUD PROVIDER CONSOLES PRIOR TO PRODUCTION DEPLOYMENT**.
+> 
+> Simply removing secrets from current files does not erase them from commit history. Ensure you:
+> 1. Rotate your **Supabase Database Password** and update `DATABASE_URL`.
+> 2. Regenerate your **Razorpay Key Secret** (`RAZORPAY_KEY_SECRET`) in the Razorpay Dashboard.
+> 3. Generate a new **Firebase Service Account Private Key** in Google Cloud Console and revoke old keys.
+> 4. Generate a fresh, random 64-character **`JWT_SECRET`**.
+> 5. Never commit `.env` or `serviceAccountKey.json` files to source control. Use `.env.example` as a template.
+
+---
+
 ## 📚 Project Documentation
 
 The project documentation is split into two dedicated guides depending on your target audience:

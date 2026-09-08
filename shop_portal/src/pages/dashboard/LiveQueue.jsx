@@ -250,11 +250,19 @@ const LiveQueue = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex-1 flex items-center justify-center text-on-surface-variant py-20">
-          <div className="flex flex-col items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-3xl animate-spin">autorenew</span>
-            <span className="text-sm">Loading Order Workflow...</span>
-          </div>
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden pb-2 animate-pulse">
+          {[1, 2, 3].map((col) => (
+            <div key={col} className="flex flex-col bg-surface-container/70 rounded-2xl border border-glass-edge/30 overflow-hidden">
+              <div className="p-4 border-b border-glass-edge/20 bg-surface-container-low/80 flex justify-between items-center h-14">
+                <div className="h-4 w-28 bg-surface-container-highest/60 rounded"></div>
+                <div className="w-6 h-6 rounded-full bg-surface-container-highest/60"></div>
+              </div>
+              <div className="flex-1 p-4 flex flex-col gap-4">
+                <div className="h-32 bg-surface-container-highest/40 rounded-xl"></div>
+                <div className="h-32 bg-surface-container-highest/30 rounded-xl"></div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         /* Kanban Board Area - Fills desktop view height seamlessly */

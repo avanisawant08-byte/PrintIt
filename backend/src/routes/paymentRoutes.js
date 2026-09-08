@@ -185,6 +185,76 @@ router.post('/guest/fail', async (req, res) => {
     }
 });
 
+// POST /api/payments/webhook — Server-to-Server Razorpay Webhook Handler
+router.post('/webhook', async (req, res) => {
+    const signature = req.headers['x-razorpay-signature'];
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET || '';
+
+    if (!signature || !webhookSecret) {
+        return res.status(400).json({ error: 'Webhook signature or secret missing' });
+    }
+
+    try {
+        const bodyPayload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+        const expectedSignature = crypto
+            .createHmac('sha256', webhookSecret)
+            .update(bodyPayload)
+            .digest('hex');
+
+        const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+        const signatureBuf = Buffer.from(signature, 'utf8');
+
+        const isValid = expectedBuf.length === signatureBuf.length && crypto.timingSafeEqual(expectedBuf, signatureBuf);
+
+        if (!isValid) {
+            console.warn('[Webhook] Invalid Razorpay webhook signature received');
+            return res.status(400).json({ error: 'Invalid webhook signature' });
+        }
+
+        const event = req.body.event;
+        const payload = req.body.payload;
+
+        console.log(`[Webhook] Received verified event: ${event}`);
+
+        if (event === 'payment.captured' && payload && payload.payment) {
+            const paymentEntity = payload.payment.entity;
+            const razorpayOrderId = paymentEntity.order_id;
+            const razorpayPaymentId = paymentEntity.id;
+            const amountInRupees = paymentEntity.amount / 100;
+
+            if (razorpayPaymentId) {
+                // Ensure payment record exists idempotently
+                const checkExisting = await pool.query('SELECT 1 FROM payments WHERE razorpay_payment_id = $1', [razorpayPaymentId]);
+                if (checkExisting.rows.length === 0) {
+                    await pool.query(
+                        `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
+                         VALUES ($1, $2, 'captured', $3)`,
+                        [razorpayOrderId, razorpayPaymentId, amountInRupees]
+                    );
+                }
+            }
+        } else if (event === 'refund.processed' && payload && payload.refund) {
+            const refundEntity = payload.refund.entity;
+            const paymentId = refundEntity.payment_id;
+            const refundId = refundEntity.id;
+
+            if (paymentId) {
+                await pool.query(
+                    `UPDATE orders 
+                     SET refund_status = 'success', refund_id = $1, payment_status = 'refunded'
+                     WHERE payment_id = $2`,
+                    [refundId, paymentId]
+                );
+            }
+        }
+
+        return res.status(200).json({ status: 'ok', received: true });
+    } catch (err) {
+        console.error('[Webhook] Error processing webhook:', err);
+        return res.status(500).json({ error: 'Webhook handling failed' });
+    }
+});
+
 // =================== AUTH ROUTES ===================
 router.use(auth);
 

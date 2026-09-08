@@ -313,7 +313,7 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
         const originalName = files.length > 1 ? `${shortId}_${index + 1}${ext}` : `${shortId}${ext}`;
 
         if (!rawUrl) {
-            console.error('[download-url] No URL found. fileInfo:', JSON.stringify(fileInfo));
+            console.error('[download-url] No URL found for file at specified index');
             return res.status(404).json({ error: 'File URL not found' });
         }
 
@@ -331,9 +331,8 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
                     expires: Date.now() + 30 * 60 * 1000, // 30 minutes
                 });
                 downloadUrl = signedUrl;
-                console.log(`[download-url] Generated signed URL for ${publicId}`);
             } catch (signErr) {
-                console.warn('[download-url] Signed URL failed, using raw URL:', signErr.message);
+                console.warn('[download-url] Signed URL generation failed, falling back to storage URL');
                 // Fall back to the raw Firebase URL (works if bucket is public)
             }
         }
@@ -341,7 +340,7 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
         return res.json({ download_url: downloadUrl, original_name: originalName });
 
     } catch (err) {
-        console.error('Error generating download url:', err);
+        console.error('Error generating download url:', err.message);
         res.status(500).json({ error: 'Failed to generate download url' });
     }
 });
@@ -415,7 +414,7 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
 
         const rawFile = files[fileIdx];
         if (!rawFile) {
-            console.error(`[proxy] No entry at index ${fileIdx}. files:`, JSON.stringify(files));
+            console.error(`[proxy] No entry at file index ${fileIdx}`);
             return res.status(404).json({ error: 'File not found at this index' });
         }
 
@@ -435,11 +434,9 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
         const originalName = files.length > 1 ? `${shortId}_${fileIdx + 1}${ext}` : `${shortId}${ext}`;
 
         if (!fileUrl) {
-            console.error(`[proxy] No URL in fileInfo:`, JSON.stringify(fileInfo));
+            console.error(`[proxy] No file URL resolved for index ${fileIdx}`);
             return res.status(404).json({ error: 'File URL not found' });
         }
-
-        console.log(`[proxy] Serving file index ${fileIdx}: ${fileUrl}`);
 
         // ---------------------------------------------------------------
         // Strategy: Try Firebase Admin signed URL first (works for private
@@ -460,12 +457,11 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
                     expires: Date.now() + 15 * 60 * 1000, // 15 minutes
                 });
 
-                console.log('[proxy] Using Firebase signed URL');
                 // Proxy via signed URL so Content-Disposition can be set
                 const https = require('https');
                 https.get(signedUrl, (response) => {
                     if (response.statusCode !== 200) {
-                        console.error('[proxy] Firebase signed URL returned', response.statusCode);
+                        console.error('[proxy] Firebase signed URL returned HTTP error status:', response.statusCode);
                         return res.status(response.statusCode).send('Failed to fetch file');
                     }
                     const contentType = response.headers['content-type'] || 'application/octet-stream';
@@ -473,7 +469,7 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
                     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(originalName)}"`);
                     response.pipe(res);
                 }).on('error', (err) => {
-                    console.error('[proxy] Signed URL fetch error:', err);
+                    console.error('[proxy] Signed URL fetch error:', err.message);
                     res.status(500).json({ error: 'Error proxying signed file' });
                 });
                 return;
@@ -490,7 +486,7 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
 
         httpClient.get(fileUrl, (response) => {
             if (response.statusCode !== 200) {
-                console.error('[proxy] Direct fetch returned', response.statusCode, 'for URL:', fileUrl);
+                console.error('[proxy] Direct fetch returned non-200 HTTP status:', response.statusCode);
                 return res.status(response.statusCode).send('Failed to fetch file from storage');
             }
             const contentType = response.headers['content-type'] || 'application/octet-stream';
@@ -498,7 +494,7 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(originalName)}"`);
             response.pipe(res);
         }).on('error', (err) => {
-            console.error('[proxy] Direct proxy error:', err);
+            console.error('[proxy] Direct proxy error:', err.message);
             res.status(500).json({ error: 'Error proxying file' });
         });
 
@@ -736,7 +732,6 @@ async function triggerNotification(customerId, title, body, orderId) {
 
         const user = result.rows[0];
         if (!user || !user.fcm_token) {
-            console.log(`ℹ️ No FCM token for customer ${customerId} — skipping push notification.`);
             return;
         }
 
@@ -766,8 +761,8 @@ async function triggerNotification(customerId, title, body, orderId) {
             },
         };
 
-        const response = await getMessaging().send(message);
-        console.log(`✅ Push notification sent for order ${orderId}:`, response);
+        await getMessaging().send(message);
+        console.log(`✅ Push notification dispatched for order ${orderId}`);
     } catch (err) {
         // Log but never throw — notification failure must not break the status update
         console.error(`❌ Push notification failed for order ${orderId}:`, err.message);

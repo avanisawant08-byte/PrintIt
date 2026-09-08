@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
 const auth = require('../middleware/auth');
 const upload = require('../config/multer');
 const { getStorage } = require('../config/firebase');
@@ -12,8 +13,19 @@ const sanitizeFileName = (name) => {
         .replace(/\.{2,}/g, '_');
 };
 
-const uploadToFirebase = (fileBuffer, originalName, mimeType) => {
+const safeDelete = async (filePath) => {
+    if (!filePath) return;
+    try {
+        await fs.promises.unlink(filePath);
+    } catch (e) {
+        // ignore if already deleted or doesn't exist
+    }
+};
+
+const uploadToFirebase = (file) => {
     return new Promise((resolve, reject) => {
+        const originalName = file.originalname;
+        const mimeType = file.mimetype;
         const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const safeName = sanitizeFileName(originalName);
         const fileName = `printit/uploads/${uniqueId}_${safeName}`;
@@ -34,11 +46,22 @@ const uploadToFirebase = (fileBuffer, originalName, mimeType) => {
                 secure_url: publicUrl,
                 public_id: blob.name,
                 format: mimeType.split('/')[1] || '',
-                bytes: fileBuffer.length
+                bytes: file.size || (file.buffer ? file.buffer.length : 0)
             });
         });
 
-        blobStream.end(fileBuffer);
+        if (file.path) {
+            const readStream = fs.createReadStream(file.path);
+            readStream.on('error', (err) => {
+                blobStream.destroy();
+                reject(err);
+            });
+            readStream.pipe(blobStream);
+        } else if (file.buffer) {
+            blobStream.end(file.buffer);
+        } else {
+            reject(new Error('No file content found to upload'));
+        }
     });
 };
 
@@ -49,8 +72,8 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Upload buffer to Firebase Storage
-        const result = await uploadToFirebase(req.file.buffer, req.file.originalname, req.file.mimetype);
+        // Stream file from disk to Firebase Storage
+        const result = await uploadToFirebase(req.file);
 
         return res.status(201).json({
             message: 'File uploaded successfully',
@@ -66,6 +89,10 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     } catch (err) {
         console.error('Upload error:', err);
         res.status(500).json({ error: 'File upload failed' });
+    } finally {
+        if (req.file && req.file.path) {
+            await safeDelete(req.file.path);
+        }
     }
 });
 
@@ -76,7 +103,7 @@ router.post('/guest', upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const result = await uploadToFirebase(req.file.buffer, req.file.originalname, req.file.mimetype);
+        const result = await uploadToFirebase(req.file);
 
         return res.status(201).json({
             message: 'File uploaded successfully',
@@ -92,6 +119,10 @@ router.post('/guest', upload.single('file'), async (req, res) => {
     } catch (err) {
         console.error('Upload error:', err);
         res.status(500).json({ error: 'File upload failed' });
+    } finally {
+        if (req.file && req.file.path) {
+            await safeDelete(req.file.path);
+        }
     }
 });
 
@@ -104,7 +135,7 @@ router.post('/multiple', auth, upload.array('files', 5), async (req, res) => {
 
         const uploadedFiles = await Promise.all(
             req.files.map(async file => {
-                const result = await uploadToFirebase(file.buffer, file.originalname, file.mimetype);
+                const result = await uploadToFirebase(file);
                 return {
                     s3_key: result.secure_url,
                     public_id: result.public_id,
@@ -123,6 +154,10 @@ router.post('/multiple', auth, upload.array('files', 5), async (req, res) => {
     } catch (err) {
         console.error('Upload error:', err);
         res.status(500).json({ error: 'File upload failed' });
+    } finally {
+        if (req.files && req.files.length > 0) {
+            await Promise.all(req.files.map(f => safeDelete(f.path)));
+        }
     }
 });
 

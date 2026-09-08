@@ -3,10 +3,10 @@ const pool = require('./src/config/db');
 
 (async () => {
   try {
-    const res = await pool.query('SELECT user_id, email, password_hash, full_name, phone, role, avatar_url, google_id, default_print_options, wallet_balance, fcm_token, created_at FROM users WHERE email = $1', ['printitsupport@gmail.com']);
-    console.log('Query success:', res.rows);
+    const res = await pool.query('SELECT 1 as connected, NOW() as current_time');
+    console.log('Database connection verification success:', res.rows[0]);
   } catch(e) {
-    console.error('Query failed:', e);
+    console.error('Database query failed:', e.message);
   } finally {
     pool.end();
   }
