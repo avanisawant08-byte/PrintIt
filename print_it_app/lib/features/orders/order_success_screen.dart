@@ -12,6 +12,7 @@ class OrderSuccessScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(orderDetailsProvider(orderId));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -21,10 +22,10 @@ class OrderSuccessScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: Icon(Icons.close, color: Color(0xFF3BAFF2)),
+            icon: Icon(Icons.close, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
             onPressed: () => context.go('/home'),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
         ],
       ),
       body: Stack(
@@ -46,10 +47,10 @@ class OrderSuccessScreen extends ConsumerWidget {
                         height: 128,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF3BAFF2).withValues(alpha: 0.1),
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.1),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF3BAFF2).withValues(alpha: 0.2),
+                              color: const Color(0xFF0284C7).withValues(alpha: 0.2),
                               blurRadius: 40,
                               spreadRadius: 10,
                             ),
@@ -59,19 +60,19 @@ class OrderSuccessScreen extends ConsumerWidget {
                       Container(
                         width: 96,
                         height: 96,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [Color(0xFF10B981), Color(0xFF059669)],
                             begin: Alignment.bottomLeft,
                             end: Alignment.topRight,
                           ),
                         ),
-                        child: Icon(Icons.check_circle, color: Theme.of(context).colorScheme.onSurface, size: 48),
+                        child: const Icon(Icons.check_circle, color: Colors.white, size: 48),
                       ),
                     ],
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   Text(
                     'Order Placed Successfully!',
                     style: TextStyle(
@@ -80,7 +81,7 @@ class OrderSuccessScreen extends ConsumerWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Your files are queued and being prepared.',
                     style: TextStyle(
@@ -88,7 +89,7 @@ class OrderSuccessScreen extends ConsumerWidget {
                       fontSize: 16,
                     ),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   
                   // Details Card
                   GlassContainer(
@@ -102,15 +103,19 @@ class OrderSuccessScreen extends ConsumerWidget {
                             Flexible(
                               child: Text(
                                 orderId.isNotEmpty ? '#${orderId.substring(0, orderId.length >= 8 ? 8 : orderId.length)}' : '#---',
-                                style: TextStyle(color: Color(0xFF7DF4FF), fontSize: 18, fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0)),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -118,17 +123,22 @@ class OrderSuccessScreen extends ConsumerWidget {
                             Text('Total Amount Paid', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14)),
                             orderAsync.when(
                               data: (order) => Text('₹${order['amount_total'] ?? '0.0'}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w600)),
-                              loading: () => SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                              loading: () => const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
                               error: (_, _) => Text('₹---', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05).withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(8),
+                            color: isDark
+                                ? const Color(0xFF1E293B).withValues(alpha: 0.6)
+                                : const Color(0xFFF0F9FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF334155) : const Color(0xFFBAE6FD),
+                            ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -136,21 +146,39 @@ class OrderSuccessScreen extends ConsumerWidget {
                               Expanded(
                                 child: Row(
                                   children: [
-                                    Icon(Icons.schedule, color: Color(0xFF3BAFF2), size: 18),
-                                    SizedBox(width: 8),
+                                    Icon(
+                                      Icons.schedule,
+                                      color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 8),
                                     Flexible(
-                                      child: Text('Estimated Pickup', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14), overflow: TextOverflow.ellipsis),
+                                      child: Text(
+                                        'Estimated Pickup',
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF3BAFF2).withValues(alpha: 0.1),
+                                  color: isDark
+                                      ? const Color(0xFF0284C7).withValues(alpha: 0.2)
+                                      : const Color(0xFFE0F2FE),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: const Color(0xFF3BAFF2).withValues(alpha: 0.2)),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF0284C7).withValues(alpha: 0.4)
+                                        : const Color(0xFFBAE6FD),
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
@@ -158,12 +186,19 @@ class OrderSuccessScreen extends ConsumerWidget {
                                       width: 6,
                                       height: 6,
                                       decoration: BoxDecoration(
-                                        color: Color(0xFF3BAFF2),
+                                        color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
-                                    Text('Ready in ~15 mins', style: TextStyle(color: Color(0xFF3BAFF2), fontSize: 12)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Ready in ~15 mins',
+                                      style: TextStyle(
+                                        color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -197,13 +232,13 @@ class OrderSuccessScreen extends ConsumerWidget {
                           ),
                           borderRadius: BorderRadius.circular(28),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.location_on, color: Theme.of(context).colorScheme.onSurface, size: 20),
+                              Icon(Icons.location_on, color: Colors.white, size: 20),
                               SizedBox(width: 8),
-                              Text('Track My Order', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600, fontSize: 16)),
+                              Text('Track My Order', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
                             ],
                           ),
                         ),

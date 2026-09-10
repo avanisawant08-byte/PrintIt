@@ -556,19 +556,19 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
                             ),
                             child: Center(
                               child: _isProcessing 
-                                ? SizedBox(
+                                ? const SizedBox(
                                     width: 24, height: 24,
-                                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onSurface, strokeWidth: 2),
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                                   )
                                 : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       'Pay ₹${orderState.amountTotal.toStringAsFixed(2)} Now',
-                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                                     ),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward, color: Theme.of(context).colorScheme.onSurface),
+                                    const SizedBox(width: 8),
+                                    const Icon(Icons.arrow_forward, color: Colors.white),
                                   ],
                                 ),
                             ),
@@ -659,7 +659,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
           backgroundColor: const Color(0xFF0F1E2E),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Color(0xFF22D3EE), width: 1.5),
+            side: const BorderSide(color: Color(0xFF0284C7), width: 1.5),
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -675,15 +675,15 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF22D3EE).withValues(alpha: 0.15),
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.phone_android, color: Color(0xFF22D3EE), size: 22),
+                          child: const Icon(Icons.phone_android, color: Color(0xFF38BDF8), size: 22),
                         ),
                         const SizedBox(width: 12),
                         Text(
                           otpSent ? 'Verify OTP' : 'Quick Mobile Login',
-                          style: const TextStyle(color: Color(0xFF8AEBFF), fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -710,13 +710,13 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
                     style: const TextStyle(color: Colors.white, fontSize: 16, letterSpacing: 1),
                     decoration: InputDecoration(
                       prefixText: '+91 ',
-                      prefixStyle: const TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.bold, fontSize: 16),
+                      prefixStyle: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 16),
                       hintText: '98765 43210',
                       hintStyle: const TextStyle(color: Colors.white30),
                       counterText: '',
                       filled: true,
                       fillColor: Colors.black26,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF22D3EE))),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0284C7))),
                     ),
                   ),
                 ] else ...[
@@ -733,7 +733,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
                       counterText: '',
                       filled: true,
                       fillColor: Colors.black26,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF22D3EE))),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0284C7))),
                     ),
                   ),
                 ],
@@ -747,8 +747,8 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF22D3EE),
-                      foregroundColor: const Color(0xFF00363E),
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: isSubmitting

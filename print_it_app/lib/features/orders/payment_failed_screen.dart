@@ -109,13 +109,13 @@ class PaymentFailedScreen extends StatelessWidget {
                           ),
                           borderRadius: BorderRadius.circular(28),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.refresh, color: Theme.of(context).colorScheme.onSurface, size: 20),
+                              Icon(Icons.refresh, color: Colors.white, size: 20),
                               SizedBox(width: 8),
-                              Text('Retry Payment', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600, fontSize: 16)),
+                              Text('Retry Payment', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
                             ],
                           ),
                         ),

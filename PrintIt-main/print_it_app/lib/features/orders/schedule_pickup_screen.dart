@@ -112,11 +112,13 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF06B6D4).withValues(alpha: 0.15)
-                  : const Color(0xFFE0F7FA).withValues(alpha: 0.8),
+                  ? const Color(0xFF0284C7).withValues(alpha: 0.2)
+                  : const Color(0xFFE0F2FE),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF22D3EE).withValues(alpha: isDark ? 0.3 : 0.6),
+                color: isDark
+                    ? const Color(0xFF0284C7).withValues(alpha: 0.4)
+                    : const Color(0xFFBAE6FD),
               ),
             ),
             child: Row(
@@ -124,14 +126,14 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
               children: [
                 Icon(
                   isScheduled ? Icons.calendar_today_outlined : Icons.bolt,
-                  color: const Color(0xFF0891B2),
+                  color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                   size: 13,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   isScheduled ? 'SCHEDULED' : 'EXPRESS',
-                  style: const TextStyle(
-                    color: Color(0xFF0891B2),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.8,
@@ -184,12 +186,12 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 duration: const Duration(milliseconds: 180),
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: !isScheduled ? const Color(0xFF22D3EE) : Colors.transparent,
+                                  color: !isScheduled ? const Color(0xFF0284C7) : Colors.transparent,
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: !isScheduled
                                       ? [
                                           BoxShadow(
-                                            color: const Color(0xFF22D3EE).withValues(alpha: 0.3),
+                                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -203,7 +205,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                     Icon(
                                       Icons.bolt,
                                       color: !isScheduled
-                                          ? const Color(0xFF082F49)
+                                          ? Colors.white
                                           : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                       size: 16,
                                     ),
@@ -212,7 +214,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       'Express (Now)',
                                       style: TextStyle(
                                         color: !isScheduled
-                                            ? const Color(0xFF082F49)
+                                            ? Colors.white
                                             : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A)),
                                         fontSize: 13,
                                         fontWeight: !isScheduled ? FontWeight.w600 : FontWeight.w400,
@@ -233,12 +235,12 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 duration: const Duration(milliseconds: 180),
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: isScheduled ? const Color(0xFF22D3EE) : Colors.transparent,
+                                  color: isScheduled ? const Color(0xFF0284C7) : Colors.transparent,
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: isScheduled
                                       ? [
                                           BoxShadow(
-                                            color: const Color(0xFF22D3EE).withValues(alpha: 0.3),
+                                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -252,7 +254,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                     Icon(
                                       Icons.calendar_today_outlined,
                                       color: isScheduled
-                                          ? const Color(0xFF082F49)
+                                          ? Colors.white
                                           : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                       size: 15,
                                     ),
@@ -261,7 +263,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       'Scheduled',
                                       style: TextStyle(
                                         color: isScheduled
-                                            ? const Color(0xFF082F49)
+                                            ? Colors.white
                                             : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A)),
                                         fontSize: 13,
                                         fontWeight: isScheduled ? FontWeight.w600 : FontWeight.w400,
@@ -294,7 +296,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF22D3EE).withValues(alpha: _glowAnimation.value * 0.18),
+                                  color: const Color(0xFF0284C7).withValues(alpha: _glowAnimation.value * 0.15),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
@@ -309,11 +311,21 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFCFFAFE),
+                                        color: isDark
+                                            ? const Color(0xFF0284C7).withValues(alpha: 0.2)
+                                            : const Color(0xFFE0F2FE),
                                         shape: BoxShape.circle,
-                                        border: Border.all(color: const Color(0xFF22D3EE).withValues(alpha: 0.4)),
+                                        border: Border.all(
+                                          color: isDark
+                                              ? const Color(0xFF0284C7).withValues(alpha: 0.4)
+                                              : const Color(0xFFBAE6FD),
+                                        ),
                                       ),
-                                      child: const Icon(Icons.timer_outlined, color: Color(0xFF0891B2), size: 20),
+                                      child: Icon(
+                                        Icons.timer_outlined,
+                                        color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                        size: 20,
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Column(
@@ -322,7 +334,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                         Text(
                                           'ESTIMATED READINESS',
                                           style: TextStyle(
-                                            color: isDark ? const Color(0xFF22D3EE) : const Color(0xFF0891B2),
+                                            color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                                             fontSize: 10,
                                             fontWeight: FontWeight.w600,
                                             letterSpacing: 0.8,
@@ -343,11 +355,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 ),
                                 Row(
                                   children: [
-                                    _buildPulsingBar(0),
+                                    _buildPulsingBar(0, isDark),
                                     const SizedBox(width: 4),
-                                    _buildPulsingBar(1),
+                                    _buildPulsingBar(1, isDark),
                                     const SizedBox(width: 4),
-                                    _buildPulsingBar(2),
+                                    _buildPulsingBar(2, isDark),
                                   ],
                                 ),
                               ],
@@ -396,18 +408,18 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 width: 58,
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF22D3EE)
+                                      ? const Color(0xFF0284C7)
                                       : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.72)),
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFF22D3EE)
+                                        ? const Color(0xFF0284C7)
                                         : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
                                   ),
                                   boxShadow: [
                                     if (isSelected)
                                       BoxShadow(
-                                        color: const Color(0xFF22D3EE).withValues(alpha: 0.35),
+                                        color: const Color(0xFF0284C7).withValues(alpha: 0.35),
                                         blurRadius: 14,
                                         offset: const Offset(0, 4),
                                       )
@@ -424,7 +436,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                     Text(
                                       '${date.day}',
                                       style: TextStyle(
-                                        color: isSelected ? const Color(0xFF082F49) : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                                        color: isSelected ? Colors.white : (isDark ? Colors.white : const Color(0xFF0F172A)),
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -434,7 +446,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       DateFormat('E').format(date),
                                       style: TextStyle(
                                         color: isSelected
-                                            ? const Color(0xFF082F49).withValues(alpha: 0.9)
+                                            ? Colors.white.withValues(alpha: 0.9)
                                             : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                         fontSize: 11,
                                         fontWeight: FontWeight.w400,
@@ -491,19 +503,19 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? (isDark ? const Color(0xFF06B6D4).withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.92))
+                                    ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.15) : const Color(0xFFF0F9FF))
                                     : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.72)),
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFF22D3EE)
+                                      ? const Color(0xFF0284C7)
                                       : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
                                   width: isSelected ? 1.5 : 1,
                                 ),
                                 boxShadow: [
                                   if (isSelected)
                                     BoxShadow(
-                                      color: const Color(0xFF22D3EE).withValues(alpha: 0.25),
+                                      color: const Color(0xFF0284C7).withValues(alpha: 0.2),
                                       blurRadius: 12,
                                     )
                                   else
@@ -531,7 +543,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       shape: BoxShape.circle,
                                       color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
                                       border: Border.all(
-                                        color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFFCBD5E1),
+                                        color: isSelected ? const Color(0xFF0284C7) : const Color(0xFFCBD5E1),
                                         width: isSelected ? 2 : 1,
                                       ),
                                     ),
@@ -541,7 +553,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                               width: 10,
                                               height: 10,
                                               decoration: const BoxDecoration(
-                                                color: Color(0xFF06B6D4),
+                                                color: Color(0xFF0284C7),
                                                 shape: BoxShape.circle,
                                               ),
                                             ),
@@ -641,7 +653,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       width: 8,
                                       height: 8,
                                       decoration: const BoxDecoration(
-                                        color: Color(0xFF06B6D4),
+                                        color: Color(0xFF10B981),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -716,11 +728,21 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFCFFAFE),
+                                  color: isDark
+                                      ? const Color(0xFF0284C7).withValues(alpha: 0.2)
+                                      : const Color(0xFFE0F2FE),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFF22D3EE).withValues(alpha: 0.4)),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF0284C7).withValues(alpha: 0.4)
+                                        : const Color(0xFFBAE6FD),
+                                  ),
                                 ),
-                                child: const Icon(Icons.description_outlined, color: Color(0xFF0891B2), size: 20),
+                                child: Icon(
+                                  Icons.description_outlined,
+                                  color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                  size: 20,
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -749,7 +771,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.check, color: Color(0xFF06B6D4), size: 20),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                size: 20,
+                              ),
                             ],
                           ),
                         );
@@ -773,11 +799,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? const Color(0xFF0A0F1D).withValues(alpha: 0.92)
-                        : Colors.white.withValues(alpha: 0.88),
+                        ? const Color(0xFF0A0F1D).withValues(alpha: 0.95)
+                        : Colors.white.withValues(alpha: 0.95),
                     border: Border(
                       top: BorderSide(
-                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.9),
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFF1F5F9),
                       ),
                     ),
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -819,10 +845,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                         height: 50,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF22D3EE),
-                            foregroundColor: const Color(0xFF082F49),
+                            backgroundColor: const Color(0xFF0284C7),
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             elevation: 0,
+                            shadowColor: const Color(0xFF0284C7).withValues(alpha: 0.35),
                           ),
                           onPressed: files.isEmpty
                               ? null
@@ -844,13 +871,14 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                               Text(
                                 'Proceed to Payment',
                                 style: TextStyle(
+                                  color: Colors.white,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.2,
                                 ),
                               ),
                               SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, size: 18),
+                              Icon(Icons.arrow_forward, size: 18, color: Colors.white),
                             ],
                           ),
                         ),
@@ -866,7 +894,8 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
     );
   }
 
-  Widget _buildPulsingBar(int index) {
+  Widget _buildPulsingBar(int index, bool isDark) {
+    final barColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
     return AnimatedBuilder(
       animation: _glowAnimation,
       builder: (context, child) {
@@ -877,7 +906,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
           width: 5,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFF22D3EE).withValues(alpha: 0.3 + (val * 0.7)),
+            color: barColor.withValues(alpha: 0.3 + (val * 0.7)),
             borderRadius: BorderRadius.circular(6),
           ),
         );

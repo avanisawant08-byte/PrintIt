@@ -101,6 +101,7 @@ class OrderTrackingScreen extends ConsumerWidget {
   }
 
   Widget _buildOrderDetails(BuildContext context, WidgetRef ref, Map<String, dynamic> order) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final status = (order['status'] ?? 'unknown').toString();
     final queuePos = order['queue_position'];
     final amount = order['amount_total'];
@@ -121,10 +122,10 @@ class OrderTrackingScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 16),
           // Order Live Tracking Header
-          const Text(
+          Text(
             'ORDER LIVE TRACKING',
             style: TextStyle(
-              color: AppTheme.logoBlue,
+              color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.5,
@@ -164,9 +165,9 @@ class OrderTrackingScreen extends ConsumerWidget {
                   builder: (context, value, child) {
                     return CircularProgressIndicator(
                       value: value,
-                      strokeWidth: 4,
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.logoBlue),
+                      strokeWidth: 5,
+                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0),
+                      valueColor: AlwaysStoppedAnimation<Color>(isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
                     );
                   },
                 ),
@@ -175,13 +176,13 @@ class OrderTrackingScreen extends ConsumerWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Position', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14)),
+                  Text('Position', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 14)),
                   Text(
                     queuePos != null ? '#$queuePos' : (status == 'completed' || status == 'collected' ? 'Done' : '...'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.logoBlue,
+                      color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                     ),
                   ),
                   if (status == 'queued' || status == 'processing')
@@ -203,10 +204,10 @@ class OrderTrackingScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'TIMELINE',
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.5,
@@ -222,7 +223,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                       bottom: 10,
                       child: Container(
                         width: 2,
-                        color: Colors.white.withValues(alpha: 0.12),
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                       ),
                     ),
                     // Vertical Active Line
@@ -232,20 +233,20 @@ class OrderTrackingScreen extends ConsumerWidget {
                       child: Container(
                         width: 2,
                         height: currentStep == 0 ? 0 : (currentStep == 1 ? 56 : (currentStep == 2 ? 112 : 168.0)),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.logoBlue,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                         ),
                       ),
                     ),
                     Column(
                       children: [
-                        _buildTimelineStep(context, 'Queued', 'Order received', Icons.check, currentStep >= 0, true),
+                        _buildTimelineStep(context, 'Queued', 'Order received', Icons.check, currentStep >= 0, currentStep == 0, isDark),
                         const SizedBox(height: 24),
-                        _buildTimelineStep(context, 'Processing', 'Preparing & printing...', Icons.sync, currentStep >= 1, currentStep == 1),
+                        _buildTimelineStep(context, 'Processing', 'Preparing & printing...', Icons.sync, currentStep >= 1, currentStep == 1, isDark),
                         const SizedBox(height: 24),
-                        _buildTimelineStep(context, 'Ready for Pickup', 'Waiting for you', Icons.shopping_bag_outlined, currentStep >= 2, false),
+                        _buildTimelineStep(context, 'Ready for Pickup', 'Waiting for you', Icons.shopping_bag_outlined, currentStep >= 2, currentStep == 2, isDark),
                         const SizedBox(height: 24),
-                        _buildTimelineStep(context, 'Collected', 'Transaction completed', Icons.done_all, currentStep >= 3, false),
+                        _buildTimelineStep(context, 'Collected', 'Transaction completed', Icons.done_all, currentStep >= 3, currentStep == 3, isDark),
                       ],
                     ),
                   ],
@@ -270,7 +271,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                     Text('₹${amount ?? '-'}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 14)),
                   ],
                 ),
-                Divider(color: Colors.white.withValues(alpha: 0.1), height: 24),
+                Divider(color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0), height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -290,11 +291,11 @@ class OrderTrackingScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppTheme.logoBlue, size: 18),
-                      SizedBox(width: 8),
-                      Text('Print Instructions', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                      Icon(Icons.info_outline, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), size: 18),
+                      const SizedBox(width: 8),
+                      Text('Print Instructions', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -318,11 +319,11 @@ class OrderTrackingScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Files', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Files', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold)),
                       if (files.length > 1)
                         TextButton(
                           onPressed: () => _downloadAllFiles(context, ref, orderId),
-                          child: const Text('Download All', style: TextStyle(color: AppTheme.logoBlue, fontSize: 12)),
+                          child: Text('Download All', style: TextStyle(color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), fontSize: 12)),
                         ),
                     ],
                   ),
@@ -335,19 +336,19 @@ class OrderTrackingScreen extends ConsumerWidget {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                       ),
                       child: Row(
                         children: [
                           const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 24),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(fileName, style: const TextStyle(color: Colors.white, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            child: Text(fileName, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.download, color: AppTheme.logoBlue),
+                            icon: Icon(Icons.download, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
                             onPressed: () => _downloadFile(context, ref, orderId, index),
                           ),
                         ],
@@ -370,9 +371,9 @@ class OrderTrackingScreen extends ConsumerWidget {
                 icon: const Icon(Icons.cancel),
                 label: const Text('Cancel Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF5252),
-                  side: BorderSide(color: const Color(0xFFFF5252).withValues(alpha: 0.3)),
-                  backgroundColor: const Color(0xFFFF5252).withValues(alpha: 0.1),
+                  foregroundColor: const Color(0xFFEF4444),
+                  side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.08),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
@@ -389,8 +390,8 @@ class OrderTrackingScreen extends ConsumerWidget {
               label: const Text('Need help with your order?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
-                backgroundColor: Colors.white.withValues(alpha: 0.05),
+                side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0xFFCBD5E1)),
+                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
             ),
@@ -402,7 +403,26 @@ class OrderTrackingScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTimelineStep(BuildContext context, String title, String subtitle, IconData icon, bool isCompleted, bool isProcessing) {
+  Widget _buildTimelineStep(BuildContext context, String title, String subtitle, IconData icon, bool isCompleted, bool isProcessing, bool isDark) {
+    Color iconBg;
+    Color iconColor;
+    Color titleColor;
+    Color subColor;
+
+    if (isCompleted) {
+      iconBg = const Color(0xFF0284C7);
+      iconColor = Colors.white;
+      titleColor = isProcessing
+          ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
+          : (isDark ? Colors.white : const Color(0xFF0F172A));
+      subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    } else {
+      iconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+      iconColor = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+      titleColor = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+      subColor = isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1);
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -412,15 +432,15 @@ class OrderTrackingScreen extends ConsumerWidget {
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isCompleted ? AppTheme.logoBlue : Colors.white.withValues(alpha: 0.05),
+            color: iconBg,
             border: Border.all(
-              color: isCompleted ? Colors.transparent : Colors.white.withValues(alpha: 0.12),
+              color: isCompleted ? Colors.transparent : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
             ),
           ),
           child: Icon(
             icon,
             size: 16,
-            color: isCompleted ? const Color(0xFF00363d) : Colors.white54,
+            color: iconColor,
           ),
         ),
         Expanded(
@@ -430,7 +450,7 @@ class OrderTrackingScreen extends ConsumerWidget {
               Text(
                 title,
                 style: TextStyle(
-                  color: isCompleted ? (isProcessing ? AppTheme.logoBlue : Colors.white) : Colors.white54,
+                  color: titleColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -439,7 +459,7 @@ class OrderTrackingScreen extends ConsumerWidget {
               Text(
                 subtitle,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.54),
+                  color: subColor,
                   fontSize: 12,
                 ),
               ),
@@ -496,22 +516,32 @@ class OrderTrackingScreen extends ConsumerWidget {
   Future<void> _confirmCancelOrder(BuildContext context, WidgetRef ref, String orderId) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        title: Text('Cancel Order', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-        content: Text('Are you sure you want to cancel this order? The refund will be credited to your Wallet instantly (or to bank if guest).', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('No', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54))),
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Cancel Order', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+          content: Text(
+            'Are you sure you want to cancel this order? The refund will be credited to your Wallet instantly (or to bank if guest).',
+            style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Yes, Cancel', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('No', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8))),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Yes, Cancel', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {

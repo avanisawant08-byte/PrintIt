@@ -278,7 +278,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                          icon: Icon(Icons.remove, size: 18, color: isDark ? const Color(0xFF22D3EE) : const Color(0xFF0F172A)),
+                                          icon: Icon(Icons.remove, size: 18, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
                                           onPressed: () => ref.read(orderProvider.notifier).updateCopies(-1),
                                           splashRadius: 18,
                                           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -296,7 +296,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                           ),
                                         ),
                                         IconButton(
-                                          icon: Icon(Icons.add, size: 18, color: isDark ? const Color(0xFF22D3EE) : const Color(0xFF0F172A)),
+                                          icon: Icon(Icons.add, size: 18, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
                                           onPressed: () => ref.read(orderProvider.notifier).updateCopies(1),
                                           splashRadius: 18,
                                           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -710,15 +710,17 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                           context.push('/schedule-pickup');
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF22D3EE),
-                          foregroundColor: const Color(0xFF082F49),
+                          backgroundColor: const Color(0xFF0284C7),
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           elevation: 0,
+                          shadowColor: const Color(0xFF0284C7).withValues(alpha: 0.35),
                         ),
                         child: const Text(
                           'Continue',
                           style: TextStyle(
+                            color: Colors.white,
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.3,
@@ -789,7 +791,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
         ),
       ),
-      trailing: isSelected ? const Icon(Icons.check, color: Color(0xFF22D3EE)) : null,
+      trailing: isSelected ? Icon(Icons.check, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)) : null,
       onTap: () {
         ref.read(orderProvider.notifier).setBinding(value);
         Navigator.pop(context);
@@ -812,27 +814,27 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? const Color(0xFF06B6D4).withValues(alpha: 0.18) : null)
+              ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.18) : null)
               : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.65)),
           gradient: isSelected
               ? (isDark
                   ? LinearGradient(
                       colors: [
-                        const Color(0xFF06B6D4).withValues(alpha: 0.28),
-                        const Color(0xFF0891B2).withValues(alpha: 0.15),
+                        const Color(0xFF0284C7).withValues(alpha: 0.28),
+                        const Color(0xFF0284C7).withValues(alpha: 0.15),
                       ],
                     )
                   : const LinearGradient(
                       colors: [
-                        Color(0xD9CFFAFE),
-                        Color(0xB3E0F7FA),
+                        Color(0xFFE0F2FE),
+                        Color(0xFFF0F9FF),
                       ],
                     ))
               : null,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF22D3EE)
+                ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
                 : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.85)),
             width: isSelected ? 1.5 : 1,
           ),
@@ -888,7 +890,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                       subtitle,
                       style: TextStyle(
                         color: isSelected
-                            ? (isDark ? const Color(0xFF8AEBFF) : const Color(0xFF0891B2))
+                            ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
                             : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                         fontSize: 11,
                         fontWeight: FontWeight.w400,
@@ -915,13 +917,13 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
         height: 24,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF22D3EE) : Colors.transparent,
+          color: isSelected ? const Color(0xFF0284C7) : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
           '$count',
           style: TextStyle(
-            color: isSelected ? const Color(0xFF082F49) : const Color(0xFFCBD5E1),
+            color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
