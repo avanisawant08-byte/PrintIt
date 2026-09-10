@@ -34,11 +34,12 @@ class OrderHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final ordersAsync = ref.watch(orderHistoryProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
-      bottomNavigationBar: _buildBottomNav(context),
+      bottomNavigationBar: _buildBottomNav(context, isDark),
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
         elevation: 0,
@@ -295,52 +296,121 @@ class OrderHistoryScreen extends ConsumerWidget {
     }
   }
 
-  Widget _buildBottomNav(BuildContext context) {
+  Widget _buildBottomNav(BuildContext context, bool isDark) {
     return Container(
-      height: 80,
+      height: 84,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2D).withValues(alpha: 0.4),
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1))),
+        color: isDark
+            ? const Color(0xFF090F1D).withValues(alpha: 0.95)
+            : Colors.white.withValues(alpha: 0.95),
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? const Color(0xFF1E293B).withValues(alpha: 0.8)
+                : const Color(0xFFF1F5F9),
+          ),
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, -4),
+                ),
+              ],
       ),
-      child: ClipRect(
-        child: BackdropFilter(
-          filter: ColorFilter.mode(Colors.transparent, BlendMode.srcOver),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(context, Icons.grid_view, 'Home', false, () => context.go('/home')),
-              _buildNavItem(context, Icons.description, 'Orders', true, () {}),
-              _buildNavItem(context, Icons.person, 'Profile', false, () => context.push('/profile')),
-            ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Tab 1: Home
+                _buildNavItem(
+                  context,
+                  icon: Icons.grid_view_rounded,
+                  label: 'Home',
+                  isActive: false,
+                  isDark: isDark,
+                  onTap: () => context.go('/home'),
+                ),
+                // Tab 2: Store
+                _buildNavItem(
+                  context,
+                  icon: Icons.storefront_rounded,
+                  label: 'Store',
+                  isActive: false,
+                  isDark: isDark,
+                  onTap: () => context.push('/store'),
+                ),
+                // Tab 3: Orders (Active)
+                _buildNavItem(
+                  context,
+                  icon: Icons.description_rounded,
+                  label: 'Orders',
+                  isActive: true,
+                  isDark: isDark,
+                  onTap: () {},
+                ),
+                // Tab 4: Profile
+                _buildNavItem(
+                  context,
+                  icon: Icons.person_outline_rounded,
+                  label: 'Profile',
+                  isActive: false,
+                  isDark: isDark,
+                  onTap: () => context.push('/profile'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    final activeColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
+    final inactiveColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (isActive)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0284C7).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(icon, color: const Color(0xFFDBFCFF)),
-            )
-          else
-            Icon(icon, color: const Color(0xFFB9CACB).withValues(alpha: 0.7)),
-          SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? (isDark ? const Color(0xFF132338) : const Color(0xFFE0F2FE))
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isActive ? activeColor : inactiveColor,
+            ),
+          ),
+          const SizedBox(height: 3),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
-              color: isActive ? const Color(0xFFDBFCFF) : const Color(0xFFB9CACB).withValues(alpha: 0.7),
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              color: isActive ? activeColor : inactiveColor,
             ),
           ),
         ],

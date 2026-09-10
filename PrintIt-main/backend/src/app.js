@@ -12,7 +12,6 @@ const path = require('path');
 const routes = require('./routes');
 const pool = require('./config/db');
 const notificationRoutes = require('./routes/notificationRoutes');
-const { startCleanupJob } = require('./utils/firebaseCleanup');
 const { setupShopCodeDb } = require('./utils/setupShopCodeDb');
 const { setupStoreDb } = require('./utils/setupStoreDb');
 const { correlationIdMiddleware, errorHandler } = require('./middleware/errorHandler');
@@ -75,32 +74,54 @@ app.use(helmet({
 }));
 
 // CORS Configuration
-const isProduction = process.env.NODE_ENV === 'production';
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
     ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
     : null;
 
-app.use(cors({
+const corsOptions = {
     origin: (origin, callback) => {
-        // Allow non-browser clients (Flutter native mobile apps, CLI, server-to-server)
+        // Allow non-browser clients (Flutter native mobile apps, curl, server-to-server)
         if (!origin) return callback(null, true);
 
-        // In production, strictly enforce allowed origins whitelist
-        if (allowedOrigins && allowedOrigins.includes(origin)) {
+        // Check explicitly allowed origins whitelist if set
+        if (allowedOrigins && (allowedOrigins.includes('*') || allowedOrigins.includes(origin))) {
             return callback(null, true);
         }
 
-        // In development/testing, allow localhost if no strict origins configured
-        if (!isProduction && (!allowedOrigins || allowedOrigins.includes('*') || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1'))) {
-            return callback(null, true);
+        try {
+            const parsed = new URL(origin);
+            // Allow all Vercel deployments (*.vercel.app and vercel.app)
+            if (parsed.hostname.endsWith('.vercel.app') || parsed.hostname === 'vercel.app') {
+                return callback(null, true);
+            }
+            // Allow Render domains (*.onrender.com)
+            if (parsed.hostname.endsWith('.onrender.com') || parsed.hostname === 'onrender.com') {
+                return callback(null, true);
+            }
+            // Allow localhost & 127.0.0.1 on any port
+            if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+                return callback(null, true);
+            }
+            // Allow private LAN IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+            if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(parsed.hostname)) {
+                return callback(null, true);
+            }
+        } catch (_) {
+            if (origin.includes('vercel.app') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+                return callback(null, true);
+            }
         }
 
-        return callback(new Error('CORS policy: Not allowed by CORS origin restriction'));
+        // Return false gracefully instead of throwing an unhandled exception
+        return callback(null, false);
     },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'Accept', 'Origin'],
     exposedHeaders: ['Content-Disposition', 'X-Request-ID']
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 
