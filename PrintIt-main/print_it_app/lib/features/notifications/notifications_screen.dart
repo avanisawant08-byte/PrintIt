@@ -21,6 +21,7 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -28,20 +29,22 @@ class NotificationsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : const Color(0xFF0F172A)),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Notifications',
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
+            color: isDark ? Colors.white : const Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
+            fontSize: 20,
+            letterSpacing: -0.3,
           ),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.done_all, color: Color(0xFF3BAFF2)),
+            icon: const Icon(Icons.done_all, color: Color(0xFF0284C7)),
             onPressed: () async {
               try {
                 await ref.read(apiProvider).patch('/notifications/read-all');
@@ -65,14 +68,19 @@ class NotificationsScreen extends ConsumerWidget {
             child: notificationsAsync.when(
               data: (notifications) {
                 if (notifications.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'No new notifications',
-                      style: TextStyle(color: Color(0xFFB9CACB), fontSize: 16),
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   );
                 }
                 return RefreshIndicator(
+                  color: const Color(0xFF0284C7),
                   onRefresh: () async {
                     ref.invalidate(notificationsProvider);
                   },
@@ -82,23 +90,23 @@ class NotificationsScreen extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final note = notifications[index];
                       final isRead = note['is_read'] == true;
-                      
+
                       // Map DB type to colors and icons
-                      Color color = const Color(0xFF3BAFF2);
-                      IconData icon = Icons.notifications;
+                      Color color = const Color(0xFF0284C7);
+                      IconData icon = Icons.notifications_rounded;
                       if (note['type'] == 'order_accepted') {
-                        color = Colors.orangeAccent;
-                        icon = Icons.print;
+                        color = const Color(0xFFF59E0B);
+                        icon = Icons.print_rounded;
                       } else if (note['type'] == 'order_ready') {
-                        color = Colors.greenAccent;
-                        icon = Icons.check_circle_outline;
+                        color = const Color(0xFF10B981);
+                        icon = Icons.check_circle_rounded;
                       } else if (note['type'] == 'order_collected') {
                         color = const Color(0xFF0284C7);
-                        icon = Icons.shopping_bag;
+                        icon = Icons.shopping_bag_rounded;
                       }
 
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.only(bottom: 14),
                         child: GestureDetector(
                           onTap: () async {
                             if (!isRead) {
@@ -110,24 +118,47 @@ class NotificationsScreen extends ConsumerWidget {
                               }
                             }
                           },
-                          child: GlassContainer(
+                          child: Container(
                             padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A).withValues(alpha: 0.65)
+                                  : Colors.white.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDark ? Colors.black.withValues(alpha: 0.25) : const Color(0x0C0F172A),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(12),
+                                  width: 44,
+                                  height: 44,
                                   decoration: BoxDecoration(
-                                    color: color.withValues(alpha: 0.15),
-                                    shape: BoxShape.circle,
+                                    color: color.withValues(alpha: isDark ? 0.20 : 0.12),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: color.withValues(alpha: isDark ? 0.30 : 0.22),
+                                      width: 1,
+                                    ),
                                   ),
-                                  child: Icon(
-                                    icon,
-                                    color: color,
-                                    size: 24,
+                                  child: Center(
+                                    child: Icon(
+                                      icon,
+                                      color: color,
+                                      size: 22,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,40 +170,47 @@ class NotificationsScreen extends ConsumerWidget {
                                             child: Text(
                                               note['title'] ?? 'Notification',
                                               style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
-                                                color: isRead ? const Color(0xFFE2E0FB) : Colors.white,
+                                                fontSize: 15,
+                                                fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
+                                                color: isDark
+                                                    ? (isRead ? const Color(0xFFCBD5E1) : Colors.white)
+                                                    : (isRead ? const Color(0xFF334155) : const Color(0xFF0F172A)),
                                               ),
                                             ),
                                           ),
+                                          const SizedBox(width: 8),
                                           Text(
                                             _formatDate(note['created_at']),
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: const Color(0xFFB9CACB).withValues(alpha: 0.7),
+                                              fontWeight: FontWeight.w500,
+                                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 6),
                                       Text(
                                         note['message'] ?? '',
                                         style: TextStyle(
-                                          fontSize: 14,
-                                          color: isRead ? const Color(0xFFB9CACB) : const Color(0xFFE2E0FB),
+                                          fontSize: 13,
+                                          height: 1.35,
+                                          color: isDark
+                                              ? (isRead ? const Color(0xFF94A3B8) : const Color(0xFFE2E8F0))
+                                              : (isRead ? const Color(0xFF64748B) : const Color(0xFF334155)),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 if (!isRead) ...[
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 10),
                                   Container(
                                     margin: const EdgeInsets.only(top: 6),
                                     width: 8,
                                     height: 8,
                                     decoration: const BoxDecoration(
-                                      color: Color(0xFF3BAFF2),
+                                      color: Color(0xFF0284C7),
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -186,8 +224,8 @@ class NotificationsScreen extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF3BAFF2))),
-              error: (e, st) => Center(child: Text('Error: $e', style: TextStyle(color: Colors.red))),
+              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF0284C7))),
+              error: (e, st) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.red))),
             ),
           ),
         ],

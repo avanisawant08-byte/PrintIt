@@ -12,8 +12,15 @@ class SchedulePickupScreen extends ConsumerStatefulWidget {
   ConsumerState<SchedulePickupScreen> createState() => _SchedulePickupScreenState();
 }
 
+class _TimeSlotItem {
+  final String display;
+  final DateTime dateTime;
+
+  const _TimeSlotItem({required this.display, required this.dateTime});
+}
+
 class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> with SingleTickerProviderStateMixin {
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   String? _selectedTimeSlot;
 
   late AnimationController _glowController;
@@ -34,6 +41,15 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
     _glowAnimation = Tween<double>(begin: 0.3, end: 0.9).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
+
+    // Smart default date selection: if today has no remaining slots, default to tomorrow!
+    final now = DateTime.now();
+    final todaySlots = _getTimeSlotsForDate(now);
+    if (todaySlots.isEmpty) {
+      _selectedDate = now.add(const Duration(days: 1));
+    } else {
+      _selectedDate = now;
+    }
   }
 
   @override
@@ -47,30 +63,42 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
     return List.generate(10, (index) => DateTime.now().add(Duration(days: index)));
   }
 
-  // Generate available time slots based on the selected date
-  List<String> get _availableTimeSlots {
-    List<String> slots = [];
-    DateTime now = DateTime.now();
-    bool isToday = _selectedDate.day == now.day && _selectedDate.month == now.month && _selectedDate.year == now.year;
+  // Generate available time slots based on the selected date (strictly future-only for today)
+  List<_TimeSlotItem> _getTimeSlotsForDate(DateTime date) {
+    final List<_TimeSlotItem> slots = [];
+    final DateTime now = DateTime.now();
+    final bool isToday = date.year == now.year && date.month == now.month && date.day == now.day;
 
-    for (int i = 9; i < 18; i++) {
-      if (isToday && i <= now.hour) continue;
-      String period1 = i >= 12 ? 'PM' : 'AM';
-      int hour1 = i > 12 ? i - 12 : i;
-      slots.add('$hour1:00 to $hour1:30 $period1');
+    // Minimum buffer: at least 20 minutes from now for same-day preparation
+    final DateTime minSlotTime = now.add(const Duration(minutes: 20));
 
-      int nextHour = i + 1;
-      String nextPeriod = nextHour >= 12 && nextHour < 24 ? 'PM' : 'AM';
-      int displayNextHour = nextHour > 12 ? nextHour - 12 : nextHour;
-      slots.add('$hour1:30 to $displayNextHour:00 $nextPeriod');
-    }
+    // Shop hours: 9:00 AM (09:00) to 9:00 PM (21:00)
+    for (int hour = 9; hour < 21; hour++) {
+      for (int minute in [0, 30]) {
+        final slotStart = DateTime(date.year, date.month, date.day, hour, minute);
+        final slotEnd = slotStart.add(const Duration(minutes: 30));
 
-    if (slots.isEmpty) {
-      slots = [
-        '5:00 to 5:30 PM',
-        '5:30 to 6:00 PM',
-        '6:00 to 6:30 PM',
-      ];
+        // Skip any slot that has already started or is within the buffer on today
+        if (isToday && slotStart.isBefore(minSlotTime)) {
+          continue;
+        }
+
+        final startPeriod = slotStart.hour >= 12 ? 'PM' : 'AM';
+        final endPeriod = slotEnd.hour >= 12 ? 'PM' : 'AM';
+        final startDisplayHour = slotStart.hour > 12 ? slotStart.hour - 12 : (slotStart.hour == 0 ? 12 : slotStart.hour);
+        final endDisplayHour = slotEnd.hour > 12 ? slotEnd.hour - 12 : (slotEnd.hour == 0 ? 12 : slotEnd.hour);
+        final startMinuteStr = slotStart.minute.toString().padLeft(2, '0');
+        final endMinuteStr = slotEnd.minute.toString().padLeft(2, '0');
+
+        final String display;
+        if (startPeriod == endPeriod) {
+          display = '$startDisplayHour:$startMinuteStr to $endDisplayHour:$endMinuteStr $startPeriod';
+        } else {
+          display = '$startDisplayHour:$startMinuteStr $startPeriod to $endDisplayHour:$endMinuteStr $endPeriod';
+        }
+
+        slots.add(_TimeSlotItem(display: display, dateTime: slotStart));
+      }
     }
     return slots;
   }
@@ -394,6 +422,10 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                             final isSelected = _selectedDate.day == date.day &&
                                 _selectedDate.month == date.month &&
                                 _selectedDate.year == date.year;
+                            final now = DateTime.now();
+                            final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+                            final dateSlots = _getTimeSlotsForDate(date);
+                            final isClosed = isToday && dateSlots.isEmpty;
 
                             return GestureDetector(
                               onTap: () {
@@ -436,20 +468,26 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                     Text(
                                       '${date.day}',
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                                        color: isSelected
+                                            ? Colors.white
+                                            : (isClosed
+                                                ? (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8))
+                                                : (isDark ? Colors.white : const Color(0xFF0F172A))),
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      DateFormat('E').format(date),
+                                      isToday && isClosed ? 'Closed' : DateFormat('E').format(date),
                                       style: TextStyle(
                                         color: isSelected
                                             ? Colors.white.withValues(alpha: 0.9)
-                                            : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                            : (isClosed
+                                                ? (isDark ? const Color(0xFFEF4444).withValues(alpha: 0.8) : const Color(0xFFDC2626))
+                                                : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
                                         fontSize: 11,
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: isClosed ? FontWeight.w600 : FontWeight.w400,
                                       ),
                                     ),
                                   ],
@@ -475,97 +513,178 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                         ),
                       ),
 
-                      // Time Slot Radio Cards matching Stitch
-                      ..._availableTimeSlots.map((slot) {
-                        final isSelected = _selectedTimeSlot == slot;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedTimeSlot = slot;
-                              });
-                              try {
-                                String startTimeStr = slot.split(' to ')[0];
-                                String periodStr = slot.split(' ')[3];
-                                int hour = int.parse(startTimeStr.split(':')[0]);
-                                int minute = int.parse(startTimeStr.split(':')[1]);
+                      // Time Slot Radio Cards (Filtered strictly for future slots)
+                      Builder(
+                        builder: (context) {
+                          final currentSlots = _getTimeSlotsForDate(_selectedDate);
 
-                                if (periodStr == 'PM' && hour != 12) hour += 12;
-                                if (periodStr == 'AM' && hour == 12) hour = 0;
-
-                                final dt = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, hour, minute);
-                                ref.read(orderProvider.notifier).setPickupTime(dt);
-                              } catch (_) {}
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 160),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          if (currentSlots.isEmpty) {
+                            return Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.15) : const Color(0xFFF0F9FF))
-                                    : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.72)),
-                                borderRadius: BorderRadius.circular(18),
+                                color: isDark
+                                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                                    : Colors.white.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFF0284C7)
-                                      : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
-                                  width: isSelected ? 1.5 : 1,
+                                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
                                 ),
                                 boxShadow: [
-                                  if (isSelected)
-                                    BoxShadow(
-                                      color: const Color(0xFF0284C7).withValues(alpha: 0.2),
-                                      blurRadius: 12,
-                                    )
-                                  else
-                                    BoxShadow(
-                                      color: isDark ? Colors.black.withValues(alpha: 0.1) : const Color(0x0C64748B),
-                                      blurRadius: 6,
-                                    ),
+                                  BoxShadow(
+                                    color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x0C0F172A),
+                                    blurRadius: 10,
+                                  ),
                                 ],
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              child: Column(
                                 children: [
-                                  Text(
-                                    slot,
-                                    style: TextStyle(
-                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                                      fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.nightlight_round,
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                      size: 26,
                                     ),
                                   ),
-                                  Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
-                                      border: Border.all(
-                                        color: isSelected ? const Color(0xFF0284C7) : const Color(0xFFCBD5E1),
-                                        width: isSelected ? 2 : 1,
-                                      ),
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    'Shop Closed For Today',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
                                     ),
-                                    child: isSelected
-                                        ? Center(
-                                            child: Container(
-                                              width: 10,
-                                              height: 10,
-                                              decoration: const BoxDecoration(
-                                                color: Color(0xFF0284C7),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                          )
-                                        : null,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'All pickup slots for today have ended. The shop reopens tomorrow morning at 9:00 AM.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      height: 1.4,
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      final tomorrow = DateTime.now().add(const Duration(days: 1));
+                                      setState(() {
+                                        _selectedDate = tomorrow;
+                                        _selectedTimeSlot = null;
+                                        ref.read(orderProvider.notifier).setPickupTime(null);
+                                      });
+                                    },
+                                    icon: const Icon(Icons.calendar_today_rounded, size: 15),
+                                    label: Text(
+                                      'Select Tomorrow (${DateFormat('d MMM').format(DateTime.now().add(const Duration(days: 1)))})',
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0284C7),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                      elevation: 0,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                        );
-                      }),
+                            );
+                          }
+
+                          return Column(
+                            children: currentSlots.map((slotItem) {
+                              final isSelected = _selectedTimeSlot == slotItem.display;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedTimeSlot = slotItem.display;
+                                    });
+                                    ref.read(orderProvider.notifier).setPickupTime(slotItem.dateTime);
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 160),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.15) : const Color(0xFFF0F9FF))
+                                          : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.72)),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? const Color(0xFF0284C7)
+                                            : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
+                                        width: isSelected ? 1.5 : 1,
+                                      ),
+                                      boxShadow: [
+                                        if (isSelected)
+                                          BoxShadow(
+                                            color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                                            blurRadius: 12,
+                                          )
+                                        else
+                                          BoxShadow(
+                                            color: isDark ? Colors.black.withValues(alpha: 0.1) : const Color(0x0C64748B),
+                                            blurRadius: 6,
+                                          ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          slotItem.display,
+                                          style: TextStyle(
+                                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                            fontSize: 14,
+                                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 20,
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                                            border: Border.all(
+                                              color: isSelected ? const Color(0xFF0284C7) : const Color(0xFFCBD5E1),
+                                              width: isSelected ? 2 : 1,
+                                            ),
+                                          ),
+                                          child: isSelected
+                                              ? Center(
+                                                  child: Container(
+                                                    width: 10,
+                                                    height: 10,
+                                                    decoration: const BoxDecoration(
+                                                      color: Color(0xFF0284C7),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                )
+                                              : null,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
                       const SizedBox(height: 16),
                     ],
 
