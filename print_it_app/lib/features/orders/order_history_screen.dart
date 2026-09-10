@@ -328,11 +328,8 @@ class OrderHistoryScreen extends ConsumerWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF7000FF).withValues(alpha: 0.3),
+                color: const Color(0xFF0284C7).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(color: const Color(0xFF3BAFF2).withValues(alpha: 0.3), blurRadius: 10)
-                ],
               ),
               child: Icon(icon, color: const Color(0xFFDBFCFF)),
             )

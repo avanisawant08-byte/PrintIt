@@ -164,8 +164,7 @@ const Wallet = () => {
       {/* Summary Cards Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Card 1: Available Balance */}
-        <div className="glass-panel p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden group hover:glow-active transition-all duration-500">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors"></div>
+        <div className="glass-panel p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden group hover:border-primary/50 hover:shadow-md transition-all duration-300">
           <span className="text-label-md font-label-md text-on-surface-variant">Available Balance</span>
           <div className="text-headline-lg font-headline-lg font-bold text-primary mt-1">
             ₹{wallet.availableBalance.toFixed(2)}
@@ -174,7 +173,7 @@ const Wallet = () => {
             <button
               onClick={() => setShowWithdrawModal(true)}
               disabled={wallet.availableBalance < 100}
-              className="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(96,165,250,0.3)] cursor-pointer font-bold active:scale-[0.98] disabled:opacity-50"
+              className="w-full bg-primary hover:bg-primary/90 text-on-primary font-label-md text-label-md py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer font-bold active:scale-[0.98] disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-sm">payments</span>
               Request Withdrawal

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryCyan = Color(0xFF06B6D4); // Cyan from Stitch design
-  static const Color accentPurple = Color(0xFF7C3AED); // Purple from Stitch design
+  static const Color logoBlue = Color(0xFF51C5F6); // Dominant saturated brand blue from original logo
+  static const Color primaryCyan = logoBlue; // Saturated blue from logo
+  static const Color brandBlue = Color(0xFF0284C7); // High-contrast deep brand blue
+  static const Color accentPurple = brandBlue; // Legacy alias replaced with brandBlue
   static const Color lightBackground = Color(0xFFF8FCFF); // Stitch Light background
   static const Color darkBackground = Color(0xFF050811); // Stitch Dark background
 
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
-      primaryColor: primaryCyan,
+      primaryColor: brandBlue,
       scaffoldBackgroundColor: lightBackground,
       fontFamily: 'Inter',
       textTheme: const TextTheme(
@@ -24,8 +26,8 @@ class AppTheme {
         bodySmall: TextStyle(color: Color(0xFF64748B)),
       ),
       colorScheme: const ColorScheme.light(
-        primary: primaryCyan,
-        secondary: accentPurple,
+        primary: brandBlue,
+        secondary: primaryCyan,
         surface: Colors.white,
         onSurface: Color(0xFF000000),
       ),
@@ -36,7 +38,7 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      primaryColor: primaryCyan,
+      primaryColor: brandBlue,
       scaffoldBackgroundColor: darkBackground,
       fontFamily: 'Inter',
       textTheme: const TextTheme(
@@ -51,8 +53,8 @@ class AppTheme {
         bodySmall: TextStyle(color: Color(0xFF64748B)),
       ),
       colorScheme: const ColorScheme.dark(
-        primary: primaryCyan,
-        secondary: accentPurple,
+        primary: brandBlue,
+        secondary: primaryCyan,
         surface: Color(0xFF111928),
         onSurface: Colors.white,
       ),

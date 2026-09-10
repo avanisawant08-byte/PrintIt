@@ -837,17 +837,11 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: const Color(0xFF22D3EE).withValues(alpha: isDark ? 0.35 : 0.28),
-                blurRadius: 14,
-                spreadRadius: 0,
-              )
-            else
-              BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x1064748B),
-                blurRadius: 8,
-              ),
+            BoxShadow(
+              color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x1064748B),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
         child: Row(

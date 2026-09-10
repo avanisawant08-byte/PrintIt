@@ -56,11 +56,12 @@ const Login = () => {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center min-h-[70vh]">
+    <div className="flex-1 flex items-center justify-center min-h-screen min-h-[100dvh]">
       <div className="w-full max-w-[400px] bg-surface-container border border-outline-variant/30 rounded-xl p-8 shadow-2xl">
-        <div className="text-center mb-8">
-          <h2 className="font-headline-lg text-primary mb-2">Welcome Back</h2>
-          <p className="text-on-surface-variant font-body-sm">Sign in to manage your print queue</p>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src="/logo_cropped.png" alt="PrintIt Logo" className="w-14 h-14 object-contain mb-3 drop-shadow-sm" />
+          <h2 className="font-headline-lg text-primary mb-1 text-2xl font-bold leading-tight min-h-[32px]">Welcome Back</h2>
+          <p className="text-on-surface-variant font-body-sm min-h-[20px]">Sign in to manage your print queue</p>
         </div>
         
         {isSessionExpired && (

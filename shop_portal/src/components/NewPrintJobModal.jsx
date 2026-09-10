@@ -127,8 +127,6 @@ const NewPrintJobModal = ({ onClose, onSubmitJob }) => {
                     <div className="h-2 w-full bg-on-surface/10 rounded"></div>
                     <div className="h-2 w-1/2 bg-on-surface/10 rounded"></div>
                   </div>
-                  {/* Decorative ambient cyan glow */}
-                  <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-primary-fixed-dim/10 blur-3xl rounded-full"></div>
                 </div>
               </div>
             </div>

@@ -42,7 +42,8 @@ const Register = () => {
   return (
     <div className="flex-1 flex items-center justify-center min-h-screen py-12 px-4">
       <div className="w-full max-w-[650px] bg-surface-container border border-outline-variant/30 rounded-xl p-8 shadow-2xl my-auto">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src="/logo_cropped.png" alt="PrintIt Logo" className="w-14 h-14 object-contain mb-3 rounded-xl shadow-sm" />
           <h2 className="font-headline-lg text-primary mb-2">Register Your Shop</h2>
           <p className="text-on-surface-variant font-body-sm">Join the PrintIt network and start receiving digital orders</p>
         </div>

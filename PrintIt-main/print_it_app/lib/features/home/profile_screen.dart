@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/theme_provider.dart';
+import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
 import '../auth/auth_provider.dart';
@@ -21,50 +22,87 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white.withValues(alpha: 0.05),
-        flexibleSpace: ClipRRect(
-          child: BackdropFilter(
-            filter: dart_ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-        elevation: 0,
-        title: Row(
-          children: [
-            Icon(Icons.print, color: const Color(0xFF00daf3)),
-            const SizedBox(width: 8),
-            const Text(
-              'Print It',
-              style: TextStyle(
-                color: Color(0xFF00daf3),
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: AppBar(
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
+              flexibleSpace: ClipRRect(
+                child: BackdropFilter(
+                  filter: dart_ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(color: Colors.transparent),
+                ),
               ),
+              elevation: 0,
+              centerTitle: false,
+              titleSpacing: 16,
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      'assets/logo_cropped.png',
+                      height: 28,
+                      width: 28,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.print, color: AppTheme.logoBlue),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Print It',
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : const Color(0xFF0F172A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    icon: Icon(
+                      Theme.of(context).brightness == Brightness.dark 
+                        ? Icons.light_mode 
+                        : Icons.dark_mode,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      size: 22,
+                    ),
+                    tooltip: Theme.of(context).brightness == Brightness.dark 
+                        ? 'Switch to Light Mode' 
+                        : 'Switch to Dark Mode',
+                    onPressed: () {
+                      ref.read(themeModeProvider.notifier).toggle(Theme.of(context).brightness);
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark 
-                ? Icons.light_mode 
-                : Icons.dark_mode,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onPressed: () {
-              ref.read(themeModeProvider.notifier).toggle(Theme.of(context).brightness);
-            },
           ),
-        ],
+        ),
       ),
       body: Stack(
         children: [
           const AmbientBackground(),
           SafeArea(
-            child: user == null
-                ? _buildGuestProfile(context)
-                : _buildUserProfile(context, ref, user),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: user == null
+                    ? _buildGuestProfile(context)
+                    : _buildUserProfile(context, ref, user),
+              ),
+            ),
           ),
         ],
       ),
@@ -89,12 +127,13 @@ class ProfileScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () => context.go('/login'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00daf3),
-              foregroundColor: const Color(0xFF0b1326),
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+              backgroundColor: AppTheme.logoBlue,
+              foregroundColor: const Color(0xFF001E2C),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             ),
-            child: const Text('Login / Sign Up', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Login / Sign Up', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           )
         ],
       ),
@@ -120,21 +159,14 @@ class ProfileScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF00daf3), width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF00daf3).withValues(alpha: 0.15),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                          ),
-                        ],
+                        border: Border.all(color: AppTheme.logoBlue, width: 2),
                       ),
                       child: CircleAvatar(
                         radius: 44,
                         backgroundColor: const Color(0xFF131b2e),
                         backgroundImage: user['avatar_url'] != null ? NetworkImage(user['avatar_url']) : null,
                         child: user['avatar_url'] == null 
-                            ? const Icon(Icons.person, size: 44, color: Color(0xFF00daf3))
+                            ? const Icon(Icons.person, size: 44, color: AppTheme.logoBlue)
                             : null,
                       ),
                     ),
@@ -143,7 +175,7 @@ class ProfileScreen extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00daf3),
+                          color: AppTheme.logoBlue,
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFF0b1326), width: 2),
                         ),
@@ -212,7 +244,7 @@ class ProfileScreen extends ConsumerWidget {
                                     style: const TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF00daf3),
+                                      color: AppTheme.logoBlue,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -248,7 +280,7 @@ class ProfileScreen extends ConsumerWidget {
                                     style: const TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF00daf3),
+                                      color: AppTheme.logoBlue,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -282,7 +314,7 @@ class ProfileScreen extends ConsumerWidget {
             child: Text(
               'APP SETTINGS',
               style: TextStyle(
-                color: Color(0xFF00daf3),
+                color: AppTheme.logoBlue,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.5,
@@ -332,7 +364,7 @@ class ProfileScreen extends ConsumerWidget {
             child: Text(
               'LEGAL & POLICIES',
               style: TextStyle(
-                color: Color(0xFF00daf3),
+                color: AppTheme.logoBlue,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.5,
@@ -393,7 +425,7 @@ class ProfileScreen extends ConsumerWidget {
                 child: Text(
                   'WALLET HISTORY',
                   style: TextStyle(
-                    color: Color(0xFF00daf3),
+                    color: AppTheme.logoBlue,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -403,7 +435,7 @@ class ProfileScreen extends ConsumerWidget {
               TextButton(
                 onPressed: () => context.push('/wallet'),
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF00daf3),
+                  foregroundColor: AppTheme.logoBlue,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -449,7 +481,7 @@ class ProfileScreen extends ConsumerWidget {
             },
             loading: () => const Center(child: Padding(
               padding: EdgeInsets.all(24.0),
-              child: CircularProgressIndicator(color: Color(0xFF00daf3)),
+              child: CircularProgressIndicator(color: AppTheme.logoBlue),
             )),
             error: (e, st) => Center(child: Text('Error loading wallet history', style: TextStyle(color: Colors.redAccent))),
           ),
@@ -514,8 +546,8 @@ class ProfileScreen extends ConsumerWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: const Color(0xFF00daf3),
-            activeTrackColor: const Color(0xFF00daf3).withValues(alpha: 0.3),
+            activeThumbColor: AppTheme.logoBlue,
+            activeTrackColor: AppTheme.logoBlue.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey,
             inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
           ),
@@ -557,7 +589,7 @@ class ProfileScreen extends ConsumerWidget {
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: isCredit ? const Color(0xFF00daf3) : Theme.of(context).colorScheme.onSurfaceVariant),
+            child: Icon(icon, color: isCredit ? AppTheme.logoBlue : Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(width: 16),
           Expanded(

@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OfflineBanner from '../components/ui/OfflineBanner';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -25,8 +26,9 @@ const DashboardLayout = () => {
       <OfflineBanner />
       {/* Top Navigation Bar */}
       <header className="bg-surface-dim text-on-surface flex justify-between items-center px-container-padding py-md w-full sticky top-0 z-50 border-b border-outline-variant/30">
-        <div className="flex items-center gap-md">
-          <span className="font-headline-lg text-[20px] font-bold text-primary px-4">
+        <div className="flex items-center gap-2.5 px-4">
+          <img src="/logo_cropped.png" alt="PrintIt Logo" className="w-8 h-8 object-contain rounded-lg shadow-sm" />
+          <span className="font-headline-lg text-[20px] font-bold text-primary">
             PrintIt | <span className="font-normal opacity-70 text-on-surface">Admin Portal</span>
           </span>
         </div>
@@ -45,6 +47,7 @@ const DashboardLayout = () => {
         </nav>
 
         <div className="flex items-center gap-md px-4">
+          <ThemeToggle />
           <div className="flex items-center gap-sm">
             <div className="text-right hidden sm:block">
               <p className="font-label-md text-[10px] leading-none opacity-50 uppercase">Administrator</p>

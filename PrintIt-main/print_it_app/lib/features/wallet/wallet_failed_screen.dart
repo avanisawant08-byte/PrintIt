@@ -104,8 +104,8 @@ class WalletFailedScreen extends StatelessWidget {
                       },
                       child: Ink(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF3BAFF2), Color(0xFF7000FF)],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
                           ),
                           borderRadius: BorderRadius.circular(28),
                         ),

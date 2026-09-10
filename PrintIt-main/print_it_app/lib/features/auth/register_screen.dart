@@ -61,13 +61,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/logo_cropped.png',
+                      height: 72,
+                      width: 72,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     'Create Account',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
                         ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: nameController,
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
@@ -131,13 +142,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       onPressed: isLoading ? null : _register,
                       child: isLoading
-                          ? CircularProgressIndicator(color: Theme.of(context).colorScheme.onSurface)
-                          : Text(
+                          ? const CircularProgressIndicator(color: Color(0xFF001E2C))
+                          : const Text(
                               'Sign Up',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: Color(0xFF001E2C),
                               ),
                             ),
                     ),

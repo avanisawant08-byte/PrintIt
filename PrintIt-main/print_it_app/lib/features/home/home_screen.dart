@@ -86,14 +86,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ref.read(themeModeProvider.notifier).toggle(Theme.of(context).brightness);
                 },
               ),
-              title: Text(
-                'PrintIt',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: isDark ? 22 : 24,
-                  letterSpacing: -0.5,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      'assets/logo_cropped.png',
+                      height: 28,
+                      width: 28,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'PrintIt',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isDark ? 22 : 24,
+                      letterSpacing: -0.5,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 Stack(
@@ -116,17 +131,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Container(
                         width: 7,
                         height: 7,
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF22D3EE) : Colors.redAccent,
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
                           shape: BoxShape.circle,
-                          boxShadow: isDark
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFF22D3EE).withValues(alpha: 0.8),
-                                    blurRadius: 4,
-                                  ),
-                                ]
-                              : null,
                         ),
                       ),
                     ),
@@ -474,14 +481,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (isActive) {
       if (isDark) {
-        bgColor = const Color(0xFF008BA3);
+        bgColor = const Color(0xFF0284C7);
         textColor = Colors.white;
-        border = null;
+        border = Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5), width: 1.0);
         shadows = [
           BoxShadow(
-            color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ];
       } else {
@@ -565,17 +572,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 borderRadius: BorderRadius.circular(isDark ? 22 : 26),
                 border: Border.all(
                   color: isDark
-                      ? const Color(0xFF14B8A6).withValues(alpha: 0.25)
+                      ? const Color(0xFF14B8A6).withValues(alpha: 0.35)
                       : const Color(0xFFA7F3D0),
                   width: isDark ? 1.0 : 2.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark
-                        ? const Color(0xFF0D9488).withValues(alpha: 0.15)
-                        : const Color(0xFF059669).withValues(alpha: 0.10),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -629,26 +634,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Color(0xFF2A1B4E),
-                          Color(0xFF1D1438),
+                          Color(0xFF0F2238),
+                          Color(0xFF0A1829),
                         ],
                       )
                     : null,
-                color: isDark ? null : const Color(0xFFEDE2FE).withValues(alpha: 0.85),
+                color: isDark ? null : const Color(0xFFE0F2FE).withValues(alpha: 0.90),
                 borderRadius: BorderRadius.circular(isDark ? 22 : 26),
                 border: Border.all(
                   color: isDark
-                      ? const Color(0xFFA855F7).withValues(alpha: 0.25)
-                      : const Color(0xFFD9C4FD),
+                      ? const Color(0xFF1E3A5F)
+                      : const Color(0xFFBAE6FD),
                   width: isDark ? 1.0 : 2.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark
-                        ? const Color(0xFF7C3AED).withValues(alpha: 0.15)
-                        : const Color(0xFF9333EA).withValues(alpha: 0.10),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -658,14 +661,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   height: 52,
                   decoration: BoxDecoration(
                     color: isDark
-                        ? const Color(0xFFA855F7).withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.70),
+                        ? const Color(0xFF0284C7).withValues(alpha: 0.15)
+                        : Colors.white.withValues(alpha: 0.75),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
                     Icons.storefront_rounded,
                     size: 30,
-                    color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA),
+                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                   ),
                 ),
               ),
@@ -800,25 +803,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Middle Row: Status & Hours & Optional Rating
             Row(
               children: [
-                // Glowing dot
+                // Status indicator dot (No glow)
                 Container(
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: isOpen
-                        ? (isDark ? const Color(0xFF22D3EE) : const Color(0xFF10B981))
-                        : Colors.redAccent,
+                    color: isOpen ? const Color(0xFF10B981) : Colors.redAccent,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: isOpen
-                            ? (isDark
-                                ? const Color(0xFF22D3EE).withValues(alpha: 0.8)
-                                : const Color(0xFF10B981).withValues(alpha: 0.6))
-                            : Colors.redAccent.withValues(alpha: 0.6),
-                        blurRadius: 6,
-                      ),
-                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -828,7 +819,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isOpen
-                        ? (isDark ? const Color(0xFF22D3EE) : const Color(0xFF047857))
+                        ? (isDark ? const Color(0xFF34D399) : const Color(0xFF047857))
                         : Colors.redAccent,
                   ),
                 ),
@@ -884,10 +875,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  elevation: 4,
-                  shadowColor: isDark
-                      ? const Color(0xFF1798D1).withValues(alpha: 0.3)
-                      : const Color(0xFF0284C7).withValues(alpha: 0.25),
+                  elevation: 2,
+                  shadowColor: Colors.black.withValues(alpha: 0.15),
                 ),
                 onPressed: () {
                   final shopId = (shop['shop_id'] ?? shop['id']).toString();
@@ -903,10 +892,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
                 child: Ink(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isDark
-                          ? const [Color(0xFF1798D1), Color(0xFF7154F8)]
-                          : const [Color(0xFF0EA5E9), Color(0xFF4F46E5)],
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -1017,7 +1004,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    final activeColor = isDark ? const Color(0xFF22D3EE) : const Color(0xFF0284C7);
+    final activeColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
     final inactiveColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     return GestureDetector(
@@ -1031,17 +1018,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
               color: isActive
-                  ? (isDark ? const Color(0xFF14324F) : const Color(0xFFE0F2FE))
+                  ? (isDark ? const Color(0xFF132338) : const Color(0xFFE0F2FE))
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
-              boxShadow: (isActive && isDark)
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
-                        blurRadius: 10,
-                      ),
-                    ]
-                  : null,
             ),
             child: Icon(
               icon,

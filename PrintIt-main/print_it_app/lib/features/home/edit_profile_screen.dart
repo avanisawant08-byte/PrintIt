@@ -59,7 +59,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Profile Picture',
-            toolbarColor: const Color(0xFF7000FF),
+            toolbarColor: const Color(0xFF0284C7),
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
             lockAspectRatio: true,
@@ -170,7 +170,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         children: [
                           CircleAvatar(
                             radius: 60,
-                            backgroundColor: const Color(0xFF7000FF).withValues(alpha: 0.2),
+                            backgroundColor: const Color(0xFF0284C7).withValues(alpha: 0.15),
                             backgroundImage: _selectedImage != null
                                 ? FileImage(_selectedImage!)
                                 : (_currentAvatarUrl != null ? NetworkImage(_currentAvatarUrl!) : null) as ImageProvider?,
@@ -262,7 +262,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _saveProfile,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7000FF),
+                          backgroundColor: const Color(0xFF0284C7),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),

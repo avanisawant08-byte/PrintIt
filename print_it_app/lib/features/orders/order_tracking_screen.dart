@@ -7,6 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../shared/widgets/glass_container.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../auth/auth_provider.dart';
+import '../../core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final orderDetailsProvider = StreamProvider.autoDispose.family<Map<String, dynamic>, String>((ref, orderId) async* {
@@ -48,7 +49,7 @@ class OrderTrackingScreen extends ConsumerWidget {
         title: const Text(
           'Track Order',
           style: TextStyle(
-            color: Color(0xFF00daf3),
+            color: AppTheme.logoBlue,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -83,7 +84,7 @@ class OrderTrackingScreen extends ConsumerWidget {
               },
               child: orderAsync.when(
                 data: (order) => _buildOrderDetails(context, ref, order),
-                loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF00daf3))),
+                loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.logoBlue)),
                 error: (e, st) => SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: SizedBox(
@@ -123,7 +124,7 @@ class OrderTrackingScreen extends ConsumerWidget {
           const Text(
             'ORDER LIVE TRACKING',
             style: TextStyle(
-              color: Color(0xFF00daf3),
+              color: AppTheme.logoBlue,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.5,
@@ -149,15 +150,8 @@ class OrderTrackingScreen extends ConsumerWidget {
               Container(
                 width: 200,
                 height: 200,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00daf3).withValues(alpha: 0.15),
-                      blurRadius: 40,
-                      spreadRadius: 10,
-                    ),
-                  ],
                 ),
               ),
               // Circular Progress
@@ -172,7 +166,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                       value: value,
                       strokeWidth: 4,
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00daf3)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.logoBlue),
                     );
                   },
                 ),
@@ -187,8 +181,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF00daf3),
-                      shadows: [Shadow(color: Color(0xFF00daf3), blurRadius: 12)],
+                      color: AppTheme.logoBlue,
                     ),
                   ),
                   if (status == 'queued' || status == 'processing')
@@ -240,8 +233,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                         width: 2,
                         height: currentStep == 0 ? 0 : (currentStep == 1 ? 56 : (currentStep == 2 ? 112 : 168.0)),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF00daf3),
-                          boxShadow: [BoxShadow(color: Color(0xFF00daf3), blurRadius: 8)],
+                          color: AppTheme.logoBlue,
                         ),
                       ),
                     ),
@@ -300,7 +292,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.info_outline, color: Color(0xFF00daf3), size: 18),
+                      Icon(Icons.info_outline, color: AppTheme.logoBlue, size: 18),
                       SizedBox(width: 8),
                       Text('Print Instructions', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                     ],
@@ -330,7 +322,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                       if (files.length > 1)
                         TextButton(
                           onPressed: () => _downloadAllFiles(context, ref, orderId),
-                          child: const Text('Download All', style: TextStyle(color: Color(0xFF00daf3), fontSize: 12)),
+                          child: const Text('Download All', style: TextStyle(color: AppTheme.logoBlue, fontSize: 12)),
                         ),
                     ],
                   ),
@@ -355,7 +347,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                             child: Text(fileName, style: const TextStyle(color: Colors.white, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.download, color: Color(0xFF00daf3)),
+                            icon: const Icon(Icons.download, color: AppTheme.logoBlue),
                             onPressed: () => _downloadFile(context, ref, orderId, index),
                           ),
                         ],
@@ -420,11 +412,10 @@ class OrderTrackingScreen extends ConsumerWidget {
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isCompleted ? const Color(0xFF00daf3) : Colors.white.withValues(alpha: 0.05),
+            color: isCompleted ? AppTheme.logoBlue : Colors.white.withValues(alpha: 0.05),
             border: Border.all(
               color: isCompleted ? Colors.transparent : Colors.white.withValues(alpha: 0.12),
             ),
-            boxShadow: isProcessing ? [const BoxShadow(color: Color(0xFF00daf3), blurRadius: 15, spreadRadius: 2)] : [],
           ),
           child: Icon(
             icon,
@@ -439,7 +430,7 @@ class OrderTrackingScreen extends ConsumerWidget {
               Text(
                 title,
                 style: TextStyle(
-                  color: isCompleted ? (isProcessing ? const Color(0xFF00daf3) : Colors.white) : Colors.white54,
+                  color: isCompleted ? (isProcessing ? AppTheme.logoBlue : Colors.white) : Colors.white54,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

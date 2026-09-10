@@ -26,17 +26,12 @@
 <!-- Custom CSS for Glow Effects and Background Gradients -->
 <style data-purpose="custom-background">
     body {
-      background-color: #050811;
+      background-color: #070b14;
       color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .app-viewport {
-      background: radial-gradient(circle at 10% 10%, rgba(14, 116, 144, 0.22) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 80%, rgba(88, 28, 135, 0.2) 0%, transparent 50%),
-                  #070d18;
-    }
-    .active-nav-glow {
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+      background: #090e1a;
     }
   </style>
 </head>
@@ -113,10 +108,10 @@
 </div>
 <!-- Action 2: Upload -->
 
-<!-- Action 3: Shops -->
+<!-- Action 2: Store -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer">
-<div class="w-full aspect-square rounded-2xl bg-gradient-to-b from-[#2a1b4e]/80 to-[#1d1438]/90 border border-purple-500/20 flex items-center justify-center shadow-lg group-hover:border-purple-400/50 transition-all duration-200">
-<div class="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+<div class="w-full aspect-square rounded-2xl bg-gradient-to-b from-[#0f2238]/80 to-[#0a1829]/90 border border-sky-500/20 flex items-center justify-center shadow-lg group-hover:border-sky-400/50 transition-all duration-200">
+<div class="w-9 h-9 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400">
 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 <path d="M3 3h18v4a3 3 0 01-3 3 3 3 0 01-3-3 3 3 0 01-3 3 3 3 0 01-3-3 3 3 0 01-3-3V3z" stroke-linecap="round" stroke-linejoin="round"></path>
 <path d="M4 10v10a1 1 0 001 1h14a1 1 0 001-1V10" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -124,7 +119,7 @@
 </svg>
 </div>
 </div>
-<span class="text-xs font-medium text-slate-200 group-hover:text-purple-300 transition-colors">Shops</span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-sky-300 transition-colors">Store</span>
 </div></section>
 <!-- END: QuickActionsGrid -->
 <!-- BEGIN: NearbyShopsSection -->
@@ -159,14 +154,14 @@
 </div>
 <!-- Shop Status & Timings -->
 <div class="flex items-center gap-2 text-xs mt-3 text-slate-300">
-<span class="inline-block w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
-<span class="font-medium text-cyan-300">Open Now</span>
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="font-medium text-emerald-400">Open Now</span>
 <span class="text-slate-500">•</span>
 <span class="text-slate-400 text-[11px]">Hours: 09:00 - 18:00</span>
 </div>
 <!-- Order Now CTA Button -->
 <div class="mt-4">
-<button class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#1798d1] to-[#7154f8] hover:opacity-95 text-white font-semibold text-sm shadow-md shadow-blue-900/30 transition-all flex items-center justify-center">
+<button class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] hover:opacity-95 text-white font-semibold text-sm shadow-md transition-all flex items-center justify-center">
               Order Now
             </button>
 </div>
@@ -201,7 +196,7 @@
 <div class="flex items-center justify-around">
 <!-- Tab: Home (Active) -->
 <button class="flex flex-col items-center gap-1 group">
-<div class="w-9 h-7 rounded-lg bg-[#14324f] text-cyan-400 flex items-center justify-center transition-transform active:scale-95 active-nav-glow">
+<div class="w-9 h-7 rounded-lg bg-[#14324f] text-cyan-400 flex items-center justify-center transition-transform active:scale-95">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
 <rect height="7" rx="1" width="7" x="3" y="3"></rect>
 <rect height="7" rx="1" width="7" x="14" y="3"></rect>

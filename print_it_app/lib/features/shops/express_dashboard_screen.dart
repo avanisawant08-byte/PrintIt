@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../../core/api/api_client.dart';
+import '../../core/theme/app_theme.dart';
 
 final shopOrdersProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
   final api = ref.read(apiProvider);
@@ -91,7 +92,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
                         ],
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFDDB7FF))),
+                    loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.logoBlue)),
                     error: (err, stack) => Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -128,7 +129,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
             const SizedBox(width: 8),
             _queueTabButton('scheduled', '🗓️ Scheduled Queue', scheduledCount, const Color(0xFF00E5FF)),
             const SizedBox(width: 8),
-            _queueTabButton('all', '🌐 All Orders', totalCount, const Color(0xFFDDB7FF)),
+            _queueTabButton('all', '🌐 All Orders', totalCount, AppTheme.logoBlue),
           ],
         ),
       ),
@@ -193,6 +194,16 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
         children: [
           Row(
             children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  'assets/logo_cropped.png',
+                  height: 28,
+                  width: 28,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(width: 8),
               RichText(
                 text: const TextSpan(
                   text: 'PrintIt | ',
@@ -229,7 +240,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: const [
-                    Text('12:34:56', style: TextStyle(color: Color(0xFFC0C1FF), fontFamily: 'monospace', fontSize: 14)),
+                    Text('12:34:56', style: TextStyle(color: AppTheme.logoBlue, fontFamily: 'monospace', fontSize: 14)),
                     Text('UTC SYNC', style: TextStyle(color: Colors.white54, fontSize: 8, letterSpacing: 1.5)),
                   ],
                 ),
@@ -243,7 +254,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
                 ],
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.account_circle, color: Color(0xFFC0C1FF)),
+              const Icon(Icons.account_circle, color: AppTheme.logoBlue),
               const SizedBox(width: 16),
               OutlinedButton(
                 onPressed: () {},
@@ -262,7 +273,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
   }
 
   Widget _navItem(IconData icon, String label, {bool isActive = false}) {
-    final color = isActive ? const Color(0xFFC0C1FF) : const Color(0xFFC7C4D7);
+    final color = isActive ? AppTheme.logoBlue : const Color(0xFFC7C4D7);
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
@@ -309,9 +320,9 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
       children: [
         Row(
           children: const [
-            Icon(Icons.bolt, color: Color(0xFFDDB7FF)),
+            Icon(Icons.bolt, color: AppTheme.logoBlue),
             SizedBox(width: 8),
-            Text('Express Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFFDDB7FF))),
+            Text('Express Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.logoBlue)),
           ],
         ),
         const SizedBox(height: 16),
@@ -327,7 +338,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
-                Icon(Icons.inventory_2, size: 48, color: Color(0xFFDDB7FF)),
+                Icon(Icons.inventory_2, size: 48, color: AppTheme.logoBlue),
                 SizedBox(height: 8),
                 Text('No new orders in queue', style: TextStyle(color: Colors.white70)),
               ],
@@ -393,7 +404,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF131B2E),
         borderRadius: BorderRadius.circular(12),
-        border: const Border(left: BorderSide(color: Color(0xFFDDB7FF), width: 4)),
+        border: const Border(left: BorderSide(color: AppTheme.logoBlue, width: 4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,17 +430,17 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('₹${amount.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFC0C1FF), fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('₹${amount.toStringAsFixed(2)}', style: const TextStyle(color: AppTheme.logoBlue, fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDB7FF).withValues(alpha: 0.2),
-                  border: Border.all(color: const Color(0xFFDDB7FF).withValues(alpha: 0.3)),
+                  color: AppTheme.logoBlue.withValues(alpha: 0.15),
+                  border: Border.all(color: AppTheme.logoBlue.withValues(alpha: 0.3)),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('PENDING PRINT', style: TextStyle(color: Color(0xFFDDB7FF), fontSize: 12, fontWeight: FontWeight.w600)),
+                child: const Text('PENDING PRINT', style: TextStyle(color: AppTheme.logoBlue, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -445,7 +456,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
               _detailItem('Copies', '${opts['copies'] ?? 1}'),
               _detailItem('Binding', opts['binding'] ?? 'None'),
               _detailItem('Phone', order['customer_phone'] ?? 'N/A', icon: Icons.call),
-              _detailItem('Pickup', opts['pickup_type'] == 'scheduled' ? 'Scheduled' : 'Express', iconColor: const Color(0xFFDDB7FF)),
+              _detailItem('Pickup', opts['pickup_type'] == 'scheduled' ? 'Scheduled' : 'Express', iconColor: AppTheme.logoBlue),
             ],
           ),
           const SizedBox(height: 16),
@@ -454,10 +465,10 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _updateStatus(context, ref, order['order_id'], 'processing'),
-                  icon: const Icon(Icons.print, color: Color(0xFF0D0096)),
-                  label: const Text('PRINT & ACCEPT', style: TextStyle(color: Color(0xFF0D0096))),
+                  icon: const Icon(Icons.print, color: Color(0xFF001E2C)),
+                  label: const Text('PRINT & ACCEPT', style: TextStyle(color: Color(0xFF001E2C), fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC0C1FF),
+                    backgroundColor: AppTheme.logoBlue,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -467,8 +478,8 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
               OutlinedButton(
                 onPressed: () {},
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: isPaid ? Colors.greenAccent : const Color(0xFFDDB7FF),
-                  side: BorderSide(color: (isPaid ? Colors.greenAccent : const Color(0xFFDDB7FF)).withValues(alpha: 0.3)),
+                  foregroundColor: isPaid ? Colors.greenAccent : AppTheme.logoBlue,
+                  side: BorderSide(color: (isPaid ? Colors.greenAccent : AppTheme.logoBlue).withValues(alpha: 0.3)),
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -490,7 +501,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
         Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 14, color: iconColor ?? const Color(0xFFC0C1FF)),
+              Icon(icon, size: 14, color: iconColor ?? AppTheme.logoBlue),
               const SizedBox(width: 4),
             ],
             Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
@@ -509,7 +520,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Processing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFFC0C1FF))),
+                const Text('Processing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.logoBlue)),
                 IconButton(
                   icon: const Icon(Icons.refresh, color: Color(0xFFC7C4D7), size: 20),
                   onPressed: () => ref.refresh(shopOrdersProvider),
@@ -608,7 +619,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('#$shortId', style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
-              const Text('Printing', style: TextStyle(color: Color(0xFFC0C1FF), fontSize: 10)),
+              const Text('Printing', style: TextStyle(color: AppTheme.logoBlue, fontSize: 10)),
             ],
           ),
           const SizedBox(height: 12),
@@ -620,7 +631,7 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
                   color: const Color(0xFF222A3D),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.description, color: Color(0xFFC0C1FF)),
+                child: const Icon(Icons.description, color: AppTheme.logoBlue),
               ),
               const SizedBox(width: 12),
               Expanded(

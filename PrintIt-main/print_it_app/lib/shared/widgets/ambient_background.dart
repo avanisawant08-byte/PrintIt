@@ -8,53 +8,18 @@ class AmbientBackground extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (isDark) {
-      return Stack(
-        children: [
-          // Base Dark Background (#050811)
-          Container(color: const Color(0xFF050811)),
-
-          // Top-left Teal/Cyan Glow Orb
-          Positioned(
-            top: -60,
-            left: -60,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF0E7490).withValues(alpha: 0.22),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0E7490).withValues(alpha: 0.25),
-                    blurRadius: 120,
-                    spreadRadius: 60,
-                  ),
-                ],
-              ),
-            ),
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF070B14),
+              Color(0xFF090E1A),
+              Color(0xFF0C1322),
+            ],
           ),
-
-          // Bottom-right Deep Purple Glow Orb
-          Positioned(
-            bottom: -60,
-            right: -60,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF581C87).withValues(alpha: 0.20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF581C87).withValues(alpha: 0.25),
-                    blurRadius: 130,
-                    spreadRadius: 60,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       );
     }
 

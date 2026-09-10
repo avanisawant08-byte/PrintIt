@@ -167,7 +167,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     spacing: 8,
                     children: [
                       Chip(label: Text(manual['branch']), backgroundColor: Colors.blue.withValues(alpha: 0.2)),
-                      Chip(label: Text(manual['course_type']), backgroundColor: Colors.purple.withValues(alpha: 0.2)),
+                      Chip(label: Text(manual['course_type']), backgroundColor: const Color(0xFF0284C7).withValues(alpha: 0.15)),
                       if (manual['semester'] != null && manual['semester'].toString().isNotEmpty)
                         Chip(label: Text('${manual['semester']} Sem'), backgroundColor: Colors.orange.withValues(alpha: 0.2)),
                     ],

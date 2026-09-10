@@ -7,7 +7,8 @@ const Landing = () => {
   return (
     <div className="flex flex-col min-h-screen min-h-[100dvh] justify-between">
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="max-w-[640px] text-center p-8 sm:p-12 bg-surface-container rounded-2xl border border-outline-variant/30 shadow-2xl">
+        <div className="max-w-[640px] text-center p-8 sm:p-12 bg-surface-container rounded-2xl border border-outline-variant/30 shadow-2xl flex flex-col items-center">
+          <img src="/logo_cropped.png" alt="PrintIt Logo" className="w-16 h-16 object-contain mb-4 rounded-2xl shadow-md" />
           <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-label-md uppercase tracking-wider mb-6 min-h-[26px]">
             Vendor Operations & Queue Management
           </div>

@@ -131,10 +131,7 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
           {/* Stitch Project 3 Progress Ring & Live Tracking */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
             {/* Circular Progress Indicator */}
-            <div className="relative flex flex-col items-center justify-center p-6 bg-surface-bright/50 rounded-xl border border-outline-variant">
-              <div className="absolute inset-0 flex items-center justify-center animate-pulse-glow">
-                <div className="w-36 h-36 rounded-full bg-primary-container/10 blur-2xl"></div>
-              </div>
+            <div className="relative flex flex-col items-center justify-center p-6 bg-surface-container rounded-xl border border-outline-variant">
               <div className="relative w-40 h-40 flex items-center justify-center glass-panel rounded-full border-2 border-primary-container/20">
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                   <circle className="text-glass-border" cx="50" cy="50" fill="none" r="45" stroke="currentColor" strokeWidth="2"></circle>

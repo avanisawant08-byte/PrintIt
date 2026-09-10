@@ -49,7 +49,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
 
   return (
     <div 
-      className="bg-[#122131]/90 backdrop-blur-md rounded-xl border border-glass-edge/30 p-5 hover:border-primary/50 transition-all shadow-[0_8px_24px_rgba(0,0,0,0.25)] relative group cursor-pointer flex flex-col"
+      className="bg-surface-container backdrop-blur-md rounded-xl border border-glass-edge/40 p-5 hover:border-primary/50 transition-all shadow-sm hover:shadow-md relative group cursor-pointer flex flex-col"
       onClick={() => onOpenModal(order)}
     >
       {/* Card Header */}
@@ -138,7 +138,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
           <>
             <button
               onClick={(e) => handleAction('processing', e)}
-              className="flex-1 bg-[#38bdf8] hover:bg-[#0284c7] text-[#001e2c] font-bold text-xs py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-[0_0_12px_rgba(56,189,248,0.2)] cursor-pointer"
+              className="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">check</span>
               Accept &amp; DL
@@ -164,7 +164,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
             </button>
             <button
               onClick={(e) => handleAction('ready', e)}
-              className="flex-1 bg-[#38bdf8] hover:bg-[#0284c7] text-[#001e2c] font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer"
+              className="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">check_box</span>
               Mark Ready
@@ -175,7 +175,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
         {colType === 'ready' && (
           <button
             onClick={(e) => handleAction('collected', e)}
-            className="flex-1 bg-[#38bdf8] hover:bg-[#0284c7] text-[#001e2c] font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
             Handed to Customer

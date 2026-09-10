@@ -5,6 +5,7 @@ import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
 import '../home/shop_provider.dart';
 import 'order_provider.dart';
+import '../../core/theme/app_theme.dart';
 
 class SelectShopScreen extends ConsumerWidget {
   const SelectShopScreen({super.key});
@@ -74,7 +75,7 @@ class SelectShopScreen extends ConsumerWidget {
                   decoration: BoxDecoration(color: const Color(0xFF1E1E31), borderRadius: BorderRadius.circular(12)),
                   child: Row(
                     children: [
-                      Icon(shop['rating'] != null ? Icons.star : Icons.verified, color: shop['rating'] != null ? Colors.amber : const Color(0xFF00daf3), size: 14),
+                      Icon(shop['rating'] != null ? Icons.star : Icons.verified, color: shop['rating'] != null ? Colors.amber : AppTheme.logoBlue, size: 14),
                       const SizedBox(width: 4),
                       Text(shop['rating'] != null ? '${shop['rating']}' : 'Verified', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w600)),
                     ],
@@ -118,11 +119,11 @@ class SelectShopScreen extends ConsumerWidget {
                 },
                 child: Ink(
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF3BAFF2), Color(0xFF7000FF)]),
+                    gradient: const LinearGradient(colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)]),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Center(
-                    child: Text('Select Shop', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
+                  child: const Center(
+                    child: Text('Select Shop', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),

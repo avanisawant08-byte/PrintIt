@@ -476,7 +476,7 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: allComplete
-                                ? [const Color(0xFF7000FF), Theme.of(context).colorScheme.primary]
+                                ? [const Color(0xFF0EA5E9), const Color(0xFF0284C7)]
                                 : [Colors.grey.shade800, Colors.grey.shade700],
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -654,7 +654,7 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                               gradient: LinearGradient(
                                 colors: fileState.isComplete
                                     ? [Colors.green.shade400, Colors.green.shade600]
-                                    : [Theme.of(context).colorScheme.primary, const Color(0xFF7000FF)],
+                                    : [const Color(0xFF0EA5E9), const Color(0xFF0284C7)],
                               ),
                               boxShadow: [
                                 BoxShadow(

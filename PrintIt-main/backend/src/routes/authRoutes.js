@@ -2,11 +2,39 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const pool = require('../config/db');
 const { getAuth } = require('../config/firebase');
 const auth = require('../middleware/auth');
-const { authLimiter } = require('../middleware/rateLimiter');
+const { authLimiter, loginLimiter, passwordResetLimiter, otpLimiter } = require('../middleware/rateLimiter');
 const { generateUniqueShopCode } = require('../utils/setupShopCodeDb');
+
+// Ensure tables for password resets and token blacklist exist
+async function ensureAuthSecurityTables() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id SERIAL PRIMARY KEY,
+                user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+                token_hash VARCHAR(64) NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                used BOOLEAN DEFAULT false,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_pwd_resets_token ON password_resets(token_hash);
+
+            CREATE TABLE IF NOT EXISTS jwt_blacklist (
+                token_hash VARCHAR(64) PRIMARY KEY,
+                expires_at TIMESTAMPTZ NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_jwt_blacklist_expires ON jwt_blacklist(expires_at);
+        `);
+    } catch (e) {
+        console.warn('Auth security tables setup warning:', e.message);
+    }
+}
+ensureAuthSecurityTables();
 
 // POST /api/auth/register — Create a new user
 router.post('/register', authLimiter, async (req, res) => {
@@ -26,7 +54,7 @@ router.post('/register', authLimiter, async (req, res) => {
 
     try {
         // Check if user already exists
-        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const userCheck = await pool.query('SELECT user_id FROM users WHERE email = $1', [email]);
         if (userCheck.rows.length > 0) {
             return res.status(400).json({ error: 'User with this email already exists' });
         }
@@ -59,13 +87,13 @@ router.post('/register', authLimiter, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Registration error:', err);
+        console.error('Registration error:', err.message);
         res.status(500).json({ error: 'Failed to register user' });
     }
 });
 
-// POST /api/auth/login — User login
-router.post('/login', authLimiter, async (req, res) => {
+// POST /api/auth/login — User login (Strict rate limit: 5 per minute)
+router.post('/login', loginLimiter, async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -74,7 +102,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
     try {
         // Find user
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const result = await pool.query('SELECT user_id, email, password_hash, full_name, phone, avatar_url, role FROM users WHERE email = $1', [email]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -111,7 +139,7 @@ router.post('/login', authLimiter, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Login error:', err);
+        console.error('Login error:', err.message);
         res.status(500).json({ error: 'Failed to login' });
     }
 });
@@ -135,7 +163,7 @@ router.post('/register-shop', authLimiter, async (req, res) => {
         await client.query('BEGIN');
 
         // Check if user already exists
-        const userCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+        const userCheck = await client.query('SELECT user_id FROM users WHERE email = $1', [email]);
         if (userCheck.rows.length > 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'User with this email already exists' });
@@ -184,7 +212,7 @@ router.post('/register-shop', authLimiter, async (req, res) => {
 
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('Shop registration error:', err);
+        console.error('Shop registration error:', err.message);
         res.status(500).json({ error: 'Failed to register shop' });
     } finally {
         client.release();
@@ -203,14 +231,14 @@ router.post('/google', authLimiter, async (req, res) => {
         const decodedToken = await getAuth().verifyIdToken(firebase_token);
         const { email, name, uid, picture } = decodedToken;
 
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const result = await pool.query('SELECT user_id, email, full_name, phone, avatar_url, role, google_id FROM users WHERE email = $1', [email]);
         let user;
 
         if (result.rows.length === 0) {
             const insertResult = await pool.query(
                 `INSERT INTO users (email, full_name, google_id, role, avatar_url) 
                  VALUES ($1, $2, $3, $4, $5) 
-                 RETURNING *`,
+                 RETURNING user_id, email, full_name, phone, avatar_url, role`,
                 [email, name || 'Google User', uid, 'customer', picture || null]
             );
             user = insertResult.rows[0];
@@ -241,13 +269,13 @@ router.post('/google', authLimiter, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Google login error detailed:', err);
+        console.error('Google login error:', err.message);
         res.status(401).json({ error: 'Invalid or expired Firebase authentication token' });
     }
 });
 
-// POST /api/auth/phone — Phone OTP Login via Firebase Token
-router.post('/phone', authLimiter, async (req, res) => {
+// POST /api/auth/phone — Phone OTP Login via Firebase Token (Rate limited)
+router.post('/phone', otpLimiter, async (req, res) => {
     const { firebase_token } = req.body;
 
     if (!firebase_token) {
@@ -263,7 +291,7 @@ router.post('/phone', authLimiter, async (req, res) => {
         }
 
         // Search user by phone number
-        let result = await pool.query('SELECT * FROM users WHERE phone = $1', [phone_number]);
+        let result = await pool.query('SELECT user_id, email, phone, full_name, role, avatar_url FROM users WHERE phone = $1', [phone_number]);
         let user;
 
         if (result.rows.length === 0) {
@@ -274,7 +302,7 @@ router.post('/phone', authLimiter, async (req, res) => {
             const insertResult = await pool.query(
                 `INSERT INTO users (email, phone, full_name, role) 
                  VALUES ($1, $2, $3, 'customer') 
-                 RETURNING *`,
+                 RETURNING user_id, email, phone, full_name, role, avatar_url`,
                 [fallbackEmail, phone_number, `Customer ${last4}`]
             );
             user = insertResult.rows[0];
@@ -315,8 +343,142 @@ router.post('/phone', authLimiter, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('Phone login error:', err);
+        console.error('Phone login error:', err.message);
         res.status(401).json({ error: 'Phone authentication verification failed' });
+    }
+});
+
+// POST /api/auth/reset-password — Password Reset (Generates secure 15-min single-use token)
+router.post('/reset-password', passwordResetLimiter, async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ error: 'Email address is required' });
+    }
+
+    try {
+        await ensureAuthSecurityTables();
+        const userRes = await pool.query('SELECT user_id, email FROM users WHERE email = $1', [email]);
+        
+        let resetToken = null;
+        if (userRes.rows.length > 0) {
+            const user = userRes.rows[0];
+            const rawToken = crypto.randomBytes(32).toString('hex');
+            const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+            // Invalidate any existing unused reset tokens for this user
+            await pool.query('UPDATE password_resets SET used = true WHERE user_id = $1 AND used = false', [user.user_id]);
+
+            // Insert new single-use token with 15-minute expiration
+            await pool.query(
+                `INSERT INTO password_resets (user_id, token_hash, expires_at)
+                 VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
+                [user.user_id, tokenHash]
+            );
+
+            resetToken = rawToken;
+        }
+
+        // Response: In automated test environment expose token for integration test suites; otherwise never expose token
+        const isTestEnv = process.env.NODE_ENV === 'test';
+        return res.json({
+            message: 'If an account exists with this email, password reset instructions have been dispatched.',
+            ...(isTestEnv && resetToken ? { reset_token: resetToken } : {})
+        });
+
+    } catch (err) {
+        console.error('Password reset error:', err.message);
+        res.status(500).json({ error: 'Failed to process password reset request' });
+    }
+});
+
+// POST /api/auth/reset-password/confirm — Confirm password reset with token
+router.post('/reset-password/confirm', passwordResetLimiter, async (req, res) => {
+    const { token, new_password } = req.body;
+
+    if (!token || !new_password) {
+        return res.status(400).json({ error: 'Reset token and new password are required' });
+    }
+
+    if (new_password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await ensureAuthSecurityTables();
+
+        const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
+
+        // Check if token exists, is unused, and has not expired
+        const resetRes = await client.query(
+            `SELECT id, user_id, expires_at, used 
+             FROM password_resets 
+             WHERE token_hash = $1 FOR UPDATE`,
+            [tokenHash]
+        );
+
+        if (resetRes.rows.length === 0 || resetRes.rows[0].used || new Date(resetRes.rows[0].expires_at) < new Date()) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Invalid, expired, or previously used password reset token' });
+        }
+
+        const resetRecord = resetRes.rows[0];
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(new_password, salt);
+
+        // Update user's password
+        await client.query(
+            'UPDATE users SET password_hash = $1 WHERE user_id = $2',
+            [password_hash, resetRecord.user_id]
+        );
+
+        // Mark token as used
+        await client.query(
+            'UPDATE password_resets SET used = true WHERE id = $1',
+            [resetRecord.id]
+        );
+
+        await client.query('COMMIT');
+
+        res.json({
+            message: 'Password successfully reset. You may now log in with your new credentials.'
+        });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Password reset confirmation error:', err.message);
+        res.status(500).json({ error: 'Failed to reset password' });
+    } finally {
+        client.release();
+    }
+});
+
+// POST /api/auth/logout — Invalidate current JWT token (Blacklist)
+router.post('/logout', auth, async (req, res) => {
+    try {
+        await ensureAuthSecurityTables();
+        const token = req.token;
+        if (token) {
+            const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+            const expiresAt = req.user && req.user.exp 
+                ? new Date(req.user.exp * 1000) 
+                : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+            await pool.query(
+                `INSERT INTO jwt_blacklist (token_hash, expires_at)
+                 VALUES ($1, $2)
+                 ON CONFLICT (token_hash) DO NOTHING`,
+                [tokenHash, expiresAt]
+            );
+        }
+
+        res.json({ message: 'Logged out successfully. Session invalidated.' });
+    } catch (err) {
+        console.error('Logout error:', err.message);
+        res.status(500).json({ error: 'Failed to process logout' });
     }
 });
 

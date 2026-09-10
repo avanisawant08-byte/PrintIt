@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import NewPrintJobModal from '../../components/NewPrintJobModal';
 import OfflineBanner from '../../components/ui/OfflineBanner';
+import ThemeToggle from '../../components/ui/ThemeToggle';
 
 const DashboardLayout = () => {
   const { user, shopName, shopCode, logout } = useAuth();
@@ -44,18 +45,12 @@ const DashboardLayout = () => {
 
   return (
     <div className="bg-background text-on-surface font-body-md antialiased min-h-screen flex w-full relative">
-      {/* Background Atmospheric Glow */}
-      <div className="fixed inset-0 pointer-events-none z-[-1]">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary-container/5 blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-secondary-container/5 blur-[120px]"></div>
-      </div>
-
       {/* SideNavBar - Optimized for all desktop ratios (1366x768, 1080p, 1440p) */}
       <aside className="hidden md:flex flex-col h-screen fixed left-0 top-0 bottom-0 w-60 lg:w-64 bg-glass-surface backdrop-blur-xl border-r border-glass-edge shadow-xl z-50">
         {/* Header */}
         <div className="px-5 py-4 border-b border-glass-edge/20 flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 shrink-0 flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
+          <div className="w-10 h-10 rounded-xl bg-surface-container border border-glass-edge/40 shrink-0 flex items-center justify-center overflow-hidden p-1 shadow-sm">
+            <img src="/logo_cropped.png" alt="PrintIt Logo" className="w-full h-full object-contain" />
           </div>
           <div className="overflow-hidden">
             <h1 className="font-display font-bold text-on-surface text-sm leading-tight tracking-tight truncate">
@@ -76,7 +71,7 @@ const DashboardLayout = () => {
               className={({ isActive }) =>
                 `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-medium transition-all duration-200 group ${
                   isActive
-                    ? 'text-primary font-bold bg-primary/10 border border-primary/40 shadow-[0_0_15px_rgba(96,165,250,0.15)]'
+                    ? 'text-primary font-bold bg-primary/10 border border-primary/40'
                     : 'text-on-surface-variant/80 hover:text-on-surface hover:bg-glass-edge/20'
                 }`
               }
@@ -139,8 +134,9 @@ const DashboardLayout = () => {
             />
           </div>
 
-          {/* Right Header Actions: Shop Code Pill, Notification Bell, Logout button */}
+          {/* Right Header Actions: Shop Code Pill, Notification Bell, ThemeToggle, Logout button */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <ThemeToggle />
             {displayCode && (
               <div 
                 onClick={handleCopyShopCode}
@@ -167,6 +163,18 @@ const DashboardLayout = () => {
               <span className="hidden sm:inline">LOGOUT</span>
               <span className="material-symbols-outlined text-[18px]">logout</span>
             </button>
+
+            <div className="w-9 h-9 rounded-full bg-surface-container overflow-hidden border border-glass-edge shrink-0">
+              <img
+                alt="User Avatar"
+                width="36"
+                height="36"
+                loading="eager"
+                decoding="async"
+                className="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnOR0laNrpSOZQsExvk0rVxT_PFmJFukviA6Vgm9OGL6Y1JAkhl36GswjuFEUrvH0A_DnCy4cb0yp9PweO76qFa28BJrCyVMCXoc2XwPPkpvf_Oh3iAXaQbiRxBqJ743bn6My5qxCTW8MHh9mIPxTgQdpFz_HlMMybfgSelqyoc45D1GdeMCwrk7jQrXi8EhrbE3yyG6FeMG_LbF1Pn1TfsrNkvJArrP4eRhtjnlqRx7WMlXUVHBTBAA"
+              />
+            </div>
           </div>
         </header>
 

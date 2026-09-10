@@ -35,7 +35,6 @@ async function ensureAuthSecurityTables() {
     }
 }
 ensureAuthSecurityTables();
->>>>>>> e1632a5 (feat(security): complete pre-deployment security hardening, rate limiting, and verification suites)
 
 // POST /api/auth/register — Create a new user
 router.post('/register', authLimiter, async (req, res) => {

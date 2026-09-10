@@ -325,7 +325,7 @@ const Analytics = () => {
                 </div>
                 <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden flex">
                   <div className="bg-cyan-400 h-full" style={{ width: `${printOptData?.size_split?.a4_pct || 100}%` }}></div>
-                  <div className="bg-purple-400 h-full" style={{ width: `${printOptData?.size_split?.a3_pct || 0}%` }}></div>
+                  <div className="bg-teal-400 h-full" style={{ width: `${printOptData?.size_split?.a3_pct || 0}%` }}></div>
                   <div className="bg-amber-400 h-full" style={{ width: `${printOptData?.size_split?.letter_pct || 0}%` }}></div>
                 </div>
               </div>

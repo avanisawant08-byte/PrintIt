@@ -93,7 +93,7 @@ class NotificationsScreen extends ConsumerWidget {
                         color = Colors.greenAccent;
                         icon = Icons.check_circle_outline;
                       } else if (note['type'] == 'order_collected') {
-                        color = const Color(0xFF7000FF);
+                        color = const Color(0xFF0284C7);
                         icon = Icons.shopping_bag;
                       }
 

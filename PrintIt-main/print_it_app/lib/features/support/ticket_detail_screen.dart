@@ -5,6 +5,7 @@ import '../../core/api/api_client.dart';
 import '../../shared/widgets/ambient_background.dart';
 import 'support_provider.dart';
 import '../auth/auth_provider.dart';
+import '../../core/theme/app_theme.dart';
 
 class TicketDetailScreen extends ConsumerStatefulWidget {
   final String ticketId;
@@ -125,11 +126,11 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.receipt_long, size: 14, color: Color(0xFF00daf3)),
+                                    const Icon(Icons.receipt_long, size: 14, color: AppTheme.logoBlue),
                                     const SizedBox(width: 6),
-                                    Text('Linked Order: ${data['order_id']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF00daf3))),
+                                    Text('Linked Order: ${data['order_id']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.logoBlue)),
                                     const SizedBox(width: 4),
-                                    const Icon(Icons.arrow_forward_ios, size: 10, color: Color(0xFF00daf3)),
+                                    const Icon(Icons.arrow_forward_ios, size: 10, color: AppTheme.logoBlue),
                                   ],
                                 ),
                               ),

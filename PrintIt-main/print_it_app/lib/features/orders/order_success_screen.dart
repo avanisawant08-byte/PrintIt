@@ -61,8 +61,8 @@ class OrderSuccessScreen extends ConsumerWidget {
                         height: 96,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF7000FF), Color(0xFF3BAFF2)],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
                             begin: Alignment.bottomLeft,
                             end: Alignment.topRight,
                           ),
@@ -192,8 +192,8 @@ class OrderSuccessScreen extends ConsumerWidget {
                       },
                       child: Ink(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF3BAFF2), Color(0xFF7000FF)],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
                           ),
                           borderRadius: BorderRadius.circular(28),
                         ),
