@@ -11,6 +11,7 @@ class LiveFilePreview extends StatefulWidget {
   final int pagesPerPaper;
   final String orientation;
   final Widget? bottomOverlay;
+  final bool repeatImageOnGrid;
 
   const LiveFilePreview({
     super.key,
@@ -18,6 +19,7 @@ class LiveFilePreview extends StatefulWidget {
     required this.pagesPerPaper,
     required this.orientation,
     this.bottomOverlay,
+    this.repeatImageOnGrid = true,
   });
 
   @override
@@ -265,6 +267,7 @@ class _LiveFilePreviewState extends State<LiveFilePreview> {
         imageWidget: imageWidget,
         pagesPerPaper: widget.pagesPerPaper,
         orientation: widget.orientation,
+        repeatImage: widget.repeatImageOnGrid,
       );
     } else {
       previewWidget = const Center(
@@ -361,11 +364,13 @@ class _NUpImagePreview extends StatelessWidget {
   final Widget imageWidget;
   final int pagesPerPaper;
   final String orientation;
+  final bool repeatImage;
 
   const _NUpImagePreview({
     required this.imageWidget,
     required this.pagesPerPaper,
     required this.orientation,
+    this.repeatImage = true,
   });
 
   @override
@@ -403,19 +408,20 @@ class _NUpImagePreview extends StatelessWidget {
             child: Row(
               children: List.generate(columns, (c) {
                 final cellIndex = r * columns + c;
+                final bool shouldRenderImage = repeatImage || cellIndex == 0;
                 return Expanded(
                   child: Container(
                     margin: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: cellIndex == 0 ? Colors.white : const Color(0xFFF8FAFC),
+                      color: shouldRenderImage ? Colors.white : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: cellIndex == 0 ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0),
+                        color: shouldRenderImage ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0),
                         style: BorderStyle.solid,
                       ),
                     ),
                     alignment: Alignment.center,
-                    child: cellIndex == 0
+                    child: shouldRenderImage
                         ? Padding(
                             padding: const EdgeInsets.all(4),
                             child: imageWidget,

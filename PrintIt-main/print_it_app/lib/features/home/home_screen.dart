@@ -1,3 +1,4 @@
+import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -380,77 +381,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
 
-          // Live Order Floating Tab
+          // Live Order Floating Tab (Apple-style Dynamic Island Live Activity Pill)
           ref.watch(liveOrderProvider).when(
             data: (activeOrder) {
               if (activeOrder == null) return const SizedBox.shrink();
-              final status = activeOrder['status'] as String;
-              final orderId = activeOrder['order_id'] ?? activeOrder['id'];
               return Positioned(
                 bottom: 96,
-                left: 20,
-                right: 20,
-                child: GestureDetector(
-                  onTap: () => context.push('/order-tracking/$orderId'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF111928).withValues(alpha: 0.95)
-                          : Colors.white.withValues(alpha: 0.95),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF06B6D4).withValues(alpha: 0.5)
-                            : const Color(0xFF0284C7).withValues(alpha: 0.4),
+                left: 16,
+                right: 16,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: RepaintBoundary(
+                      child: _LiveOrderPill(
+                        activeOrder: activeOrder,
+                        isDark: isDark,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.sync_rounded, color: Color(0xFF06B6D4), size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'LIVE ORDER TRACKING',
-                                style: TextStyle(
-                                  color: Color(0xFF06B6D4),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Status: ${status.toUpperCase()}',
-                                style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF06B6D4)),
-                      ],
                     ),
                   ),
                 ),
@@ -1042,3 +989,326 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+
+/// Apple-style Dynamic Island / Live Activity frosted glass pill with 60fps lightweight animations.
+class _LiveOrderPill extends StatefulWidget {
+  final Map<String, dynamic> activeOrder;
+  final bool isDark;
+
+  const _LiveOrderPill({
+    required this.activeOrder,
+    required this.isDark,
+  });
+
+  @override
+  State<_LiveOrderPill> createState() => _LiveOrderPillState();
+}
+
+class _LiveOrderPillState extends State<_LiveOrderPill>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseScale;
+  late final Animation<double> _pulseOpacity;
+  bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ultra lightweight 2.2-second smooth breath animation
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+
+    _pulseScale = Tween<double>(begin: 1.0, end: 1.65).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    _pulseOpacity = Tween<double>(begin: 0.65, end: 0.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeOrder = widget.activeOrder;
+    final isDark = widget.isDark;
+    final status =
+        (activeOrder['status'] ?? 'processing').toString().toLowerCase();
+    final orderId =
+        (activeOrder['order_id'] ?? activeOrder['id'] ?? '').toString();
+    final shortId = orderId.length > 8
+        ? orderId.substring(0, 8).toUpperCase()
+        : orderId.toUpperCase();
+
+    // Apple-style semantic color tokens & microcopy
+    final Color accentColor;
+    final IconData statusIcon;
+    final String title;
+    final String subtitle;
+
+    switch (status) {
+      case 'queued':
+        accentColor = const Color(0xFFF59E0B); // Amber
+        statusIcon = Icons.hourglass_top_rounded;
+        title = 'Order in Queue';
+        subtitle = 'Waiting for printer • Tap to track';
+        break;
+      case 'ready':
+        accentColor = const Color(0xFF10B981); // Emerald
+        statusIcon = Icons.check_circle_rounded;
+        title = 'Ready for Pickup';
+        subtitle = 'Order is ready • Tap for QR code';
+        break;
+      case 'processing':
+      default:
+        accentColor = const Color(0xFF0284C7); // Brand Sapphire Blue
+        statusIcon = Icons.print_rounded;
+        title = 'Printing in Progress';
+        subtitle = 'Shop is printing • Tap to track';
+        break;
+    }
+
+    final surfaceColor1 = isDark
+        ? const Color(0xFF131C2E).withValues(alpha: 0.88)
+        : Colors.white.withValues(alpha: 0.90);
+    final surfaceColor2 = isDark
+        ? const Color(0xFF0F172A).withValues(alpha: 0.82)
+        : Colors.white.withValues(alpha: 0.80);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : const Color(0xFFE2E8F0).withValues(alpha: 0.85);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: () => context.push('/order-tracking/$orderId'),
+        child: AnimatedScale(
+          scale: _isHovered ? 1.015 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.40)
+                      : const Color(0x180F172A),
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 8),
+                ),
+                if (_isHovered)
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: isDark ? 0.20 : 0.12),
+                    blurRadius: 24,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 4),
+                  ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: BackdropFilter(
+                filter: dart_ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [surfaceColor1, surfaceColor2],
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: _isHovered
+                          ? accentColor.withValues(alpha: isDark ? 0.45 : 0.35)
+                          : borderColor,
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Status Icon Squircle
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color:
+                              accentColor.withValues(alpha: isDark ? 0.18 : 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: accentColor
+                                .withValues(alpha: isDark ? 0.30 : 0.22),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            statusIcon,
+                            color: accentColor,
+                            size: 19,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Text Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                ),
+                                if (shortId.isNotEmpty) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.08)
+                                          : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white
+                                                .withValues(alpha: 0.06)
+                                            : const Color(0xFFE2E8F0),
+                                        width: 0.6,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '#$shortId',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? const Color(0xFF94A3B8)
+                                            : const Color(0xFF64748B),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                // Pulsing live indicator dot (lightweight, isolated builder)
+                                SizedBox(
+                                  width: 10,
+                                  height: 10,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      AnimatedBuilder(
+                                        animation: _pulseController,
+                                        builder: (context, child) {
+                                          return Transform.scale(
+                                            scale: _pulseScale.value,
+                                            child: Container(
+                                              width: 7,
+                                              height: 7,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: accentColor.withValues(
+                                                    alpha: _pulseOpacity.value),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      Container(
+                                        width: 5,
+                                        height: 5,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: accentColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    subtitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? const Color(0xFF94A3B8)
+                                          : const Color(0xFF64748B),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      // Sleek Apple-style Arrow Chip
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : const Color(0xFFF1F5F9),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.10)
+                                : const Color(0xFFE2E8F0),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 13,
+                          color: isDark
+                              ? const Color(0xFFCBD5E1)
+                              : const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

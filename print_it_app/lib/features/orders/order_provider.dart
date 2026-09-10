@@ -13,6 +13,7 @@ class FileEntry {
   final String printInstructions;
   final String orientation;
   final String sides;
+  final bool repeatImageOnGrid;
 
   FileEntry({
     required this.file,
@@ -24,6 +25,7 @@ class FileEntry {
     this.printInstructions = '',
     this.orientation = 'portrait',
     this.sides = 'single',
+    this.repeatImageOnGrid = true,
   });
 
   FileEntry copyWith({
@@ -36,6 +38,7 @@ class FileEntry {
     String? printInstructions,
     String? orientation,
     String? sides,
+    bool? repeatImageOnGrid,
   }) {
     return FileEntry(
       file: file ?? this.file,
@@ -47,6 +50,7 @@ class FileEntry {
       printInstructions: printInstructions ?? this.printInstructions,
       orientation: orientation ?? this.orientation,
       sides: sides ?? this.sides,
+      repeatImageOnGrid: repeatImageOnGrid ?? this.repeatImageOnGrid,
     );
   }
 }
@@ -65,6 +69,7 @@ class OrderState {
   final String printInstructions;
   final String orientation;
   final String sides;
+  final bool repeatImageOnGrid;
   final String pickupType; // 'express' or 'scheduled'
   final DateTime? pickupTime;
   final double amountTotal;
@@ -90,6 +95,7 @@ class OrderState {
     this.printInstructions = '',
     this.orientation = 'portrait',
     this.sides = 'single',
+    this.repeatImageOnGrid = true,
     this.pickupType = 'express',
     this.pickupTime,
     this.amountTotal = 0.0,
@@ -122,6 +128,7 @@ class OrderState {
     String? printInstructions,
     String? orientation,
     String? sides,
+    bool? repeatImageOnGrid,
     String? pickupType,
     DateTime? pickupTime,
     double? amountTotal,
@@ -147,6 +154,7 @@ class OrderState {
       printInstructions: printInstructions ?? this.printInstructions,
       orientation: orientation ?? this.orientation,
       sides: sides ?? this.sides,
+      repeatImageOnGrid: repeatImageOnGrid ?? this.repeatImageOnGrid,
       pickupType: pickupType ?? this.pickupType,
       pickupTime: pickupTime ?? this.pickupTime,
       amountTotal: amountTotal ?? this.amountTotal,
@@ -232,6 +240,7 @@ class OrderNotifier extends Notifier<OrderState> {
         pagesPerPaper: state.pagesPerPaper,
         orientation: state.orientation,
         sides: state.sides,
+        repeatImageOnGrid: state.repeatImageOnGrid,
       );
       state = state.copyWith(
         files: [entry],
@@ -257,6 +266,7 @@ class OrderNotifier extends Notifier<OrderState> {
         printInstructions: entry.printInstructions,
         orientation: entry.orientation,
         sides: entry.sides,
+        repeatImageOnGrid: entry.repeatImageOnGrid,
       );
       _calculateTotal();
     }
@@ -361,6 +371,16 @@ class OrderNotifier extends Notifier<OrderState> {
       state = state.copyWith(files: newFiles);
     }
     _calculateTotal();
+  }
+
+  void setRepeatImageOnGrid(bool val) {
+    state = state.copyWith(repeatImageOnGrid: val);
+    if (state.files.isNotEmpty && state.activeFileIndex < state.files.length) {
+      final updated = state.files[state.activeFileIndex].copyWith(repeatImageOnGrid: val);
+      final newFiles = List<FileEntry>.from(state.files);
+      newFiles[state.activeFileIndex] = updated;
+      state = state.copyWith(files: newFiles);
+    }
   }
 
   void setPrintInstructions(String text) {

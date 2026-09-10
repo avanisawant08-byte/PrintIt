@@ -143,6 +143,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
           'copies': fileEntry.copies,
           'binding': fileEntry.binding == 'hardcover' ? 'spiral' : fileEntry.binding,
           'pages_per_paper': fileEntry.pagesPerPaper,
+          'repeat_image_on_grid': fileEntry.repeatImageOnGrid,
         },
         'print_instructions': fileEntry.printInstructions,
       });

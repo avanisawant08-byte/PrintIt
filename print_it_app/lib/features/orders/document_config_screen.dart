@@ -36,6 +36,12 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
   Widget build(BuildContext context) {
     final orderState = ref.watch(orderProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeFile = orderState.activeFile;
+    final isImageFile = activeFile != null &&
+        (activeFile.file.name.toLowerCase().endsWith('.jpg') ||
+            activeFile.file.name.toLowerCase().endsWith('.jpeg') ||
+            activeFile.file.name.toLowerCase().endsWith('.png') ||
+            activeFile.file.name.toLowerCase().endsWith('.webp'));
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -117,10 +123,16 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                           },
                                           itemBuilder: (context, index) {
                                             final entry = orderState.files[index];
+                                            final fileName = entry.file.name.toLowerCase();
+                                            final isImage = fileName.endsWith('.jpg') ||
+                                                fileName.endsWith('.jpeg') ||
+                                                fileName.endsWith('.png') ||
+                                                fileName.endsWith('.webp');
                                             return LiveFilePreview(
                                               fileEntry: entry,
                                               pagesPerPaper: orderState.pagesPerPaper,
                                               orientation: orderState.orientation,
+                                              repeatImageOnGrid: orderState.repeatImageOnGrid,
                                               bottomOverlay: Positioned(
                                                 bottom: 6,
                                                 left: 0,
@@ -159,6 +171,56 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                                         _buildOverlayPageButton(ref, 4, orderState.pagesPerPaper == 4),
                                                         const SizedBox(width: 4),
                                                         _buildOverlayPageButton(ref, 6, orderState.pagesPerPaper == 6),
+                                                        if (isImage && orderState.pagesPerPaper > 1) ...[
+                                                          const SizedBox(width: 6),
+                                                          Container(width: 1, height: 14, color: Colors.white24),
+                                                          const SizedBox(width: 6),
+                                                          GestureDetector(
+                                                            onTap: () => ref
+                                                                .read(orderProvider.notifier)
+                                                                .setRepeatImageOnGrid(!orderState.repeatImageOnGrid),
+                                                            child: Container(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                              decoration: BoxDecoration(
+                                                                color: orderState.repeatImageOnGrid
+                                                                    ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                                                    : Colors.transparent,
+                                                                borderRadius: BorderRadius.circular(6),
+                                                                border: Border.all(
+                                                                  color: orderState.repeatImageOnGrid
+                                                                      ? const Color(0xFF38BDF8)
+                                                                      : const Color(0xFF64748B),
+                                                                  width: 0.8,
+                                                                ),
+                                                              ),
+                                                              child: Row(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: [
+                                                                  Icon(
+                                                                    orderState.repeatImageOnGrid
+                                                                        ? Icons.check_box_rounded
+                                                                        : Icons.check_box_outline_blank_rounded,
+                                                                    size: 13,
+                                                                    color: orderState.repeatImageOnGrid
+                                                                        ? const Color(0xFF38BDF8)
+                                                                        : const Color(0xFF94A3B8),
+                                                                  ),
+                                                                  const SizedBox(width: 3),
+                                                                  Text(
+                                                                    'Repeat',
+                                                                    style: TextStyle(
+                                                                      fontSize: 10,
+                                                                      fontWeight: FontWeight.w600,
+                                                                      color: orderState.repeatImageOnGrid
+                                                                          ? Colors.white
+                                                                          : const Color(0xFF94A3B8),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ],
                                                     ),
                                                   ),
@@ -214,6 +276,83 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
+
+                            // Repeat Photo Across Sheet Card
+                            if (isImageFile && orderState.pagesPerPaper > 1) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                                      : Colors.white.withValues(alpha: 0.72),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: orderState.repeatImageOnGrid
+                                        ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.4) : const Color(0xFFBAE6FD))
+                                        : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0x12A0C3D7),
+                                      blurRadius: 16,
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: orderState.repeatImageOnGrid
+                                            ? (isDark ? const Color(0xFF0C4A6E) : const Color(0xFFE0F2FE))
+                                            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.grid_view_rounded,
+                                        size: 22,
+                                        color: orderState.repeatImageOnGrid
+                                            ? const Color(0xFF0284C7)
+                                            : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Repeat Photo Across Sheet',
+                                            style: TextStyle(
+                                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Tile this image across all ${orderState.pagesPerPaper} layout blocks',
+                                            style: TextStyle(
+                                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Switch.adaptive(
+                                      value: orderState.repeatImageOnGrid,
+                                      activeColor: const Color(0xFF0284C7),
+                                      onChanged: (val) {
+                                        ref.read(orderProvider.notifier).setRepeatImageOnGrid(val);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
 
                             // Number of Copies Card
                             Container(
