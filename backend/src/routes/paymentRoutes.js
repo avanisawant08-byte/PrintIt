@@ -89,17 +89,21 @@ router.post('/guest/verify', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // Prevent Double-Spending: Check if this payment has already been associated with an order
+        // Prevent Double-Spending / Idempotency Check:
         const existingUsage = await client.query(
-            `SELECT 1 FROM orders WHERE payment_id = $1
+            `SELECT order_id, status, amount_total, shop_id, queue_position, cancel_token FROM orders WHERE payment_id = $1
              UNION ALL
-             SELECT 1 FROM product_orders WHERE payment_id = $1`,
+             SELECT order_id, status, amount_total, shop_id, 0 AS queue_position, '' AS cancel_token FROM product_orders WHERE payment_id = $1`,
             [razorpay_payment_id]
         );
 
         if (existingUsage.rows.length > 0) {
-            await client.query('ROLLBACK');
-            return res.status(409).json({ error: 'This payment has already been verified and associated with an existing order.' });
+            await client.query('COMMIT');
+            return res.status(200).json({ 
+                message: 'Payment already verified & order exists', 
+                order: existingUsage.rows[0],
+                cancel_token: existingUsage.rows[0].cancel_token || ''
+            });
         }
 
         // Validate Server-Side Pricing
@@ -113,7 +117,8 @@ router.post('/guest/verify', async (req, res) => {
 
         await client.query(
             `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
-             VALUES ($1, $2, 'captured', $3)`,
+             VALUES ($1, $2, 'captured', $3)
+             ON CONFLICT (razorpay_payment_id) DO NOTHING`,
             [razorpay_order_id, razorpay_payment_id, amount_total]
         );
 
@@ -145,9 +150,18 @@ router.post('/guest/verify', async (req, res) => {
         await client.query('ROLLBACK');
         console.error('Guest Order creation error:', err);
         if (err.code === '23505') {
+            try {
+                const existing = await pool.query('SELECT * FROM orders WHERE payment_id = $1', [razorpay_payment_id]);
+                if (existing.rows.length > 0) {
+                    return res.status(200).json({ message: 'Payment verified & order retrieved', order: existing.rows[0], cancel_token: existing.rows[0].cancel_token || '' });
+                }
+            } catch (_) {}
             return res.status(409).json({ error: 'This payment has already been used for an existing order.' });
         }
-        res.status(500).json({ error: 'Payment verified but order creation failed' });
+        res.status(500).json({ 
+            error: 'Payment verified but order creation failed',
+            details: err.message 
+        });
     } finally {
         client.release();
     }
@@ -316,17 +330,20 @@ router.post('/verify', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // Prevent Double-Spending: Check if this payment has already been associated with an order
+        // Prevent Double-Spending / Idempotency Check:
         const existingUsage = await client.query(
-            `SELECT 1 FROM orders WHERE payment_id = $1
+            `SELECT order_id, status, amount_total, shop_id, queue_position FROM orders WHERE payment_id = $1
              UNION ALL
-             SELECT 1 FROM product_orders WHERE payment_id = $1`,
+             SELECT order_id, status, amount_total, shop_id, 0 AS queue_position FROM product_orders WHERE payment_id = $1`,
             [razorpay_payment_id]
         );
 
         if (existingUsage.rows.length > 0) {
-            await client.query('ROLLBACK');
-            return res.status(409).json({ error: 'This payment has already been verified and associated with an existing order.' });
+            await client.query('COMMIT');
+            return res.status(200).json({ 
+                message: 'Payment already verified & order exists', 
+                order: existingUsage.rows[0]
+            });
         }
 
         // Validate Server-Side Pricing
@@ -341,7 +358,8 @@ router.post('/verify', async (req, res) => {
         // Log payment record in payments table
         await client.query(
             `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
-             VALUES ($1, $2, 'captured', $3)`,
+             VALUES ($1, $2, 'captured', $3)
+             ON CONFLICT (razorpay_payment_id) DO NOTHING`,
             [razorpay_order_id, razorpay_payment_id, amount_total]
         );
 
@@ -398,9 +416,18 @@ router.post('/verify', async (req, res) => {
         await client.query('ROLLBACK');
         console.error('Order creation/payment logging error:', err);
         if (err.code === '23505') {
+            try {
+                const existing = await pool.query('SELECT * FROM orders WHERE payment_id = $1', [razorpay_payment_id]);
+                if (existing.rows.length > 0) {
+                    return res.status(200).json({ message: 'Payment verified & order retrieved', order: existing.rows[0] });
+                }
+            } catch (_) {}
             return res.status(409).json({ error: 'This payment has already been used for an existing order.' });
         }
-        res.status(500).json({ error: 'Payment verified but order creation failed' });
+        res.status(500).json({ 
+            error: 'Payment verified but order creation failed',
+            details: err.message 
+        });
     } finally {
         client.release();
     }

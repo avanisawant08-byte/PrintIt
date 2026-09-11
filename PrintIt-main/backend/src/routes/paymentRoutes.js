@@ -5,6 +5,33 @@ const crypto = require('crypto');
 const getRazorpay = require('../config/razorpay');
 const pool = require('../config/db');
 const { generateOrderId } = require('../utils/orderIdGenerator');
+const { calculatePrintSubtotal } = require('../utils/pricingCalculator');
+const { paymentLimiter } = require('../middleware/rateLimiter');
+
+router.use(paymentLimiter);
+
+const verifyRazorpaySignature = (orderId, paymentId, signature) => {
+    if (!signature || !orderId || !paymentId) return false;
+    
+    // Allow mock signature ONLY in automated test mode with explicit environment flag
+    if (process.env.NODE_ENV === 'test' && process.env.ALLOW_MOCK_PAYMENTS === 'true' && signature === 'mock_signature') {
+        return true;
+    }
+    
+    const body = orderId + '|' + paymentId;
+    const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
+        .update(body)
+        .digest('hex');
+
+    const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+    const signatureBuf = Buffer.from(signature, 'utf8');
+
+    if (expectedBuf.length !== signatureBuf.length) {
+        return false;
+    }
+    return crypto.timingSafeEqual(expectedBuf, signatureBuf);
+};
 
 // =================== GUEST ROUTES ===================
 
@@ -48,16 +75,8 @@ router.post('/guest/verify', async (req, res) => {
     } = req.body;
 
     // 1. Verify Razorpay signature
-    if (razorpay_signature !== 'mock_signature') {
-        const body = razorpay_order_id + '|' + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-            .update(body)
-            .digest('hex');
-
-        if (expectedSignature !== razorpay_signature) {
-            return res.status(400).json({ error: 'Invalid payment signature' });
-        }
+    if (!verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature)) {
+        return res.status(400).json({ error: 'Invalid payment signature' });
     }
 
     const pickupOptions = JSON.stringify({
@@ -70,9 +89,36 @@ router.post('/guest/verify', async (req, res) => {
     try {
         await client.query('BEGIN');
 
+        // Prevent Double-Spending / Idempotency Check:
+        const existingUsage = await client.query(
+            `SELECT order_id, status, amount_total, shop_id, queue_position, cancel_token FROM orders WHERE payment_id = $1
+             UNION ALL
+             SELECT order_id, status, amount_total, shop_id, 0 AS queue_position, '' AS cancel_token FROM product_orders WHERE payment_id = $1`,
+            [razorpay_payment_id]
+        );
+
+        if (existingUsage.rows.length > 0) {
+            await client.query('COMMIT');
+            return res.status(200).json({ 
+                message: 'Payment already verified & order exists', 
+                order: existingUsage.rows[0],
+                cancel_token: existingUsage.rows[0].cancel_token || ''
+            });
+        }
+
+        // Validate Server-Side Pricing
+        const { minRequiredAmount } = await calculatePrintSubtotal(client, shop_id, files);
+        if (parseFloat(amount_total) < minRequiredAmount) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                error: `Order amount insufficient. Minimum required ₹${minRequiredAmount}, received ₹${amount_total}`
+            });
+        }
+
         await client.query(
             `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
-             VALUES ($1, $2, 'captured', $3)`,
+             VALUES ($1, $2, 'captured', $3)
+             ON CONFLICT (razorpay_payment_id) DO NOTHING`,
             [razorpay_order_id, razorpay_payment_id, amount_total]
         );
 
@@ -84,24 +130,38 @@ router.post('/guest/verify', async (req, res) => {
         const queue_position = parseInt(queueResult.rows[0].count) + 1;
 
         const orderId = await generateOrderId(req.body.pickup_type || 'express', client);
+        const cancelToken = crypto.randomBytes(16).toString('hex');
+        const printMode = req.body.print_mode || 'normal';
 
         const result = await client.query(
             `INSERT INTO orders (
-                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions
-            ) VALUES ($1, NULL, $2, $3, $4, 'queued', $5, $6, 'captured', $7, $8)
+                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions, cancel_token, print_mode, deletion_status
+            ) VALUES ($1, NULL, $2, $3, $4, 'queued', $5, $6, 'captured', $7, $8, $9, $10, 'active')
             RETURNING *`,
             [
-                orderId, shop_id, JSON.stringify(files), pickupOptions, queue_position, amount_total, razorpay_payment_id, ''
+                orderId, shop_id, JSON.stringify(files), pickupOptions, queue_position, amount_total, razorpay_payment_id, '', cancelToken, printMode
             ]
         );
 
         await client.query('COMMIT');
-        return res.status(201).json({ message: 'Payment verified & order created', order: result.rows[0] });
+        return res.status(201).json({ message: 'Payment verified & order created', order: result.rows[0], cancel_token: cancelToken });
 
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Guest Order creation error:', err);
-        res.status(500).json({ error: 'Payment verified but order creation failed' });
+        if (err.code === '23505') {
+            try {
+                const existing = await pool.query('SELECT * FROM orders WHERE payment_id = $1', [razorpay_payment_id]);
+                if (existing.rows.length > 0) {
+                    return res.status(200).json({ message: 'Payment verified & order retrieved', order: existing.rows[0], cancel_token: existing.rows[0].cancel_token || '' });
+                }
+            } catch (_) {}
+            return res.status(409).json({ error: 'This payment has already been used for an existing order.' });
+        }
+        res.status(500).json({ 
+            error: 'Payment verified but order creation failed',
+            details: err.message 
+        });
     } finally {
         client.release();
     }
@@ -119,12 +179,13 @@ router.post('/guest/fail', async (req, res) => {
         try {
             await client.query('BEGIN');
             const orderId = await generateOrderId(pickup_type || 'express', client);
+            const printMode = req.body.print_mode || 'normal';
             const result = await client.query(
                 `INSERT INTO orders (
-                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id
-                ) VALUES ($1, NULL, $2, $3, $4, 'cancelled', NULL, $5, 'failed', NULL)
+                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_mode, secure_expires_at
+                ) VALUES ($1, NULL, $2, $3, $4, 'cancelled', NULL, $5, 'failed', NULL, $6, CASE WHEN $6 = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE NULL END)
                 RETURNING *`,
-                [orderId, shop_id, JSON.stringify(files), pickupOptions, amount_total]
+                [orderId, shop_id, JSON.stringify(files), pickupOptions, amount_total, printMode]
             );
             await client.query('COMMIT');
             return res.status(201).json({ message: 'Failed order logged', order: result.rows[0] });
@@ -137,6 +198,76 @@ router.post('/guest/fail', async (req, res) => {
     } catch (err) {
         console.error('Guest Order failure log error:', err);
         res.status(500).json({ error: 'Failed to log failed order' });
+    }
+});
+
+// POST /api/payments/webhook — Server-to-Server Razorpay Webhook Handler
+router.post('/webhook', async (req, res) => {
+    const signature = req.headers['x-razorpay-signature'];
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET || '';
+
+    if (!signature || !webhookSecret) {
+        return res.status(400).json({ error: 'Webhook signature or secret missing' });
+    }
+
+    try {
+        const bodyPayload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+        const expectedSignature = crypto
+            .createHmac('sha256', webhookSecret)
+            .update(bodyPayload)
+            .digest('hex');
+
+        const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+        const signatureBuf = Buffer.from(signature, 'utf8');
+
+        const isValid = expectedBuf.length === signatureBuf.length && crypto.timingSafeEqual(expectedBuf, signatureBuf);
+
+        if (!isValid) {
+            console.warn('[Webhook] Invalid Razorpay webhook signature received');
+            return res.status(400).json({ error: 'Invalid webhook signature' });
+        }
+
+        const event = req.body.event;
+        const payload = req.body.payload;
+
+        console.log(`[Webhook] Received verified event: ${event}`);
+
+        if (event === 'payment.captured' && payload && payload.payment) {
+            const paymentEntity = payload.payment.entity;
+            const razorpayOrderId = paymentEntity.order_id;
+            const razorpayPaymentId = paymentEntity.id;
+            const amountInRupees = paymentEntity.amount / 100;
+
+            if (razorpayPaymentId) {
+                // Ensure payment record exists idempotently
+                const checkExisting = await pool.query('SELECT 1 FROM payments WHERE razorpay_payment_id = $1', [razorpayPaymentId]);
+                if (checkExisting.rows.length === 0) {
+                    await pool.query(
+                        `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
+                         VALUES ($1, $2, 'captured', $3)`,
+                        [razorpayOrderId, razorpayPaymentId, amountInRupees]
+                    );
+                }
+            }
+        } else if (event === 'refund.processed' && payload && payload.refund) {
+            const refundEntity = payload.refund.entity;
+            const paymentId = refundEntity.payment_id;
+            const refundId = refundEntity.id;
+
+            if (paymentId) {
+                await pool.query(
+                    `UPDATE orders 
+                     SET refund_status = 'success', refund_id = $1, payment_status = 'refunded'
+                     WHERE payment_id = $2`,
+                    [refundId, paymentId]
+                );
+            }
+        }
+
+        return res.status(200).json({ status: 'ok', received: true });
+    } catch (err) {
+        console.error('[Webhook] Error processing webhook:', err);
+        return res.status(500).json({ error: 'Webhook handling failed' });
     }
 });
 
@@ -185,13 +316,7 @@ router.post('/verify', async (req, res) => {
     } = req.body;
 
     // 1. Verify Razorpay signature
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-        .update(body)
-        .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
+    if (!verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature)) {
         return res.status(400).json({ error: 'Invalid payment signature' });
     }
 
@@ -205,10 +330,36 @@ router.post('/verify', async (req, res) => {
     try {
         await client.query('BEGIN');
 
+        // Prevent Double-Spending / Idempotency Check:
+        const existingUsage = await client.query(
+            `SELECT order_id, status, amount_total, shop_id, queue_position FROM orders WHERE payment_id = $1
+             UNION ALL
+             SELECT order_id, status, amount_total, shop_id, 0 AS queue_position FROM product_orders WHERE payment_id = $1`,
+            [razorpay_payment_id]
+        );
+
+        if (existingUsage.rows.length > 0) {
+            await client.query('COMMIT');
+            return res.status(200).json({ 
+                message: 'Payment already verified & order exists', 
+                order: existingUsage.rows[0]
+            });
+        }
+
+        // Validate Server-Side Pricing
+        const { minRequiredAmount } = await calculatePrintSubtotal(client, shop_id, files);
+        if (parseFloat(amount_total) < minRequiredAmount) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                error: `Order amount insufficient. Minimum required ₹${minRequiredAmount}, received ₹${amount_total}`
+            });
+        }
+
         // Log payment record in payments table
         await client.query(
             `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
-             VALUES ($1, $2, 'captured', $3)`,
+             VALUES ($1, $2, 'captured', $3)
+             ON CONFLICT (razorpay_payment_id) DO NOTHING`,
             [razorpay_order_id, razorpay_payment_id, amount_total]
         );
 
@@ -221,6 +372,7 @@ router.post('/verify', async (req, res) => {
         const queue_position = parseInt(queueResult.rows[0].count) + 1;
 
         const orderId = await generateOrderId(req.body.pickup_type || 'express', client);
+        const printMode = req.body.print_mode || 'normal';
 
         // Insert order into DB
         const result = await client.query(
@@ -235,18 +387,21 @@ router.post('/verify', async (req, res) => {
                 amount_total,
                 payment_status,
                 payment_id,
-                print_instructions
-            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, '')
+                print_instructions,
+                print_mode,
+                deletion_status
+            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, '', $9, 'active')
             RETURNING *`,
             [
                 orderId,
-                customer_id,
+                req.user.user_id,
                 shop_id,
                 JSON.stringify(files),
                 pickupOptions,
                 queue_position,
                 amount_total,
-                razorpay_payment_id
+                razorpay_payment_id,
+                printMode
             ]
         );
 
@@ -260,7 +415,19 @@ router.post('/verify', async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Order creation/payment logging error:', err);
-        res.status(500).json({ error: 'Payment verified but order creation failed' });
+        if (err.code === '23505') {
+            try {
+                const existing = await pool.query('SELECT * FROM orders WHERE payment_id = $1', [razorpay_payment_id]);
+                if (existing.rows.length > 0) {
+                    return res.status(200).json({ message: 'Payment verified & order retrieved', order: existing.rows[0] });
+                }
+            } catch (_) {}
+            return res.status(409).json({ error: 'This payment has already been used for an existing order.' });
+        }
+        res.status(500).json({ 
+            error: 'Payment verified but order creation failed',
+            details: err.message 
+        });
     } finally {
         client.release();
     }
@@ -278,12 +445,13 @@ router.post('/fail', async (req, res) => {
         try {
             await client.query('BEGIN');
             const orderId = await generateOrderId(pickup_type || 'express', client);
+            const printMode = req.body.print_mode || 'normal';
             const result = await client.query(
                 `INSERT INTO orders (
-                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id
-                ) VALUES ($1, $2, $3, $4, $5, 'cancelled', NULL, $6, 'failed', NULL)
+                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_mode, secure_expires_at
+                ) VALUES ($1, $2, $3, $4, $5, 'cancelled', NULL, $6, 'failed', NULL, $7, CASE WHEN $7 = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE NULL END)
                 RETURNING *`,
-                [orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, amount_total]
+                [orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, amount_total, printMode]
             );
             await client.query('COMMIT');
             return res.status(201).json({ message: 'Failed order logged', order: result.rows[0] });
@@ -311,7 +479,11 @@ router.post('/wallet', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Check Wallet Balance
+        // 1. Calculate Required Print Subtotal on Server
+        const { subtotal } = await calculatePrintSubtotal(client, shop_id, files);
+        const requiredAmount = Math.max(subtotal, parseFloat(amount_total) || 0);
+
+        // 2. Check Wallet Balance
         const userResult = await client.query(
             'SELECT wallet_balance FROM users WHERE user_id = $1 FOR UPDATE',
             [req.user.user_id]
@@ -323,29 +495,28 @@ router.post('/wallet', async (req, res) => {
         }
 
         const balance = parseFloat(userResult.rows[0].wallet_balance);
-        const amount = parseFloat(amount_total);
 
-        if (balance < amount) {
+        if (balance < requiredAmount) {
             await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'Insufficient wallet balance' });
+            return res.status(400).json({ error: `Insufficient wallet balance. Required ₹${requiredAmount}, available ₹${balance}` });
         }
 
-        // 2. Deduct Balance
+        // 3. Deduct Verified Balance
         await client.query(
             'UPDATE users SET wallet_balance = wallet_balance - $1 WHERE user_id = $2',
-            [amount, req.user.user_id]
+            [requiredAmount, req.user.user_id]
         );
 
-        // 3. Log Wallet Transaction
+        // 4. Log Wallet Transaction
         const txResult = await client.query(
             `INSERT INTO wallet_transactions (user_id, amount, type)
              VALUES ($1, $2, 'payment')
              RETURNING id`,
-            [req.user.user_id, -amount]
+            [req.user.user_id, -requiredAmount]
         );
         const payment_id = 'wt_' + txResult.rows[0].id;
 
-        // 4. Create Order
+        // 5. Create Order
         const queueResult = await client.query(
             `SELECT COUNT(*) FROM orders
              WHERE shop_id = $1 AND status = 'queued'`,
@@ -359,14 +530,15 @@ router.post('/wallet', async (req, res) => {
         });
 
         const orderId = await generateOrderId(req.body.pickup_type || 'express', client);
+        const printMode = req.body.print_mode || 'normal';
 
         const result = await client.query(
             `INSERT INTO orders (
-                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions
-            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, '')
+                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions, print_mode, deletion_status
+            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, $9, $10, 'active')
             RETURNING *`,
             [
-                orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, queue_position, amount, payment_id
+                orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, queue_position, requiredAmount, payment_id, req.body.print_instructions || '', printMode
             ]
         );
 

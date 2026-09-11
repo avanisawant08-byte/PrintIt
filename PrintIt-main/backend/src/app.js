@@ -14,15 +14,20 @@ const pool = require('./config/db');
 const notificationRoutes = require('./routes/notificationRoutes');
 const { setupShopCodeDb } = require('./utils/setupShopCodeDb');
 const { setupStoreDb } = require('./utils/setupStoreDb');
+const { setupPrintingModeDb } = require('./utils/setupPrintingModeDb');
+const { setupOrdersAndSequencesDb } = require('./utils/setupOrdersAndSequencesDb');
+const { startCleanupJob } = require('./utils/firebaseCleanup');
 const { correlationIdMiddleware, errorHandler } = require('./middleware/errorHandler');
 
 // Connect to DB immediately after import
 pool.connect()
-  .then((client) => {
+  .then(async (client) => {
       console.log("✅ Database pool connected successfully.");
       client.release();
-      setupShopCodeDb();
-      setupStoreDb();
+      await setupOrdersAndSequencesDb();
+      await setupShopCodeDb();
+      await setupStoreDb();
+      await setupPrintingModeDb();
       startCleanupJob();
   })
   .catch(err => console.error("❌ Database connection error:", err.message));

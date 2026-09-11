@@ -76,7 +76,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
       final verifyEndpoint = isLoggedIn ? '/payments/verify' : '/payments/guest/verify';
       final verifyRes = await dio.post(verifyEndpoint, data: orderData);
 
-      if (verifyRes.statusCode == 201) {
+      if (verifyRes.statusCode == 201 || verifyRes.statusCode == 200) {
         if (!mounted) return;
         final createdOrderId = verifyRes.data['order']?['order_id'] ?? '';
         ref.read(orderProvider.notifier).reset();
@@ -86,8 +86,28 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+      String errorMsg = 'Payment was received, but order finalization encountered an issue.';
+      if (e is DioException && e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.containsKey('error')) {
+          errorMsg = '${data['error']}${data.containsKey('details') ? ' (' + data['details'].toString() + ')' : ''}';
+        }
+      } else if (e is Exception) {
+        errorMsg = e.toString().replaceFirst('Exception: ', '');
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 10),
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: () => _handlePaymentSuccess(response),
+          ),
+        ),
       );
       setState(() => _isProcessing = false);
     }
