@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -163,6 +164,7 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
   }
 
   void _removeFile(int index) {
+    HapticFeedback.selectionClick();
     setState(() {
       _uploadedFiles[index].dispose();
       _uploadedFiles.removeAt(index);
@@ -170,6 +172,7 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
   }
 
   void _proceedToConfig() {
+    HapticFeedback.lightImpact();
     if (_uploadedFiles.isEmpty) return;
 
     // Convert uploaded files to FileEntry list
@@ -369,7 +372,10 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                         ],
                         // Drop Zone
                         GestureDetector(
-                          onTap: _pickFiles,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _pickFiles();
+                          },
                           child: GlassContainer(
                             width: double.infinity,
                             padding: const EdgeInsets.all(32),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
@@ -154,6 +155,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
   }
 
   Future<void> _processPaymentAndOrder() async {
+    HapticFeedback.mediumImpact();
     if (_useWallet) {
       await _processWalletPayment();
       return;
@@ -594,6 +596,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
     bool isSelected = _selectedMethod == title;
     return GestureDetector(
       onTap: disabled ? null : () {
+        HapticFeedback.selectionClick();
         setState(() {
           _selectedMethod = title;
           _useWallet = title == 'PrintIt Wallet';

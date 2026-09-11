@@ -85,6 +85,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
                 onPressed: () {
+                  HapticFeedback.selectionClick();
                   ref.read(themeModeProvider.notifier).toggle(Theme.of(context).brightness);
                 },
               ),
@@ -231,7 +232,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 icon: Icons.navigation_rounded,
                                 isDark: isDark,
                                 isActive: _selectedFilter == 'Nearby',
-                                onTap: () => setState(() => _selectedFilter = 'Nearby'),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _selectedFilter = 'Nearby');
+                                },
                               ),
                               const SizedBox(width: 10),
                               _buildFilterPill(
@@ -240,7 +244,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 icon: Icons.star_border_rounded,
                                 isDark: isDark,
                                 isActive: _selectedFilter == 'High Rated',
-                                onTap: () => setState(() => _selectedFilter = 'High Rated'),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _selectedFilter = 'High Rated');
+                                },
                               ),
                               const SizedBox(width: 10),
                               _buildFilterPill(
@@ -249,7 +256,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 icon: Icons.bolt_rounded,
                                 isDark: isDark,
                                 isActive: _selectedFilter == 'Express',
-                                onTap: () => setState(() => _selectedFilter = 'Express'),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _selectedFilter = 'Express');
+                                },
                               ),
                             ],
                           ),
@@ -498,6 +508,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildScanQrCard(BuildContext context, bool isDark) {
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         context.push('/qr-scanner');
       },
       child: Column(
@@ -569,6 +580,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildStoreCard(BuildContext context, bool isDark) {
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         context.push('/store');
       },
       child: Column(
@@ -822,6 +834,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shadowColor: Colors.black.withValues(alpha: 0.15),
                 ),
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   final shopId = (shop['shop_id'] ?? shop['id']).toString();
                   if (shopId.isNotEmpty) {
                     final priceBw = double.tryParse(shop['price_bw']?.toString() ?? '') ?? 0.10;

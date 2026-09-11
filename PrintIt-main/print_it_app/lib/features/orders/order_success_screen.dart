@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/widgets/ambient_background.dart';
 import '../../shared/widgets/glass_container.dart';
 import 'order_tracking_screen.dart'; // To reuse orderDetailsProvider
 
-class OrderSuccessScreen extends ConsumerWidget {
+class OrderSuccessScreen extends ConsumerStatefulWidget {
   final String orderId;
   const OrderSuccessScreen({super.key, required this.orderId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
+}
+
+class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen> {
+  @override
+  void initState() {
+    super.initState();
+    HapticFeedback.mediumImpact();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final orderId = widget.orderId;
     final orderAsync = ref.watch(orderDetailsProvider(orderId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -221,6 +234,7 @@ class OrderSuccessScreen extends ConsumerWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                       ),
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         if (orderId.isNotEmpty) {
                           context.go('/order-tracking/$orderId');
                         }
@@ -260,7 +274,10 @@ class OrderSuccessScreen extends ConsumerWidget {
                           side: BorderSide.none,
                         ),
                       ),
-                      onPressed: () => context.go('/home'),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        context.go('/home');
+                      },
                       child: const Text('Back to Home', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     ),
                   ),

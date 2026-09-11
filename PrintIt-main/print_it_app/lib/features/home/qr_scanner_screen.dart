@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -528,6 +529,7 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
                                 for (final barcode in capture.barcodes) {
                                   final raw = barcode.rawValue;
                                   if (raw != null && raw.isNotEmpty) {
+                                    HapticFeedback.mediumImpact();
                                     _processShopId(raw);
                                     break;
                                   }

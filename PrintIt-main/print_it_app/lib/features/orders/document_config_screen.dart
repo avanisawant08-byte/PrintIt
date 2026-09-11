@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/widgets/ambient_background.dart';
@@ -427,7 +428,10 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                       children: [
                                         IconButton(
                                           icon: Icon(Icons.remove, size: 18, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
-                                          onPressed: () => ref.read(orderProvider.notifier).updateCopies(-1),
+                                          onPressed: () {
+                                            HapticFeedback.selectionClick();
+                                            ref.read(orderProvider.notifier).updateCopies(-1);
+                                          },
                                           splashRadius: 18,
                                           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                           padding: EdgeInsets.zero,
@@ -445,7 +449,10 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                         ),
                                         IconButton(
                                           icon: Icon(Icons.add, size: 18, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
-                                          onPressed: () => ref.read(orderProvider.notifier).updateCopies(1),
+                                          onPressed: () {
+                                            HapticFeedback.selectionClick();
+                                            ref.read(orderProvider.notifier).updateCopies(1);
+                                          },
                                           splashRadius: 18,
                                           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                           padding: EdgeInsets.zero,
@@ -952,6 +959,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
+                          HapticFeedback.lightImpact();
                           context.push('/schedule-pickup');
                         },
                         style: ElevatedButton.styleFrom(
@@ -1218,7 +1226,10 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
     String? subtitle,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -1320,7 +1331,10 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
 
   Widget _buildOverlayPageButton(WidgetRef ref, int count, bool isSelected) {
     return GestureDetector(
-      onTap: () => ref.read(orderProvider.notifier).setPagesPerPaper(count),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        ref.read(orderProvider.notifier).setPagesPerPaper(count);
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         width: 24,

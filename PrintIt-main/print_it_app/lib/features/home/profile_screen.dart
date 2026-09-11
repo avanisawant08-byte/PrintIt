@@ -1,5 +1,6 @@
 import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/theme_provider.dart';
@@ -82,6 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                         ? 'Switch to Light Mode' 
                         : 'Switch to Dark Mode',
                     onPressed: () {
+                      HapticFeedback.selectionClick();
                       ref.read(themeModeProvider.notifier).toggle(Theme.of(context).brightness);
                     },
                   ),
@@ -497,6 +499,7 @@ class ProfileScreen extends ConsumerWidget {
             height: 52,
             child: ElevatedButton(
               onPressed: () {
+                HapticFeedback.mediumImpact();
                 ref.read(authProvider.notifier).logout();
                 context.go('/home');
               },
@@ -560,7 +563,10 @@ class ProfileScreen extends ConsumerWidget {
           ),
           Switch(
             value: value,
-            onChanged: onChanged,
+            onChanged: (val) {
+              HapticFeedback.selectionClick();
+              onChanged(val);
+            },
             activeThumbColor: AppTheme.logoBlue,
             activeTrackColor: AppTheme.logoBlue.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -205,6 +206,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                           Expanded(
                             child: GestureDetector(
                               onTap: () {
+                                HapticFeedback.selectionClick();
                                 ref.read(orderProvider.notifier).setPickupType('express');
                                 ref.read(orderProvider.notifier).setPickupTime(null);
                               },
@@ -255,6 +257,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                           Expanded(
                             child: GestureDetector(
                               onTap: () {
+                                HapticFeedback.selectionClick();
                                 ref.read(orderProvider.notifier).setPickupType('scheduled');
                               },
                               child: AnimatedContainer(
@@ -424,6 +427,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
 
                             return GestureDetector(
                               onTap: () {
+                                HapticFeedback.selectionClick();
                                 setState(() {
                                   _selectedDate = date;
                                   _selectedTimeSlot = null;
@@ -598,6 +602,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 padding: const EdgeInsets.only(bottom: 10.0),
                                 child: GestureDetector(
                                   onTap: () {
+                                    HapticFeedback.selectionClick();
                                     setState(() {
                                       _selectedTimeSlot = slotItem.display;
                                     });
@@ -947,6 +952,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                               ? null
                               : () {
                                   if (isScheduled && _selectedTimeSlot == null) {
+                                    HapticFeedback.lightImpact();
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('Please select a pickup time slot'),
@@ -954,6 +960,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       ),
                                     );
                                   } else {
+                                    HapticFeedback.lightImpact();
                                     context.push('/payment');
                                   }
                                 },
