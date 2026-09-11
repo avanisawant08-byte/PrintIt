@@ -17,6 +17,7 @@ const Pricing = lazy(() => import('./pages/dashboard/Pricing'));
 const Wallet = lazy(() => import('./pages/dashboard/Wallet'));
 const Analytics = lazy(() => import('./pages/dashboard/Analytics'));
 const Settings = lazy(() => import('./pages/dashboard/Settings'));
+const PrintAgent = lazy(() => import('./pages/dashboard/PrintAgent'));
 const Support = lazy(() => import('./pages/dashboard/Support'));
 
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
@@ -71,6 +72,7 @@ function App() {
             <Route path="wallet" element={<Wallet />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="agent" element={<PrintAgent />} />
             <Route path="support" element={<Support />} />
           </Route>
 

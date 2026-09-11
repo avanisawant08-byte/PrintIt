@@ -286,22 +286,23 @@ router.get('/orders', async (req, res) => {
         let query = `
             SELECT 
                 so.*,
-                u.name AS customer_name,
+                u.full_name AS customer_name,
                 u.phone AS customer_phone,
                 u.email AS customer_email,
                 COALESCE(
                     json_agg(
                         json_build_object(
-                            'order_item_id', soi.order_item_id,
+                            'order_item_id', soi.item_id,
+                            'item_id', soi.item_id,
                             'product_id', soi.product_id,
                             'title', p.title,
                             'category', p.category,
                             'quantity', soi.quantity,
                             'unit_price', soi.unit_price,
-                            'total_price', soi.total_price,
+                            'total_price', soi.subtotal,
                             'cover_photo_url', p.cover_photo_url
                         )
-                    ) FILTER (WHERE soi.order_item_id IS NOT NULL), '[]'
+                    ) FILTER (WHERE soi.item_id IS NOT NULL), '[]'
                 ) AS items
             FROM store_orders so
             LEFT JOIN users u ON so.customer_id = u.user_id

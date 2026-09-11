@@ -7,6 +7,7 @@ const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
 const getRazorpay = require('../config/razorpay');
 const { calculatePrintSubtotal } = require('../utils/pricingCalculator');
+const { deleteOrderFilesImmediately } = require('../utils/firebaseCleanup');
 
 /**
  * @route   POST /api/orders/guest
@@ -31,7 +32,8 @@ router.post('/guest', async (req, res) => {
         amount_total,
         payment_id = null,
         razorpay_payment_id = null,
-        print_instructions = null
+        print_instructions = null,
+        print_mode = 'normal'
     } = value;
 
     const targetPaymentId = razorpay_payment_id || payment_id;
@@ -109,8 +111,10 @@ router.post('/guest', async (req, res) => {
                 payment_status,
                 payment_id,
                 print_instructions,
-                cancel_token
-            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, $9, $10)
+                cancel_token,
+                print_mode,
+                deletion_status
+            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, $9, $10, $11, 'active')
             RETURNING *`,
             [
                 order_id,
@@ -122,7 +126,8 @@ router.post('/guest', async (req, res) => {
                 amount_total,
                 targetPaymentId,
                 print_instructions,
-                cancelToken
+                cancelToken,
+                print_mode || 'normal'
             ]
         );
 
@@ -175,7 +180,8 @@ router.post('/', roleCheck('customer'), async (req, res) => {
         amount_total,
         payment_id = null,
         razorpay_payment_id = null,
-        print_instructions = null
+        print_instructions = null,
+        print_mode = 'normal'
     } = value;
 
     const targetPaymentId = razorpay_payment_id || payment_id;
@@ -250,8 +256,10 @@ router.post('/', roleCheck('customer'), async (req, res) => {
                 amount_total,
                 payment_status,
                 payment_id,
-                print_instructions
-            ) VALUES ($1, $2, $3, $4, 'queued', $5, $6, 'captured', $7, $8)
+                print_instructions,
+                print_mode,
+                deletion_status
+            ) VALUES ($1, $2, $3, $4, 'queued', $5, $6, 'captured', $7, $8, $9, 'active')
             RETURNING *`,
             [
                 req.user.user_id,
@@ -261,7 +269,8 @@ router.post('/', roleCheck('customer'), async (req, res) => {
                 queue_position,
                 amount_total,
                 targetPaymentId,
-                print_instructions
+                print_instructions,
+                print_mode || 'normal'
             ]
         );
 
@@ -303,7 +312,7 @@ router.get('/', async (req, res) => {
 
         if (req.user.role === 'customer') {
             result = await pool.query(
-                'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id FROM orders WHERE customer_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+                'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id, print_mode, files_deleted_at, deletion_status, secure_expires_at FROM orders WHERE customer_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
                 [req.user.user_id, limit, offset]
             );
             countResult = await pool.query('SELECT COUNT(*) FROM orders WHERE customer_id = $1', [req.user.user_id]);
@@ -314,13 +323,13 @@ router.get('/', async (req, res) => {
                 return res.json({ data: [], pagination: { page, limit, total_items: 0, total_pages: 0 } });
             }
             result = await pool.query(
-                'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id FROM orders WHERE shop_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+                'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id, print_mode, files_deleted_at, deletion_status, secure_expires_at FROM orders WHERE shop_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
                 [shopId, limit, offset]
             );
             countResult = await pool.query('SELECT COUNT(*) FROM orders WHERE shop_id = $1', [shopId]);
         } else if (req.user.role === 'admin') {
             result = await pool.query(
-                'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id FROM orders ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+                'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id, print_mode, files_deleted_at, deletion_status, secure_expires_at FROM orders ORDER BY created_at DESC LIMIT $1 OFFSET $2',
                 [limit, offset]
             );
             countResult = await pool.query('SELECT COUNT(*) FROM orders');
@@ -354,7 +363,7 @@ router.get('/:id', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id FROM orders WHERE order_id = $1',
+            'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id, print_mode, files_deleted_at, deletion_status, secure_expires_at FROM orders WHERE order_id = $1',
             [id]
         );
 
@@ -423,7 +432,9 @@ router.patch('/:id/status', async (req, res) => {
 
         const result = await pool.query(
             `UPDATE orders 
-             SET status = $1::order_status
+             SET status = $1::order_status,
+                 completed_at = CASE WHEN $1::text = 'collected' OR $1::text = 'cancelled' THEN NOW() ELSE completed_at END,
+                 secure_expires_at = CASE WHEN $1::text = 'cancelled' AND print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
              WHERE order_id = $2
              RETURNING *`,
             [status, id]
@@ -431,6 +442,10 @@ router.patch('/:id/status', async (req, res) => {
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Order not found' });
+        }
+
+        if (status === 'collected' && result.rows[0].print_mode === 'secure') {
+            deleteOrderFilesImmediately(id);
         }
 
         return res.json({
@@ -555,7 +570,8 @@ router.patch('/:id/cancel', roleCheck('customer'), async (req, res) => {
                  cancelled_at = NOW(),
                  refund_status = $1,
                  refund_id = $2,
-                 payment_status = $3
+                 payment_status = $3,
+                 secure_expires_at = CASE WHEN print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
              WHERE order_id = $4
              RETURNING *`,
             [refundStatus, refundId, paymentStatus, id]

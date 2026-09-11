@@ -72,6 +72,12 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
                   Queue Pos #{order.queue_position}
                 </span>
               )}
+              {order.print_mode === 'secure' && (
+                <span className="bg-amber-500/15 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.25)]">
+                  <span className="material-symbols-outlined text-[14px]">lock</span>
+                  Secure Print
+                </span>
+              )}
             </div>
             <p className="text-xs text-on-surface-variant mt-1">
               Placed on {new Date(order.created_at).toLocaleString()}
@@ -88,6 +94,28 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
 
         {/* Content */}
         <div className="p-6 overflow-y-auto kanban-col flex flex-col gap-6">
+          {/* Secure Printing Privacy Banner */}
+          {order.print_mode === 'secure' && (
+            <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex items-start gap-3">
+              <span className="material-symbols-outlined text-amber-400 text-2xl shrink-0 mt-0.5">verified_user</span>
+              <div className="text-xs text-amber-200/90 leading-relaxed">
+                <div className="font-bold text-amber-300 uppercase tracking-wider text-[11px] mb-1 flex items-center gap-1.5">
+                  <span>Confidential Secure Print Order</span>
+                  {order.files_deleted && (
+                    <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0.2 rounded font-semibold uppercase">
+                      ✓ Files Purged
+                    </span>
+                  )}
+                </div>
+                <p>
+                  {order.files_deleted
+                    ? 'Documents have been permanently erased from storage servers in accordance with the deletion-on-success policy.'
+                    : 'Customer selected Secure Printing. Links are strictly single-use (15-min TTL) and all uploaded files will be permanently erased immediately once marked collected or after a 15-minute failure timeout.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="bg-surface-bright p-3.5 rounded-xl border border-outline-variant">
@@ -256,13 +284,20 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => onPrint(order.order_id, true)}
-                      className="px-3 py-1.5 bg-primary-container text-on-primary-container font-semibold rounded text-xs hover:bg-primary transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">download</span>
-                      Download
-                    </button>
+                    {order.files_deleted ? (
+                      <span className="px-3 py-1.5 bg-surface-bright text-on-surface-variant/70 border border-outline-variant rounded text-xs flex items-center gap-1 shrink-0 font-medium">
+                        <span className="material-symbols-outlined text-[16px] text-emerald-400">check_circle</span>
+                        Erased
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => onPrint(order.order_id, true)}
+                        className="px-3 py-1.5 bg-primary-container text-on-primary-container font-semibold rounded text-xs hover:bg-primary transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">download</span>
+                        Download
+                      </button>
+                    )}
                   </div>
                 ))
               )}
@@ -283,15 +318,27 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
         <div className="p-4 border-t border-outline-variant bg-surface-container-low flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <button
+              disabled={Boolean(order.files_deleted)}
               onClick={() => onPrint(order.order_id, true)}
-              className="px-4 py-2 bg-surface-bright border border-outline-variant text-primary rounded-lg text-xs font-semibold hover:border-primary transition-colors flex items-center gap-1.5 cursor-pointer"
+              className={`px-4 py-2 border rounded-lg text-xs font-semibold flex items-center gap-1.5 ${
+                order.files_deleted
+                  ? 'bg-surface-bright/50 border-outline-variant/50 text-outline cursor-not-allowed opacity-60'
+                  : 'bg-surface-bright border-outline-variant text-primary hover:border-primary transition-colors cursor-pointer'
+              }`}
+              title={order.files_deleted ? 'Document files have been permanently erased' : ''}
             >
               <span className="material-symbols-outlined text-[16px]">download</span>
-              Download PDF
+              {order.files_deleted ? 'Files Erased' : 'Download PDF'}
             </button>
             <button
+              disabled={Boolean(order.files_deleted)}
               onClick={() => onPrint(order.order_id, false)}
-              className="px-4 py-2 bg-surface-bright border border-outline-variant text-on-surface rounded-lg text-xs font-semibold hover:border-primary transition-colors flex items-center gap-1.5 cursor-pointer"
+              className={`px-4 py-2 border rounded-lg text-xs font-semibold flex items-center gap-1.5 ${
+                order.files_deleted
+                  ? 'bg-surface-bright/50 border-outline-variant/50 text-outline cursor-not-allowed opacity-60'
+                  : 'bg-surface-bright border-outline-variant text-on-surface hover:border-primary transition-colors cursor-pointer'
+              }`}
+              title={order.files_deleted ? 'Document files have been permanently erased' : ''}
             >
               <span className="material-symbols-outlined text-[16px]">print</span>
               Print Document

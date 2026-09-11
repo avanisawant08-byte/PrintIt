@@ -14,6 +14,8 @@ const pool = require('./config/db');
 const notificationRoutes = require('./routes/notificationRoutes');
 const { setupShopCodeDb } = require('./utils/setupShopCodeDb');
 const { setupStoreDb } = require('./utils/setupStoreDb');
+const { setupPrintingModeDb } = require('./utils/setupPrintingModeDb');
+const { startCleanupJob } = require('./utils/firebaseCleanup');
 const { correlationIdMiddleware, errorHandler } = require('./middleware/errorHandler');
 
 // Connect to DB immediately after import
@@ -23,6 +25,7 @@ pool.connect()
       client.release();
       setupShopCodeDb();
       setupStoreDb();
+      setupPrintingModeDb();
       startCleanupJob();
   })
   .catch(err => console.error("❌ Database connection error:", err.message));

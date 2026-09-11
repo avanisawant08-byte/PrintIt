@@ -155,7 +155,8 @@ router.get('/orders/:id', publicOrderLimiter, async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(
-            `SELECT order_id, shop_id, status, queue_position, amount_total, payment_status, created_at, files
+            `SELECT order_id, shop_id, status, queue_position, amount_total, payment_status, created_at, files,
+                    print_mode, files_deleted, deletion_status, files_deleted_at
              FROM orders
              WHERE order_id = $1`,
             [id]
@@ -195,7 +196,11 @@ router.get('/orders/:id', publicOrderLimiter, async (req, res) => {
             amount_total: order.amount_total,
             payment_status: order.payment_status,
             created_at: order.created_at,
-            files: sanitizedFiles
+            files: sanitizedFiles,
+            print_mode: order.print_mode || 'normal',
+            files_deleted: order.files_deleted || false,
+            deletion_status: order.deletion_status || 'retained',
+            files_deleted_at: order.files_deleted_at || null
         });
     } catch (err) {
         console.error('Error fetching public order:', err);
@@ -287,7 +292,8 @@ router.patch('/orders/:id/cancel', publicOrderLimiter, async (req, res) => {
                  cancelled_at = NOW(),
                  refund_status = $1,
                  refund_id = $2,
-                 payment_status = $3
+                 payment_status = $3,
+                 secure_expires_at = CASE WHEN print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
              WHERE order_id = $4
              RETURNING *`,
             [refundStatus, refundId, paymentStatus, id]

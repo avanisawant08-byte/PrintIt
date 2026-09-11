@@ -22,18 +22,26 @@ const safeDelete = async (filePath) => {
     }
 };
 
-const uploadToFirebase = (file) => {
+const uploadToFirebase = (file, printMode = 'normal') => {
     return new Promise((resolve, reject) => {
+        const isSecure = (printMode || '').toLowerCase() === 'secure';
+        const folder = isSecure ? 'printit/secure_uploads' : 'printit/uploads';
         const originalName = file.originalname;
         const mimeType = file.mimetype;
         const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const safeName = sanitizeFileName(originalName);
-        const fileName = `printit/uploads/${uniqueId}_${safeName}`;
+        const fileName = `${folder}/${uniqueId}_${safeName}`;
         const blob = bucket.file(fileName);
         
         const blobStream = blob.createWriteStream({
             resumable: false,
             contentType: mimeType,
+            metadata: {
+                metadata: {
+                    print_mode: isSecure ? 'secure' : 'normal',
+                    uploaded_at: new Date().toISOString()
+                }
+            }
         });
 
         blobStream.on('error', (error) => {
@@ -45,6 +53,8 @@ const uploadToFirebase = (file) => {
             resolve({
                 secure_url: publicUrl,
                 public_id: blob.name,
+                print_mode: isSecure ? 'secure' : 'normal',
+                storage_path: fileName,
                 format: mimeType.split('/')[1] || '',
                 bytes: file.size || (file.buffer ? file.buffer.length : 0)
             });
@@ -72,14 +82,18 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Stream file from disk to Firebase Storage
-        const result = await uploadToFirebase(req.file);
+        const printMode = req.query.print_mode || req.query.mode || req.body?.print_mode || req.body?.mode || 'normal';
+
+        // Stream file from disk to Firebase Storage (isolated path for secure mode)
+        const result = await uploadToFirebase(req.file, printMode);
 
         return res.status(201).json({
             message: 'File uploaded successfully',
             file: {
                 s3_key: result.secure_url,
                 public_id: result.public_id,
+                print_mode: result.print_mode,
+                storage_path: result.storage_path,
                 original_name: req.file.originalname,
                 format: result.format,
                 size: result.bytes
@@ -103,13 +117,16 @@ router.post('/guest', upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const result = await uploadToFirebase(req.file);
+        const printMode = req.query.print_mode || req.query.mode || req.body?.print_mode || req.body?.mode || 'normal';
+        const result = await uploadToFirebase(req.file, printMode);
 
         return res.status(201).json({
             message: 'File uploaded successfully',
             file: {
                 s3_key: result.secure_url,
                 public_id: result.public_id,
+                print_mode: result.print_mode,
+                storage_path: result.storage_path,
                 original_name: req.file.originalname,
                 format: result.format,
                 size: result.bytes
@@ -133,12 +150,16 @@ router.post('/multiple', auth, upload.array('files', 5), async (req, res) => {
             return res.status(400).json({ error: 'No files uploaded' });
         }
 
+        const printMode = req.query.print_mode || req.query.mode || req.body?.print_mode || req.body?.mode || 'normal';
+
         const uploadedFiles = await Promise.all(
             req.files.map(async file => {
-                const result = await uploadToFirebase(file);
+                const result = await uploadToFirebase(file, printMode);
                 return {
                     s3_key: result.secure_url,
                     public_id: result.public_id,
+                    print_mode: result.print_mode,
+                    storage_path: result.storage_path,
                     original_name: file.originalname,
                     format: result.format,
                     size: result.bytes

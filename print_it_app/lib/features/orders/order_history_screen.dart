@@ -162,6 +162,8 @@ class OrderHistoryScreen extends ConsumerWidget {
                   ))
                 : 'No files';
 
+            final isSecure = order['print_mode'] == 'secure';
+
             return Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: GestureDetector(
@@ -191,9 +193,35 @@ class OrderHistoryScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Order #${orderId.length >= 8 ? orderId.substring(0, 8) : orderId}',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
+                            Row(
+                              children: [
+                                Text(
+                                  'Order #${orderId.length >= 8 ? orderId.substring(0, 8) : orderId}',
+                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                                if (isSecure) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3), width: 0.8),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.lock, size: 10, color: Color(0xFF10B981)),
+                                        SizedBox(width: 3),
+                                        Text(
+                                          'SECURE',
+                                          style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             SizedBox(height: 2),
                             Text(

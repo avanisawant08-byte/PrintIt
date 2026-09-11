@@ -5,13 +5,15 @@
     "test:shopkeeper": "playwright test --project=\"Shopkeeper Portal\"",
     "test:customer": "playwright test --project=\"Customer Web\"",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "test:selenium": "node tests/selenium/run_tests.js"
   },
   "dependencies": {
     "puppeteer": "^25.8.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
-    "playwright": "^1.63.0"
+    "playwright": "^1.63.0",
+    "selenium-webdriver": "^4.49.0"
   }
 }

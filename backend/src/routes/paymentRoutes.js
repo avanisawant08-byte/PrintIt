@@ -126,14 +126,15 @@ router.post('/guest/verify', async (req, res) => {
 
         const orderId = await generateOrderId(req.body.pickup_type || 'express', client);
         const cancelToken = crypto.randomBytes(16).toString('hex');
+        const printMode = req.body.print_mode || 'normal';
 
         const result = await client.query(
             `INSERT INTO orders (
-                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions, cancel_token
-            ) VALUES ($1, NULL, $2, $3, $4, 'queued', $5, $6, 'captured', $7, $8, $9)
+                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions, cancel_token, print_mode, deletion_status
+            ) VALUES ($1, NULL, $2, $3, $4, 'queued', $5, $6, 'captured', $7, $8, $9, $10, 'active')
             RETURNING *`,
             [
-                orderId, shop_id, JSON.stringify(files), pickupOptions, queue_position, amount_total, razorpay_payment_id, '', cancelToken
+                orderId, shop_id, JSON.stringify(files), pickupOptions, queue_position, amount_total, razorpay_payment_id, '', cancelToken, printMode
             ]
         );
 
@@ -164,12 +165,13 @@ router.post('/guest/fail', async (req, res) => {
         try {
             await client.query('BEGIN');
             const orderId = await generateOrderId(pickup_type || 'express', client);
+            const printMode = req.body.print_mode || 'normal';
             const result = await client.query(
                 `INSERT INTO orders (
-                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id
-                ) VALUES ($1, NULL, $2, $3, $4, 'cancelled', NULL, $5, 'failed', NULL)
+                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_mode, secure_expires_at
+                ) VALUES ($1, NULL, $2, $3, $4, 'cancelled', NULL, $5, 'failed', NULL, $6, CASE WHEN $6 = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE NULL END)
                 RETURNING *`,
-                [orderId, shop_id, JSON.stringify(files), pickupOptions, amount_total]
+                [orderId, shop_id, JSON.stringify(files), pickupOptions, amount_total, printMode]
             );
             await client.query('COMMIT');
             return res.status(201).json({ message: 'Failed order logged', order: result.rows[0] });
@@ -352,6 +354,7 @@ router.post('/verify', async (req, res) => {
         const queue_position = parseInt(queueResult.rows[0].count) + 1;
 
         const orderId = await generateOrderId(req.body.pickup_type || 'express', client);
+        const printMode = req.body.print_mode || 'normal';
 
         // Insert order into DB
         const result = await client.query(
@@ -366,8 +369,10 @@ router.post('/verify', async (req, res) => {
                 amount_total,
                 payment_status,
                 payment_id,
-                print_instructions
-            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, '')
+                print_instructions,
+                print_mode,
+                deletion_status
+            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, '', $9, 'active')
             RETURNING *`,
             [
                 orderId,
@@ -377,7 +382,8 @@ router.post('/verify', async (req, res) => {
                 pickupOptions,
                 queue_position,
                 amount_total,
-                razorpay_payment_id
+                razorpay_payment_id,
+                printMode
             ]
         );
 
@@ -412,12 +418,13 @@ router.post('/fail', async (req, res) => {
         try {
             await client.query('BEGIN');
             const orderId = await generateOrderId(pickup_type || 'express', client);
+            const printMode = req.body.print_mode || 'normal';
             const result = await client.query(
                 `INSERT INTO orders (
-                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id
-                ) VALUES ($1, $2, $3, $4, $5, 'cancelled', NULL, $6, 'failed', NULL)
+                    order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_mode, secure_expires_at
+                ) VALUES ($1, $2, $3, $4, $5, 'cancelled', NULL, $6, 'failed', NULL, $7, CASE WHEN $7 = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE NULL END)
                 RETURNING *`,
-                [orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, amount_total]
+                [orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, amount_total, printMode]
             );
             await client.query('COMMIT');
             return res.status(201).json({ message: 'Failed order logged', order: result.rows[0] });
@@ -496,14 +503,15 @@ router.post('/wallet', async (req, res) => {
         });
 
         const orderId = await generateOrderId(req.body.pickup_type || 'express', client);
+        const printMode = req.body.print_mode || 'normal';
 
         const result = await client.query(
             `INSERT INTO orders (
-                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions
-            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, $9)
+                order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, payment_id, print_instructions, print_mode, deletion_status
+            ) VALUES ($1, $2, $3, $4, $5, 'queued', $6, $7, 'captured', $8, $9, $10, 'active')
             RETURNING *`,
             [
-                orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, queue_position, requiredAmount, payment_id, req.body.print_instructions || ''
+                orderId, req.user.user_id, shop_id, JSON.stringify(files), pickupOptions, queue_position, requiredAmount, payment_id, req.body.print_instructions || '', printMode
             ]
         );
 

@@ -122,6 +122,33 @@ class OrderTrackingScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 16),
           // Order Live Tracking Header
+          if (order['print_mode'] == 'secure') ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.lock_outline, size: 14, color: Color(0xFFF59E0B)),
+                  SizedBox(width: 6),
+                  Text(
+                    'SECURE PRINTING ORDER',
+                    style: TextStyle(
+                      color: Color(0xFFF59E0B),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Text(
             'ORDER LIVE TRACKING',
             style: TextStyle(
@@ -320,7 +347,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Files', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold)),
-                      if (files.length > 1)
+                      if (files.length > 1 && order['files_deleted'] != true)
                         TextButton(
                           onPressed: () => _downloadAllFiles(context, ref, orderId),
                           child: Text('Download All', style: TextStyle(color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), fontSize: 12)),
@@ -328,6 +355,48 @@ class OrderTrackingScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  if (order['files_deleted'] == true) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Document Permanently Deleted',
+                                  style: TextStyle(
+                                    color: Color(0xFF10B981),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  order['print_mode'] == 'secure'
+                                      ? 'Per your Secure Printing selection, your uploaded file was permanently erased from PrintIt servers.'
+                                      : 'Document has reached the end of its retention window and was removed.',
+                                  style: TextStyle(
+                                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   ...List.generate(files.length, (index) {
                     final fileItem = files[index];
                     final fileInfo = fileItem['file_info'] ?? fileItem;
@@ -347,10 +416,22 @@ class OrderTrackingScreen extends ConsumerWidget {
                           Expanded(
                             child: Text(fileName, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.download, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
-                            onPressed: () => _downloadFile(context, ref, orderId, index),
-                          ),
+                          order['files_deleted'] == true
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Erased',
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF94A3B8)),
+                                  ),
+                                )
+                              : IconButton(
+                                  icon: Icon(Icons.download, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
+                                  onPressed: () => _downloadFile(context, ref, orderId, index),
+                                ),
                         ],
                       ),
                     );

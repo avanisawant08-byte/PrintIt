@@ -65,6 +65,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
         'amount_total': orderState.amountTotal,
         'pickup_type': orderState.pickupType,
         'pickup_time': orderState.pickupTime?.toIso8601String(),
+        'print_mode': orderState.printMode,
       };
 
       if (isLoggedIn) {
@@ -109,6 +110,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
           'amount_total': orderState.amountTotal,
           'pickup_type': orderState.pickupType,
           'pickup_time': orderState.pickupTime?.toIso8601String(),
+          'print_mode': orderState.printMode,
         });
       }
     } catch (e) {
@@ -212,7 +214,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
             ));
           }
 
-          final uploadEndpoint = isLoggedIn ? '/upload' : '/upload/guest';
+          final uploadEndpoint = '${isLoggedIn ? '/upload' : '/upload/guest'}?print_mode=${orderState.printMode}';
           final uploadRes = await dio.post(uploadEndpoint, data: uploadData);
           if (uploadRes.statusCode != 201) throw Exception('File upload failed for ${entry.file.name}');
           
@@ -298,7 +300,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
           } else if (!kIsWeb && entry.file.path != null) {
             uploadData.files.add(MapEntry('file', await MultipartFile.fromFile(entry.file.path!, filename: entry.file.name)));
           }
-          final uploadEndpoint = isLoggedIn ? '/upload' : '/upload/guest';
+          final uploadEndpoint = '${isLoggedIn ? '/upload' : '/upload/guest'}?print_mode=${orderState.printMode}';
           final uploadRes = await dio.post(uploadEndpoint, data: uploadData);
           if (uploadRes.statusCode != 201) throw Exception('File upload failed for ${entry.file.name}');
           _uploadedFiles.add(uploadRes.data['file']);
@@ -312,6 +314,7 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
         'amount_total': orderState.amountTotal,
         'pickup_type': orderState.pickupType,
         'pickup_time': orderState.pickupTime?.toIso8601String(),
+        'print_mode': orderState.printMode,
       });
 
       if (res.statusCode == 201) {

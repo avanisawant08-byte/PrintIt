@@ -55,11 +55,23 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
       {/* Card Header */}
       <div className="flex justify-between items-start mb-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-display text-xl text-primary font-bold tracking-tight">#{shortId}</span>
             {order.queue_position && colType === 'queued' && (
               <span className="bg-surface-container/80 px-2 py-0.5 rounded text-[11px] text-on-surface-variant font-medium border border-glass-edge/30">
                 Pos {order.queue_position}
+              </span>
+            )}
+            {order.print_mode === 'secure' && (
+              <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.2)]">
+                <span className="material-symbols-outlined text-[12px]">lock</span>
+                SECURE
+              </span>
+            )}
+            {order.files_deleted && (
+              <span className="inline-flex items-center gap-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-medium px-1.5 py-0.5 rounded">
+                <span className="material-symbols-outlined text-[11px]">delete_sweep</span>
+                Erased
               </span>
             )}
           </div>

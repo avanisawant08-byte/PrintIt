@@ -4,6 +4,7 @@ const pool = require('../config/db');
 const auth = require('../middleware/auth');
 const shopCheck = require('../middleware/shopCheck');
 const { getMessaging } = require('../config/firebase');
+const { deleteOrderFilesImmediately } = require('../utils/firebaseCleanup');
 
 // All routes in this router require authentication and shop verification
 router.use(auth);
@@ -133,7 +134,7 @@ router.get('/orders/:id', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id FROM orders WHERE order_id = $1',
+            'SELECT order_id, customer_id, shop_id, files, print_options, status, queue_position, amount_total, payment_status, created_at, updated_at, completed_at, files_deleted, cancelled_at, payment_id, pickup_qr, print_instructions, refund_status, refund_id, print_mode, files_deleted_at, deletion_status, secure_expires_at FROM orders WHERE order_id = $1',
             [id]
         );
 
@@ -276,7 +277,7 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT shop_id, files FROM orders WHERE order_id = $1',
+            'SELECT shop_id, files, files_deleted, print_mode FROM orders WHERE order_id = $1',
             [id]
         );
 
@@ -288,6 +289,10 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
 
         if (order.shop_id !== req.shop_id) {
             return res.status(403).json({ error: 'Access denied. This order does not belong to your shop.' });
+        }
+
+        if (order.files_deleted) {
+            return res.status(410).json({ error: 'This document has already been permanently deleted per the customer\'s Secure Printing retention policy.' });
         }
 
         let files = order.files || [];
@@ -326,9 +331,11 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
                 const { getStorage } = require('../config/firebase');
                 const bucket = getStorage().bucket();
                 const fileRef = bucket.file(publicId);
+                const isSecure = order.print_mode === 'secure';
+                const ttlMs = isSecure ? (15 * 60 * 1000) : (30 * 60 * 1000); // 15-min TTL for secure mode
                 const [signedUrl] = await fileRef.getSignedUrl({
                     action: 'read',
-                    expires: Date.now() + 30 * 60 * 1000, // 30 minutes
+                    expires: Date.now() + ttlMs,
                 });
                 downloadUrl = signedUrl;
             } catch (signErr) {
@@ -402,11 +409,15 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
     }
 
     try {
-        const result = await pool.query('SELECT shop_id, files FROM orders WHERE order_id = $1', [id]);
+        const result = await pool.query('SELECT shop_id, files, files_deleted, print_mode FROM orders WHERE order_id = $1', [id]);
         if (result.rows.length === 0) return res.status(404).json({ error: 'Order not found' });
 
         const order = result.rows[0];
         if (order.shop_id !== req.shop_id) return res.status(403).json({ error: 'Access denied' });
+
+        if (order.files_deleted) {
+            return res.status(410).json({ error: 'This document has already been permanently deleted per the customer\'s Secure Printing retention policy.' });
+        }
 
         let files = order.files;
         if (typeof files === 'string') files = JSON.parse(files);
@@ -451,10 +462,12 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
                 const { getStorage } = require('../config/firebase');
                 const bucket = getStorage().bucket();
                 const fileRef = bucket.file(filePublicId);
+                const isSecure = order.print_mode === 'secure';
+                const ttlMs = isSecure ? (15 * 60 * 1000) : (30 * 60 * 1000);
 
                 const [signedUrl] = await fileRef.getSignedUrl({
                     action: 'read',
-                    expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+                    expires: Date.now() + ttlMs,
                 });
 
                 // Proxy via signed URL so Content-Disposition can be set
@@ -545,11 +558,17 @@ router.patch('/orders/:id/status', async (req, res) => {
         const updateResult = await pool.query(
             `UPDATE orders 
              SET status = $1::text::order_status,
-                 completed_at = CASE WHEN $1::text = 'collected' OR $1::text = 'cancelled' THEN NOW() ELSE completed_at END
+                 completed_at = CASE WHEN $1::text = 'collected' OR $1::text = 'cancelled' THEN NOW() ELSE completed_at END,
+                 secure_expires_at = CASE WHEN $1::text = 'cancelled' AND print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
              WHERE order_id = $2 
              RETURNING *`,
             [status, id]
         );
+
+        // Immediate deletion on print completion for Secure Printing mode
+        if (status === 'collected' && updateResult.rows[0].print_mode === 'secure') {
+            deleteOrderFilesImmediately(id);
+        }
 
         // Notifications and FCM logic
         if (updateResult.rows[0].customer_id) {
@@ -1158,6 +1177,53 @@ router.patch('/product-orders/:id/collect', async (req, res) => {
     } catch (err) {
         console.error('Error updating order to collected:', err);
         res.status(500).json({ error: 'Failed to update order status' });
+    }
+});
+
+
+/**
+ * @route   GET /api/shop/agent
+ * @desc    Get connected print agent device and pairing status
+ * @access  Private (Shop Owner Only)
+ */
+router.get('/agent', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, device_name, pairing_code, pairing_code_expires_at, 
+                    selected_printer, agent_version, status, last_seen_at, updated_at
+             FROM agent_devices 
+             WHERE shop_id = $1 
+             ORDER BY updated_at DESC LIMIT 1`,
+            [req.shop_id]
+        );
+        res.json({ device: result.rows[0] || null });
+    } catch (err) {
+        console.error('Error fetching agent device:', err);
+        res.status(500).json({ error: 'Failed to fetch agent device' });
+    }
+});
+
+/**
+ * @route   POST /api/shop/agent/pairing-code
+ * @desc    Generate a new 6-character pairing code for the shop
+ * @access  Private (Shop Owner Only)
+ */
+router.post('/agent/pairing-code', async (req, res) => {
+    const { device_name = 'Counter-Station' } = req.body;
+    try {
+        const codeResult = await pool.query(
+            'SELECT generate_pairing_code($1, $2) AS code',
+            [req.shop_id, device_name]
+        );
+        const code = codeResult.rows[0]?.code;
+        res.json({
+            pairing_code: code,
+            expires_in_minutes: 15,
+            message: 'Pairing code generated successfully'
+        });
+    } catch (err) {
+        console.error('Error generating pairing code:', err);
+        res.status(500).json({ error: 'Failed to generate pairing code' });
     }
 });
 

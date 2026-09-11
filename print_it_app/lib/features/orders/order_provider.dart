@@ -72,6 +72,7 @@ class OrderState {
   final bool repeatImageOnGrid;
   final String pickupType; // 'express' or 'scheduled'
   final DateTime? pickupTime;
+  final String printMode; // 'normal' or 'secure'
   final double amountTotal;
   final double priceBw;
   final double priceColor;
@@ -98,6 +99,7 @@ class OrderState {
     this.repeatImageOnGrid = true,
     this.pickupType = 'express',
     this.pickupTime,
+    this.printMode = 'normal',
     this.amountTotal = 0.0,
     this.priceBw = 2.00,
     this.priceColor = 10.00,
@@ -131,6 +133,7 @@ class OrderState {
     bool? repeatImageOnGrid,
     String? pickupType,
     DateTime? pickupTime,
+    String? printMode,
     double? amountTotal,
     double? priceBw,
     double? priceColor,
@@ -157,6 +160,7 @@ class OrderState {
       repeatImageOnGrid: repeatImageOnGrid ?? this.repeatImageOnGrid,
       pickupType: pickupType ?? this.pickupType,
       pickupTime: pickupTime ?? this.pickupTime,
+      printMode: printMode ?? this.printMode,
       amountTotal: amountTotal ?? this.amountTotal,
       priceBw: priceBw ?? this.priceBw,
       priceColor: priceColor ?? this.priceColor,
@@ -173,6 +177,10 @@ class OrderNotifier extends Notifier<OrderState> {
   @override
   OrderState build() {
     return OrderState();
+  }
+
+  void setPrintMode(String mode) {
+    state = state.copyWith(printMode: mode);
   }
 
   void setShopId(String shopId) {

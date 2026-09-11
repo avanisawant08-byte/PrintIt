@@ -286,11 +286,23 @@ const Orders = () => {
                       <tr key={o.order_id} className="border-b border-outline-variant/30 hover:bg-surface-bright/50 transition-colors">
                         <td className="p-4 font-mono font-semibold text-primary">#{o.order_id.split('-')[0]}</td>
                         <td className="p-4">
-                          <span className={`px-2 py-1 rounded text-[0.7rem] font-bold ${
-                            isScheduled ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                          }`}>
-                            {isScheduled ? '🗓️ Scheduled' : '⚡ Express'}
-                          </span>
+                          <div className="flex flex-wrap gap-1.5 items-center">
+                            <span className={`px-2 py-1 rounded text-[0.7rem] font-bold ${
+                              isScheduled ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                            }`}>
+                              {isScheduled ? '🗓️ Scheduled' : '⚡ Express'}
+                            </span>
+                            {o.print_mode === 'secure' && (
+                              <span className="px-2 py-1 rounded text-[0.7rem] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">
+                                🔒 Secure
+                              </span>
+                            )}
+                            {(o.files_deleted || o.deletion_status === 'deleted') && (
+                              <span className="px-1.5 py-0.5 rounded text-[0.65rem] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700/50">
+                                Erased
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4 text-on-surface-variant">{new Date(o.created_at).toLocaleString()}</td>
                         <td className="p-4">
