@@ -90,20 +90,29 @@ router.post('/guest/verify', async (req, res) => {
         await client.query('BEGIN');
 
         // Prevent Double-Spending / Idempotency Check:
-        const existingUsage = await client.query(
-            `SELECT order_id, status, amount_total, shop_id, queue_position, cancel_token FROM orders WHERE payment_id = $1
-             UNION ALL
-             SELECT order_id, status, amount_total, shop_id, 0 AS queue_position, '' AS cancel_token FROM product_orders WHERE payment_id = $1`,
+        const existingOrder = await client.query(
+            `SELECT order_id, status, amount_total, shop_id, queue_position, cancel_token 
+             FROM orders WHERE payment_id = $1`,
             [razorpay_payment_id]
         );
 
-        if (existingUsage.rows.length > 0) {
+        if (existingOrder.rows.length > 0) {
             await client.query('COMMIT');
             return res.status(200).json({ 
                 message: 'Payment already verified & order exists', 
-                order: existingUsage.rows[0],
-                cancel_token: existingUsage.rows[0].cancel_token || ''
+                order: existingOrder.rows[0],
+                cancel_token: existingOrder.rows[0].cancel_token || ''
             });
+        }
+
+        const existingProductOrder = await client.query(
+            `SELECT 1 FROM product_orders WHERE payment_id = $1`,
+            [razorpay_payment_id]
+        );
+
+        if (existingProductOrder.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'This payment has already been used for an existing product order.' });
         }
 
         // Validate Server-Side Pricing
@@ -331,19 +340,28 @@ router.post('/verify', async (req, res) => {
         await client.query('BEGIN');
 
         // Prevent Double-Spending / Idempotency Check:
-        const existingUsage = await client.query(
-            `SELECT order_id, status, amount_total, shop_id, queue_position FROM orders WHERE payment_id = $1
-             UNION ALL
-             SELECT order_id, status, amount_total, shop_id, 0 AS queue_position FROM product_orders WHERE payment_id = $1`,
+        const existingOrder = await client.query(
+            `SELECT order_id, status, amount_total, shop_id, queue_position 
+             FROM orders WHERE payment_id = $1`,
             [razorpay_payment_id]
         );
 
-        if (existingUsage.rows.length > 0) {
+        if (existingOrder.rows.length > 0) {
             await client.query('COMMIT');
             return res.status(200).json({ 
                 message: 'Payment already verified & order exists', 
-                order: existingUsage.rows[0]
+                order: existingOrder.rows[0]
             });
+        }
+
+        const existingProductOrder = await client.query(
+            `SELECT 1 FROM product_orders WHERE payment_id = $1`,
+            [razorpay_payment_id]
+        );
+
+        if (existingProductOrder.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'This payment has already been used for an existing product order.' });
         }
 
         // Validate Server-Side Pricing
