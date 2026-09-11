@@ -371,19 +371,13 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                     ? const Color(0xFF121929).withValues(alpha: 0.90)
                                     : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF334155).withValues(alpha: 0.50)
-                                      : Colors.white.withValues(alpha: 0.75),
-                                  width: 1.0,
-                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: isDark
-                                        ? Colors.black.withValues(alpha: 0.25)
-                                        : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 5),
+                                        ? Colors.black.withValues(alpha: 0.35)
+                                        : const Color(0x140F172A),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
                                   ),
                                 ],
                               ),
@@ -784,9 +778,6 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                     ? const Color(0xFF0F172A).withValues(alpha: 0.55)
                                     : Colors.white.withValues(alpha: 0.65),
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.85),
-                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x1064748B),
@@ -1254,8 +1245,8 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
           border: Border.all(
             color: isSelected
                 ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
-                : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.85)),
-            width: isSelected ? 1.5 : 1,
+                : Colors.transparent,
+            width: isSelected ? 1.5 : 0,
           ),
           boxShadow: [
             BoxShadow(

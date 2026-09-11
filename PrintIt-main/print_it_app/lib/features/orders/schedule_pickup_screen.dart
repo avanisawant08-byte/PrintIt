@@ -191,17 +191,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                             ? const Color(0xFF121929).withValues(alpha: 0.90)
                             : Colors.white.withValues(alpha: 0.88),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF334155).withValues(alpha: 0.50)
-                              : Colors.white.withValues(alpha: 0.75),
-                          width: 1.0,
-                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                            blurRadius: 16,
-                            offset: const Offset(0, 5),
+                            color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -323,12 +317,6 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                   ? const Color(0xFF121929).withValues(alpha: 0.90)
                                   : Colors.white.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF334155).withValues(alpha: 0.50)
-                                    : Colors.white.withValues(alpha: 0.75),
-                                width: 1.0,
-                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFF0284C7).withValues(alpha: _glowAnimation.value * 0.15),
@@ -336,9 +324,9 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                   offset: const Offset(0, 4),
                                 ),
                                 BoxShadow(
-                                  color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 5),
+                                  color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
@@ -450,12 +438,6 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       ? const Color(0xFF0284C7)
                                       : (isDark ? const Color(0xFF121929).withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.88)),
                                   borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFF0284C7)
-                                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75)),
-                                    width: 1.0,
-                                  ),
                                   boxShadow: [
                                     if (isSelected)
                                       BoxShadow(
@@ -465,8 +447,9 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       )
                                     else
                                       BoxShadow(
-                                        color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                        blurRadius: 8,
+                                        color: isDark ? Colors.black.withValues(alpha: 0.30) : const Color(0x140F172A),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
                                       ),
                                   ],
                                 ),
@@ -536,15 +519,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                     ? const Color(0xFF121929).withValues(alpha: 0.90)
                                     : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
-                                  width: 1.0,
-                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 5),
+                                    color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
                                   ),
                                 ],
                               ),
@@ -632,12 +611,6 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                           ? const Color(0xFF0284C7)
                                           : (isDark ? const Color(0xFF121929).withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.88)),
                                       borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? const Color(0xFF0284C7)
-                                            : (isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75)),
-                                        width: 1.0,
-                                      ),
                                       boxShadow: [
                                         if (isSelected)
                                           BoxShadow(
@@ -710,15 +683,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                   ? const Color(0xFF121929).withValues(alpha: 0.90)
                                   : Colors.white.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
-                                width: 1.0,
-                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 5),
+                                  color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
@@ -756,15 +725,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                   ? const Color(0xFF121929).withValues(alpha: 0.90)
                                   : Colors.white.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
-                                width: 1.0,
-                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 5),
+                                  color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
@@ -846,15 +811,11 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 ? const Color(0xFF121929).withValues(alpha: 0.90)
                                 : Colors.white.withValues(alpha: 0.88),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
-                              width: 1.0,
-                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                                blurRadius: 16,
-                                offset: const Offset(0, 5),
+                                color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                                blurRadius: 20,
+                                offset: const Offset(0, 6),
                               ),
                             ],
                           ),

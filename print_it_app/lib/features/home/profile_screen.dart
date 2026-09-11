@@ -306,6 +306,7 @@ class ProfileScreen extends ConsumerWidget {
                   },
                 ),
               ],
+            ),
           ),
           
           const SizedBox(height: 32),
@@ -500,12 +501,8 @@ class ProfileScreen extends ConsumerWidget {
                 context.go('/home');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? const Color(0xFFEF4444).withValues(alpha: 0.18)
-                    : const Color(0xFFFEE2E2),
-                foregroundColor: isDark
-                    ? const Color(0xFFF87171)
-                    : const Color(0xFFDC2626),
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
                 elevation: 0,
                 shadowColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
@@ -513,9 +510,16 @@ class ProfileScreen extends ConsumerWidget {
                   side: BorderSide.none,
                 ),
               ),
-              child: const Text(
-                'Sign Out',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout_rounded, size: 18, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Sign Out',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ],
               ),
             ),
           ),

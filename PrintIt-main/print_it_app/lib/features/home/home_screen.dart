@@ -649,18 +649,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ? const Color(0xFF121929).withValues(alpha: 0.92)
               : Colors.white.withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(26),
-          border: Border.all(
-            color: isDark
-                ? const Color(0xFF334155).withValues(alpha: 0.60)
-                : Colors.white.withValues(alpha: 0.75),
-          ),
           boxShadow: [
             BoxShadow(
               color: isDark
-                  ? Colors.black.withValues(alpha: 0.25)
-                  : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-              blurRadius: 16,
-              offset: const Offset(0, 5),
+                  ? Colors.black.withValues(alpha: 0.35)
+                  : const Color(0x150F172A),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
             ),
           ],
         ),

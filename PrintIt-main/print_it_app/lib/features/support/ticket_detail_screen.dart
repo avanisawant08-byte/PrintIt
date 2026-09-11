@@ -86,17 +86,11 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                             ? const Color(0xFF121929).withValues(alpha: 0.90)
                             : Colors.white.withValues(alpha: 0.88),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF334155).withValues(alpha: 0.50)
-                              : Colors.white.withValues(alpha: 0.75),
-                          width: 1.0,
-                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
-                            blurRadius: 16,
-                            offset: const Offset(0, 5),
+                            color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0x140F172A),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),

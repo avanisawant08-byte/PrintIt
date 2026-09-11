@@ -17,7 +17,7 @@ class GlassContainer extends StatelessWidget {
     required this.child,
     this.width = double.infinity,
     this.height,
-    this.borderRadius = 20,
+    this.borderRadius = 22,
     this.padding,
     this.margin,
     this.color,
@@ -29,34 +29,29 @@ class GlassContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final defaultShadow = isDark
-        ? [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 16,
-              offset: const Offset(0, 5),
-            ),
-          ]
-        : [
-            BoxShadow(
-              color: const Color(0xFF0C4A6E).withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 5),
-            ),
-          ];
+    final surfaceColor1 = isDark
+        ? const Color(0xFF131C2E).withValues(alpha: 0.88)
+        : Colors.white.withValues(alpha: 0.90);
+    final surfaceColor2 = isDark
+        ? const Color(0xFF0F172A).withValues(alpha: 0.82)
+        : Colors.white.withValues(alpha: 0.80);
 
-    final effectiveColor = color ??
-        (isDark
-            ? const Color(0xFF121929).withValues(alpha: 0.90)
-            : Colors.white.withValues(alpha: 0.88));
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : const Color(0xFFE2E8F0).withValues(alpha: 0.85);
 
-    final effectiveBorder = border ??
-        Border.all(
-          color: isDark
-              ? const Color(0xFF334155).withValues(alpha: 0.50)
-              : Colors.white.withValues(alpha: 0.75),
-          width: 1.0,
-        );
+    final defaultShadow = [
+      BoxShadow(
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.40)
+            : const Color(0x180F172A),
+        blurRadius: 20,
+        spreadRadius: 0,
+        offset: const Offset(0, 8),
+      ),
+    ];
+
+    final effectiveBorder = border;
 
     return Container(
       margin: margin,
@@ -71,15 +66,20 @@ class GlassContainer extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Container(
+            padding: padding ?? const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: effectiveColor,
+              gradient: color != null
+                  ? null
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [surfaceColor1, surfaceColor2],
+                    ),
+              color: color,
               borderRadius: BorderRadius.circular(borderRadius),
               border: effectiveBorder,
             ),
-            child: Padding(
-              padding: padding ?? const EdgeInsets.all(16.0),
-              child: child,
-            ),
+            child: child,
           ),
         ),
       ),
