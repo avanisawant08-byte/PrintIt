@@ -251,6 +251,7 @@ class ShopDetailScreen extends ConsumerWidget {
   Widget _buildManualsSection(BuildContext context, List<dynamic> manuals) {
     if (manuals.isEmpty) return const SizedBox();
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,9 +286,19 @@ class ShopDetailScreen extends ConsumerWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  color: isDark ? const Color(0xFF121929).withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
+                    width: 1.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

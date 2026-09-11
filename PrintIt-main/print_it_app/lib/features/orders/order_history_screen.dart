@@ -122,6 +122,7 @@ class OrderHistoryScreen extends ConsumerWidget {
   }
 
   Widget _buildOrderList(AsyncValue<List<dynamic>> ordersAsync, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ordersAsync.when(
       data: (orders) {
         if (orders.isEmpty) {
@@ -162,13 +163,15 @@ class OrderHistoryScreen extends ConsumerWidget {
                   ))
                 : 'No files';
 
+            final isSecure = order['print_mode'] == 'secure';
+
             return Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: GestureDetector(
                 onTap: () => context.push('/order-tracking/$orderId'),
                 child: GlassContainer(
                   padding: EdgeInsets.all(16),
-                  borderRadius: 14,
+                  borderRadius: 20,
                   child: Row(
                     children: [
                       // Status Icon
@@ -177,11 +180,11 @@ class OrderHistoryScreen extends ConsumerWidget {
                         height: 44,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _statusColor(status).withValues(alpha: 0.15),
+                          color: _statusColor(status, isDark).withValues(alpha: isDark ? 0.18 : 0.12),
                         ),
                         child: Icon(
                           _statusIcon(status),
-                          color: _statusColor(status),
+                          color: _statusColor(status, isDark),
                           size: 22,
                         ),
                       ),
@@ -191,14 +194,48 @@ class OrderHistoryScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Order #${orderId.length >= 8 ? orderId.substring(0, 8) : orderId}',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
+                            Row(
+                              children: [
+                                Text(
+                                  'Order #${orderId.length >= 8 ? orderId.substring(0, 8) : orderId}',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                if (isSecure) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3), width: 0.8),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.lock, size: 10, color: Color(0xFF10B981)),
+                                        SizedBox(width: 3),
+                                        Text(
+                                          'SECURE',
+                                          style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                            SizedBox(height: 2),
+                            SizedBox(height: 3),
                             Text(
                               filesSummary,
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 13),
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -206,21 +243,30 @@ class OrderHistoryScreen extends ConsumerWidget {
                             Row(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: _statusColor(status).withValues(alpha: 0.15),
+                                    color: _statusColor(status, isDark).withValues(alpha: isDark ? 0.18 : 0.12),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     status.toUpperCase(),
-                                    style: TextStyle(color: _statusColor(status), fontSize: 10, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: _statusColor(status, isDark),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 8),
                                 if (createdAt != null)
                                   Text(
                                     _formatDate(createdAt.toString()),
-                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35), fontSize: 12),
+                                    style: TextStyle(
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                               ],
                             ),
@@ -231,9 +277,19 @@ class OrderHistoryScreen extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('₹$amount', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text(
+                            '₹$amount',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                           SizedBox(height: 4),
-                          Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
+                          Icon(
+                            Icons.chevron_right,
+                            color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                          ),
                         ],
                       ),
                     ],
@@ -264,27 +320,33 @@ class OrderHistoryScreen extends ConsumerWidget {
     }
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
+  Color _statusColor(String status, bool isDark) {
+    switch (status.toLowerCase()) {
       case 'completed':
-        return Colors.greenAccent;
+      case 'collected':
+      case 'ready':
+        return isDark ? const Color(0xFF34D399) : const Color(0xFF059669);
       case 'printing':
-        return Colors.orangeAccent;
+      case 'processing':
+        return isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
       case 'queued':
-        return const Color(0xFF3BAFF2);
+        return isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
       case 'cancelled':
       case 'failed':
-        return Colors.redAccent;
+        return isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626);
       default:
-        return Colors.white54;
+        return isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
     }
   }
 
   IconData _statusIcon(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'completed':
+      case 'collected':
+      case 'ready':
         return Icons.check_circle_outline;
       case 'printing':
+      case 'processing':
         return Icons.print;
       case 'queued':
         return Icons.hourglass_top;

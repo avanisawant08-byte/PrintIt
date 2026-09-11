@@ -45,6 +45,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final detailAsync = ref.watch(ticketDetailProvider(widget.ticketId));
     final authState = ref.watch(authProvider);
     final currentUserId = authState.user?['user_id'];
@@ -81,9 +82,23 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       margin: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: theme.colorScheme.outlineVariant),
+                        color: isDark
+                            ? const Color(0xFF121929).withValues(alpha: 0.90)
+                            : Colors.white.withValues(alpha: 0.88),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF334155).withValues(alpha: 0.50)
+                              : Colors.white.withValues(alpha: 0.75),
+                          width: 1.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                            blurRadius: 16,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,9 +134,10 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.08),
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.08)
+                                      : const Color(0xFFE0F2FE),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,

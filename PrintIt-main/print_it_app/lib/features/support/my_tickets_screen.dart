@@ -59,10 +59,28 @@ class MyTicketsScreen extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final ticket = tickets[index];
                       final status = ticket['status'];
-                      return Card(
-                        color: theme.colorScheme.surfaceContainer,
+                      final isDark = theme.brightness == Brightness.dark;
+                      return Container(
                         margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF121929).withValues(alpha: 0.90)
+                              : Colors.white.withValues(alpha: 0.88),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF334155).withValues(alpha: 0.50)
+                                : Colors.white.withValues(alpha: 0.75),
+                            width: 1.0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                              blurRadius: 16,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           title: Text(ticket['subject'], style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
@@ -78,10 +96,10 @@ class MyTicketsScreen extends ConsumerWidget {
                                   children: [
                                     if (ticket['issue_type'] != null && ticket['issue_type'].toString().isNotEmpty)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
                                           color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
                                           ticket['issue_type'],
@@ -90,10 +108,10 @@ class MyTicketsScreen extends ConsumerWidget {
                                       ),
                                     if (ticket['order_id'] != null && ticket['order_id'].toString().isNotEmpty)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
                                           'Order: ${ticket['order_id']}',
@@ -129,29 +147,29 @@ class MyTicketsScreen extends ConsumerWidget {
   }
 
   Widget _buildStatusBadge(String status, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     Color color;
     switch (status) {
       case 'open':
-        color = Colors.blueAccent;
+        color = const Color(0xFF0284C7);
         break;
       case 'in_progress':
-        color = Colors.orangeAccent;
+        color = const Color(0xFFD97706);
         break;
       case 'resolved':
-        color = Colors.greenAccent;
+        color = const Color(0xFF059669);
         break;
       case 'closed':
-        color = Colors.grey;
+        color = const Color(0xFF64748B);
         break;
       default:
-        color = Colors.white;
+        color = isDark ? Colors.white70 : const Color(0xFF475569);
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withValues(alpha: isDark ? 0.18 : 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         status.toUpperCase().replaceAll('_', ' '),

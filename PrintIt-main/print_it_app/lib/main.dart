@@ -120,7 +120,7 @@ void main() async {
       final decoded = jsonDecode(userDataStr);
       if (decoded is Map) {
         AuthNotifier.initialCachedUser = Map<String, dynamic>.from(decoded);
-        debugPrint('✅ Initial session hydrated for user: ${AuthNotifier.initialCachedUser?['phone'] ?? AuthNotifier.initialCachedUser?['email']}');
+        debugPrint('✅ Initial session hydrated for user session: [REDACTED]');
       }
     }
   } catch (e) {

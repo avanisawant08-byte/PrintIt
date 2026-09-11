@@ -47,6 +47,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
@@ -172,11 +173,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide.none,
                         ),
                       ),
                       onPressed: isLoading
@@ -196,7 +201,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: isDark ? Colors.white : Colors.black87,
                         ),
                       ),
                     ),

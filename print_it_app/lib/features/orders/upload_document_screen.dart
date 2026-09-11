@@ -314,8 +314,7 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                              border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Row(
@@ -348,9 +347,8 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withValues(alpha: 0.2),
+                                    color: Colors.green.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
                                   ),
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -413,17 +411,16 @@ class _UploadDocumentScreenState extends ConsumerState<UploadDocumentScreen>
                                 ),
                                 const SizedBox(height: 16),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+                                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                                   ),
                                   child: Text(
                                     'Browse Files',
                                     style: TextStyle(
                                       color: Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),

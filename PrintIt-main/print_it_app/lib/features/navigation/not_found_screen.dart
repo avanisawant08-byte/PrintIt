@@ -92,15 +92,22 @@ class NotFoundScreen extends StatelessWidget {
                         children: [
                           if (canPop)
                             Expanded(
-                              child: OutlinedButton(
+                              child: ElevatedButton(
                                 onPressed: goBack,
-                                style: OutlinedButton.styleFrom(
+                                style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 14),
+                                  elevation: 0,
+                                  shadowColor: Colors.transparent,
+                                  backgroundColor: theme.brightness == Brightness.dark
+                                      ? const Color(0xFF1E293B)
+                                      : const Color(0xFFF1F5F9),
+                                  foregroundColor: theme.colorScheme.onSurface,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
+                                    side: BorderSide.none,
                                   ),
                                 ),
-                                child: const Text('Go Back'),
+                                child: const Text('Go Back', style: TextStyle(fontWeight: FontWeight.w600)),
                               ),
                             ),
                           if (canPop) const SizedBox(width: 12),

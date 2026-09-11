@@ -257,11 +257,8 @@ class _StoreOrdersScreenState extends ConsumerState<StoreOrdersScreen> {
                               margin: const EdgeInsets.symmetric(horizontal: 16),
                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                color: theme.colorScheme.primary.withValues(alpha: 0.10),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                                ),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -34,6 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       });
     }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -170,11 +171,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide.none,
                         ),
                       ),
                       onPressed: authState.isLoading
@@ -204,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: isDark ? Colors.white : Colors.black87,
                               ),
                             )
                           : Image.network(
@@ -216,7 +221,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: isDark ? Colors.white : Colors.black87,
                         ),
                       ),
                     ),
@@ -225,21 +230,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.18) : const Color(0xFFE0F2FE),
+                        foregroundColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide.none,
                         ),
                       ),
                       onPressed: () => _showPhoneLoginDialog(context),
-                      icon: const Icon(Icons.phone_android, color: Color(0xFF22D3EE), size: 22),
-                      label: const Text(
+                      icon: Icon(Icons.phone_android, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), size: 22),
+                      label: Text(
                         'Continue with Phone Number',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF8AEBFF),
+                          color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                         ),
                       ),
                     ),

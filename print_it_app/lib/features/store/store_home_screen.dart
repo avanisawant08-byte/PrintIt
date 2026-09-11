@@ -146,11 +146,8 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.07) : Colors.black.withValues(alpha: 0.04),
+                      color: isDark ? Colors.white.withValues(alpha: 0.07) : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
-                      ),
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -260,14 +257,9 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? (isDark ? Colors.white12 : Colors.black12)
-                                : Colors.transparent,
+                                ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                                : (isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF1F5F9)),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isSelected
-                                  ? theme.colorScheme.primary.withValues(alpha: 0.6)
-                                  : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
-                            ),
                           ),
                           child: Text(
                             branch,

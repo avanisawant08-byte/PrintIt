@@ -8,6 +8,7 @@ class PaymentFailedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -126,13 +127,19 @@ class PaymentFailedScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 56,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide.none,
+                        ),
                       ),
                       onPressed: () => context.go('/home'),
-                      child: Text('Back to Home', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16)),
+                      child: const Text('Back to Home', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     ),
                   ),
                   SizedBox(height: 32),

@@ -188,16 +188,20 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                            : Colors.white.withValues(alpha: 0.72),
+                            ? const Color(0xFF121929).withValues(alpha: 0.90)
+                            : Colors.white.withValues(alpha: 0.88),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF334155).withValues(alpha: 0.50)
+                              : Colors.white.withValues(alpha: 0.75),
+                          width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0x1064748B),
-                            blurRadius: 10,
+                            color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                            blurRadius: 16,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -316,17 +320,25 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                  : Colors.white.withValues(alpha: 0.72),
+                                  ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                  : Colors.white.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+                                color: isDark
+                                    ? const Color(0xFF334155).withValues(alpha: 0.50)
+                                    : Colors.white.withValues(alpha: 0.75),
+                                width: 1.0,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFF0284C7).withValues(alpha: _glowAnimation.value * 0.15),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
+                                ),
+                                BoxShadow(
+                                  color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
@@ -343,11 +355,6 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                             ? const Color(0xFF0284C7).withValues(alpha: 0.2)
                                             : const Color(0xFFE0F2FE),
                                         shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isDark
-                                              ? const Color(0xFF0284C7).withValues(alpha: 0.4)
-                                              : const Color(0xFFBAE6FD),
-                                        ),
                                       ),
                                       child: Icon(
                                         Icons.timer_outlined,
@@ -441,12 +448,13 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? const Color(0xFF0284C7)
-                                      : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.72)),
+                                      : (isDark ? const Color(0xFF121929).withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.88)),
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: isSelected
                                         ? const Color(0xFF0284C7)
-                                        : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
+                                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75)),
+                                    width: 1.0,
                                   ),
                                   boxShadow: [
                                     if (isSelected)
@@ -457,7 +465,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       )
                                     else
                                       BoxShadow(
-                                        color: isDark ? Colors.black.withValues(alpha: 0.12) : const Color(0x0C64748B),
+                                        color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
                                         blurRadius: 8,
                                       ),
                                   ],
@@ -525,16 +533,18 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                    : Colors.white.withValues(alpha: 0.8),
+                                    ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                    : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                                  color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
+                                  width: 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x0C0F172A),
-                                    blurRadius: 10,
+                                    color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),
@@ -619,25 +629,26 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.15) : const Color(0xFFF0F9FF))
-                                          : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.72)),
+                                          ? const Color(0xFF0284C7)
+                                          : (isDark ? const Color(0xFF121929).withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.88)),
                                       borderRadius: BorderRadius.circular(18),
                                       border: Border.all(
                                         color: isSelected
                                             ? const Color(0xFF0284C7)
-                                            : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
-                                        width: isSelected ? 1.5 : 1,
+                                            : (isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75)),
+                                        width: 1.0,
                                       ),
                                       boxShadow: [
                                         if (isSelected)
                                           BoxShadow(
-                                            color: const Color(0xFF0284C7).withValues(alpha: 0.2),
-                                            blurRadius: 12,
+                                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                                            blurRadius: 14,
+                                            offset: const Offset(0, 4),
                                           )
                                         else
                                           BoxShadow(
-                                            color: isDark ? Colors.black.withValues(alpha: 0.1) : const Color(0x0C64748B),
-                                            blurRadius: 6,
+                                            color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                            blurRadius: 8,
                                           ),
                                       ],
                                     ),
@@ -696,16 +707,18 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                  : Colors.white.withValues(alpha: 0.72),
+                                  ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                  : Colors.white.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+                                color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
+                                width: 1.0,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x1064748B),
-                                  blurRadius: 8,
+                                  color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
@@ -740,16 +753,18 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                  : Colors.white.withValues(alpha: 0.72),
+                                  ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                  : Colors.white.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+                                color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
+                                width: 1.0,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0x1064748B),
-                                  blurRadius: 8,
+                                  color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
@@ -828,16 +843,18 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF0F172A).withValues(alpha: 0.55)
-                                : Colors.white.withValues(alpha: 0.72),
+                                ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                : Colors.white.withValues(alpha: 0.88),
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+                              color: isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75),
+                              width: 1.0,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: isDark ? Colors.black.withValues(alpha: 0.12) : const Color(0x0C64748B),
-                                blurRadius: 6,
+                                color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                blurRadius: 16,
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
@@ -851,11 +868,6 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                       ? const Color(0xFF0284C7).withValues(alpha: 0.2)
                                       : const Color(0xFFE0F2FE),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? const Color(0xFF0284C7).withValues(alpha: 0.4)
-                                        : const Color(0xFFBAE6FD),
-                                  ),
                                 ),
                                 child: Icon(
                                   Icons.description_outlined,

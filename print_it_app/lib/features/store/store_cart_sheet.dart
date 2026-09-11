@@ -109,11 +109,8 @@ class _StoreCartSheetState extends ConsumerState<StoreCartSheet> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                ),
               ),
               child: Column(
                 children: [
@@ -420,13 +417,14 @@ class _StoreCartSheetState extends ConsumerState<StoreCartSheet> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: _paymentMethod == 'wallet'
-                                ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                : (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03)),
-                            borderRadius: BorderRadius.circular(14),
+                                ? theme.colorScheme.primary.withValues(alpha: 0.12)
+                                : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: _paymentMethod == 'wallet'
-                                  ? theme.colorScheme.primary
-                                  : (isDark ? Colors.white10 : Colors.black12),
+                                  ? theme.colorScheme.primary.withValues(alpha: 0.6)
+                                  : Colors.transparent,
+                              width: 1.0,
                             ),
                           ),
                           child: Row(
@@ -472,13 +470,14 @@ class _StoreCartSheetState extends ConsumerState<StoreCartSheet> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: _paymentMethod == 'razorpay'
-                                ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                : (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03)),
-                            borderRadius: BorderRadius.circular(14),
+                                ? theme.colorScheme.primary.withValues(alpha: 0.12)
+                                : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: _paymentMethod == 'razorpay'
-                                  ? theme.colorScheme.primary
-                                  : (isDark ? Colors.white10 : Colors.black12),
+                                  ? theme.colorScheme.primary.withValues(alpha: 0.6)
+                                  : Colors.transparent,
+                              width: 1.0,
                             ),
                           ),
                           child: Row(

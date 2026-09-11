@@ -650,7 +650,7 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
                       SizedBox(
                         width: double.infinity,
                         height: 50,
-                        child: OutlinedButton.icon(
+                        child: ElevatedButton.icon(
                           icon: Icon(Icons.edit_note_rounded, color: primaryAccent),
                           label: Text(
                             'Enter Shop Code / Link Manually',
@@ -660,15 +660,16 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> with SingleTi
                               color: textColor,
                             ),
                           ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
-                              width: 1.5,
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide.none,
                             ),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             backgroundColor: isDark
-                                ? const Color(0xFF111928).withValues(alpha: 0.6)
-                                : Colors.white.withValues(alpha: 0.8),
+                                ? const Color(0xFF1E293B)
+                                : Colors.white.withValues(alpha: 0.9),
                           ),
                           onPressed: () => _showManualEntryDialog(isDark),
                         ),

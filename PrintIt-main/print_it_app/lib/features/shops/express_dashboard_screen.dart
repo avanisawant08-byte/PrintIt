@@ -256,14 +256,19 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
               const SizedBox(width: 8),
               const Icon(Icons.account_circle, color: AppTheme.logoBlue),
               const SizedBox(width: 16),
-              OutlinedButton(
+              ElevatedButton(
                 onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white, side: const BorderSide(color: Color(0xFF464554)),
-                  backgroundColor: const Color(0xFF2D3449),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: const Color(0xFFF87171),
+                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide.none,
+                  ),
                 ),
-                child: const Text('LOGOUT', style: TextStyle(fontSize: 12)),
+                child: const Text('LOGOUT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -475,15 +480,20 @@ class _ExpressDashboardScreenState extends ConsumerState<ExpressDashboardScreen>
                 ),
               ),
               const SizedBox(width: 16),
-              OutlinedButton(
+              ElevatedButton(
                 onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: isPaid ? Colors.greenAccent : AppTheme.logoBlue,
-                  side: BorderSide(color: (isPaid ? Colors.greenAccent : AppTheme.logoBlue).withValues(alpha: 0.3)),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: isPaid ? const Color(0xFF34D399) : const Color(0xFF38BDF8),
+                  backgroundColor: (isPaid ? const Color(0xFF10B981) : const Color(0xFF0284C7)).withValues(alpha: 0.18),
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide.none,
+                  ),
                 ),
-                child: Text(isPaid ? 'PAID' : 'UNPAID'),
+                child: Text(isPaid ? 'PAID' : 'UNPAID', style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),

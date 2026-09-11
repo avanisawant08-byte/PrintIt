@@ -30,7 +30,7 @@ class NotificationService {
     try {
       final token = await _messaging.getToken();
       if (token != null) {
-        debugPrint("✅ FCM Token: ${token.substring(0, 20)}...");
+        debugPrint("✅ FCM Token retrieved: [REDACTED]");
         await _sendTokenToServer(token);
       } else {
         debugPrint("⚠️ FCM token is null");

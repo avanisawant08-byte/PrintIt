@@ -128,7 +128,6 @@ class OrderTrackingScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -362,7 +361,6 @@ class OrderTrackingScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
@@ -405,9 +403,8 @@ class OrderTrackingScreen extends ConsumerWidget {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         children: [
@@ -447,15 +444,19 @@ class OrderTrackingScreen extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               height: 56,
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: () => _confirmCancelOrder(context, ref, orderId),
                 icon: const Icon(Icons.cancel),
                 label: const Text('Cancel Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFEF4444),
-                  side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.08),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
+                  backgroundColor: isDark ? const Color(0xFFEF4444).withValues(alpha: 0.18) : const Color(0xFFFEE2E2),
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide.none,
+                  ),
                 ),
               ),
             ),
@@ -465,15 +466,19 @@ class OrderTrackingScreen extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             height: 56,
-            child: OutlinedButton.icon(
+            child: ElevatedButton.icon(
               onPressed: () => context.push('/help'),
               icon: const Icon(Icons.support_agent),
               label: const Text('Need help with your order?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-                side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0xFFCBD5E1)),
-                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: isDark ? Colors.white : Colors.black87,
+                backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide.none,
+                ),
               ),
             ),
           ),

@@ -604,11 +604,27 @@ class _SecurePaymentScreenState extends ConsumerState<SecurePaymentScreen> {
         child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08) : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected 
+              ? const Color(0xFF0284C7).withValues(alpha: 0.12) 
+              : (Theme.of(context).brightness == Brightness.dark 
+                  ? const Color(0xFF121929).withValues(alpha: 0.90) 
+                  : Colors.white.withValues(alpha: 0.88)),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3BAFF2).withValues(alpha: 0.5) : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+            color: isSelected 
+                ? const Color(0xFF0284C7) 
+                : (Theme.of(context).brightness == Brightness.dark 
+                    ? const Color(0xFF334155).withValues(alpha: 0.50) 
+                    : Colors.white.withValues(alpha: 0.75)),
+            width: 1.0,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [

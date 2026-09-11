@@ -95,17 +95,22 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0F172A).withValues(alpha: 0.65)
-                                    : Colors.white.withValues(alpha: 0.72),
+                                    ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                    : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                  color: isDark
+                                      ? const Color(0xFF334155).withValues(alpha: 0.50)
+                                      : Colors.white.withValues(alpha: 0.75),
+                                  width: 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withValues(alpha: 0.3) : const Color(0x18A0C3D7),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 4),
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.25)
+                                        : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),
@@ -283,18 +288,22 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                      : Colors.white.withValues(alpha: 0.72),
+                                      ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                      : Colors.white.withValues(alpha: 0.88),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: orderState.repeatImageOnGrid
                                         ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.4) : const Color(0xFFBAE6FD))
-                                        : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white),
+                                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75)),
+                                    width: 1.0,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0x12A0C3D7),
+                                      color: isDark
+                                          ? Colors.black.withValues(alpha: 0.25)
+                                          : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
                                       blurRadius: 16,
+                                      offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),
@@ -343,7 +352,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                     ),
                                     Switch.adaptive(
                                       value: orderState.repeatImageOnGrid,
-                                      activeColor: const Color(0xFF0284C7),
+                                      activeTrackColor: const Color(0xFF0284C7),
                                       onChanged: (val) {
                                         ref.read(orderProvider.notifier).setRepeatImageOnGrid(val);
                                       },
@@ -359,16 +368,22 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                    : Colors.white.withValues(alpha: 0.72),
+                                    ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                    : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                  color: isDark
+                                      ? const Color(0xFF334155).withValues(alpha: 0.50)
+                                      : Colors.white.withValues(alpha: 0.75),
+                                  width: 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0x12A0C3D7),
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.25)
+                                        : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
                                     blurRadius: 16,
+                                    offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),
@@ -797,6 +812,106 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 20),
+
+                            // Printing Mode Selector Section (Normal vs Secure)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 2),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Printing Mode',
+                                        style: TextStyle(
+                                          color: isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      if (orderState.printMode == 'secure')
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'PRIVACY GUARANTEED',
+                                            style: TextStyle(
+                                              color: Color(0xFFF59E0B),
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => _showSecurePrintingExplanation(context, isDark),
+                                  icon: const Icon(Icons.info_outline, size: 14, color: Color(0xFF0284C7)),
+                                  label: const Text(
+                                    'How it works',
+                                    style: TextStyle(fontSize: 11, color: Color(0xFF0284C7), fontWeight: FontWeight.w600),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSelectableCard(
+                                    isDark: isDark,
+                                    isSelected: orderState.printMode != 'secure',
+                                    onTap: () {
+                                      ref.read(orderProvider.notifier).setPrintMode('normal');
+                                    },
+                                    icon: Icon(
+                                      Icons.print_outlined,
+                                      size: 20,
+                                      color: orderState.printMode != 'secure'
+                                          ? const Color(0xFF0284C7)
+                                          : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                    ),
+                                    title: 'Normal',
+                                    subtitle: 'Standard temp storage',
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildSelectableCard(
+                                    isDark: isDark,
+                                    isSelected: orderState.printMode == 'secure',
+                                    onTap: () {
+                                      ref.read(orderProvider.notifier).setPrintMode('secure');
+                                      _showSecurePrintingExplanation(context, isDark);
+                                    },
+                                    icon: Icon(
+                                      Icons.security_rounded,
+                                      size: 20,
+                                      color: orderState.printMode == 'secure'
+                                          ? const Color(0xFFF59E0B)
+                                          : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                    ),
+                                    title: '🔒 Secure',
+                                    subtitle: 'Auto-erased on print',
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -917,6 +1032,171 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showSecurePrintingExplanation(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.security_rounded, color: Color(0xFFF59E0B), size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Secure Printing Mode',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Zero trace after print · 100% Free for all users',
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildGuaranteeItem(
+                  icon: Icons.folder_delete_outlined,
+                  title: 'Immediate Deletion on Print',
+                  desc: 'Files are permanently erased from cloud servers immediately once printed & collected.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 12),
+                _buildGuaranteeItem(
+                  icon: Icons.timer_outlined,
+                  title: '15-Minute Auto-Expiry on Failure',
+                  desc: 'If an order fails or cancels, files are strictly erased after 15 minutes without trace.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 12),
+                _buildGuaranteeItem(
+                  icon: Icons.link_off_rounded,
+                  title: 'Short-Lived Signed URLs Only',
+                  desc: 'Only single-use, 15-minute access links are generated for the print shop.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, size: 16, color: Color(0xFF0284C7)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Notice: Not end-to-end zero-knowledge encryption. Our backend must render pages for printing.',
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Got it', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGuaranteeItem({
+    required IconData icon,
+    required String title,
+    required String desc,
+    required bool isDark,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: const Color(0xFF38BDF8)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                desc,
+                style: TextStyle(
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  fontSize: 11,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

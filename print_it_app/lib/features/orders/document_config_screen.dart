@@ -95,17 +95,22 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0F172A).withValues(alpha: 0.65)
-                                    : Colors.white.withValues(alpha: 0.72),
+                                    ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                    : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                  color: isDark
+                                      ? const Color(0xFF334155).withValues(alpha: 0.50)
+                                      : Colors.white.withValues(alpha: 0.75),
+                                  width: 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withValues(alpha: 0.3) : const Color(0x18A0C3D7),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 4),
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.25)
+                                        : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),
@@ -283,18 +288,22 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                      : Colors.white.withValues(alpha: 0.72),
+                                      ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                      : Colors.white.withValues(alpha: 0.88),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: orderState.repeatImageOnGrid
                                         ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.4) : const Color(0xFFBAE6FD))
-                                        : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white),
+                                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.75)),
+                                    width: 1.0,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0x12A0C3D7),
+                                      color: isDark
+                                          ? Colors.black.withValues(alpha: 0.25)
+                                          : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
                                       blurRadius: 16,
+                                      offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),
@@ -359,16 +368,22 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                    : Colors.white.withValues(alpha: 0.72),
+                                    ? const Color(0xFF121929).withValues(alpha: 0.90)
+                                    : Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                  color: isDark
+                                      ? const Color(0xFF334155).withValues(alpha: 0.50)
+                                      : Colors.white.withValues(alpha: 0.75),
+                                  width: 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0x12A0C3D7),
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.25)
+                                        : const Color(0xFF0C4A6E).withValues(alpha: 0.05),
                                     blurRadius: 16,
+                                    offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),

@@ -141,6 +141,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildUserProfile(BuildContext context, WidgetRef ref, Map<String, dynamic> user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
@@ -148,7 +149,7 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           // Profile Hero Section
           GlassContainer(
-            borderRadius: 16,
+            borderRadius: 20,
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
@@ -233,9 +234,10 @@ class ProfileScreen extends ConsumerWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.06)
+                                    : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Column(
                                 children: [
@@ -248,12 +250,12 @@ class ProfileScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  const Text(
+                                  Text(
                                     'MY ORDERS',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.grey,
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                       letterSpacing: 1.2,
                                     ),
                                   ),
@@ -269,9 +271,10 @@ class ProfileScreen extends ConsumerWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.06)
+                                    : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Column(
                                 children: [
@@ -284,12 +287,12 @@ class ProfileScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  const Text(
+                                  Text(
                                     'WALLET',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.grey,
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                       letterSpacing: 1.2,
                                     ),
                                   ),
@@ -303,7 +306,6 @@ class ProfileScreen extends ConsumerWidget {
                   },
                 ),
               ],
-            ),
           ),
           
           const SizedBox(height: 32),
@@ -372,7 +374,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           GlassContainer(
-            borderRadius: 16,
+            borderRadius: 20,
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -382,28 +384,28 @@ class ProfileScreen extends ConsumerWidget {
                   title: 'Privacy Policy',
                   onTap: () => context.push('/privacy'),
                 ),
-                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                Divider(color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0).withValues(alpha: 0.7), height: 1),
                 _buildNavigationTile(
                   context,
                   icon: Icons.gavel_outlined,
                   title: 'Terms of Service',
                   onTap: () => context.push('/terms'),
                 ),
-                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                Divider(color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0).withValues(alpha: 0.7), height: 1),
                 _buildNavigationTile(
                   context,
                   icon: Icons.currency_rupee,
                   title: 'Refund & Cancellation Policy',
                   onTap: () => context.push('/refund-policy'),
                 ),
-                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                Divider(color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0).withValues(alpha: 0.7), height: 1),
                 _buildNavigationTile(
                   context,
                   icon: Icons.security_outlined,
                   title: 'Security Practices',
                   onTap: () => context.push('/security'),
                 ),
-                Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                Divider(color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0).withValues(alpha: 0.7), height: 1),
                 _buildNavigationTile(
                   context,
                   icon: Icons.accessibility_new_outlined,
@@ -488,23 +490,32 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
           
-          // Sign Out Button
+          // Sign Out Button (Border-free full-filled frosted button)
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
+            height: 52,
+            child: ElevatedButton(
               onPressed: () {
                 ref.read(authProvider.notifier).logout();
                 context.go('/home');
               },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFFF5252), width: 1),
-                foregroundColor: const Color(0xFFFF5252),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.18)
+                    : const Color(0xFFFEE2E2),
+                foregroundColor: isDark
+                    ? const Color(0xFFF87171)
+                    : const Color(0xFFDC2626),
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide.none,
+                ),
               ),
               child: const Text(
                 'Sign Out',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -577,8 +588,9 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildWalletHistoryCard(BuildContext context, {required String title, required String date, required String amount, required bool isCredit, required IconData icon}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GlassContainer(
-      borderRadius: 12,
+      borderRadius: 18,
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
@@ -586,19 +598,39 @@ class ProfileScreen extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8),
+              color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: isCredit ? AppTheme.logoBlue : Theme.of(context).colorScheme.onSurfaceVariant),
+            child: Icon(
+              icon,
+              color: isCredit
+                  ? (isDark ? const Color(0xFF38BDF8) : AppTheme.logoBlue)
+                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 4),
-                Text(date, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                Text(
+                  date,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  ),
+                ),
               ],
             ),
           ),
@@ -607,7 +639,9 @@ class ProfileScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isCredit ? const Color(0xFF00C853) : Theme.of(context).colorScheme.onSurface,
+              color: isCredit
+                  ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                  : (isDark ? Colors.white : Colors.black),
             ),
           ),
         ],
