@@ -1,5 +1,6 @@
 import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/theme_provider.dart';
@@ -1005,6 +1006,7 @@ class _LiveOrderPillState extends State<_LiveOrderPill>
   late final Animation<double> _pulseScale;
   late final Animation<double> _pulseOpacity;
   bool _isHovered = false;
+  bool _isPressed = false;
 
   @override
   void initState() {
@@ -1075,19 +1077,23 @@ class _LiveOrderPillState extends State<_LiveOrderPill>
     final surfaceColor2 = isDark
         ? const Color(0xFF0F172A).withValues(alpha: 0.82)
         : Colors.white.withValues(alpha: 0.80);
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : const Color(0xFFE2E8F0).withValues(alpha: 0.85);
+    final isInteractive = _isHovered || _isPressed;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
+        onTapDown: (_) {
+          HapticFeedback.lightImpact();
+          setState(() => _isPressed = true);
+        },
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
         onTap: () => context.push('/order-tracking/$orderId'),
         child: AnimatedScale(
-          scale: _isHovered ? 1.015 : 1.0,
-          duration: const Duration(milliseconds: 180),
+          scale: _isPressed ? 0.98 : (_isHovered ? 1.015 : 1.0),
+          duration: const Duration(milliseconds: 140),
           curve: Curves.easeOutCubic,
           child: Container(
             decoration: BoxDecoration(
@@ -1101,13 +1107,17 @@ class _LiveOrderPillState extends State<_LiveOrderPill>
                   spreadRadius: 0,
                   offset: const Offset(0, 8),
                 ),
-                if (_isHovered)
-                  BoxShadow(
-                    color: accentColor.withValues(alpha: isDark ? 0.20 : 0.12),
-                    blurRadius: 24,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 4),
+                // Persistent ambient status aura - visible on smartphones without hover!
+                BoxShadow(
+                  color: accentColor.withValues(
+                    alpha: isInteractive
+                        ? (isDark ? 0.32 : 0.22)
+                        : (isDark ? 0.18 : 0.12),
                   ),
+                  blurRadius: isInteractive ? 26 : 20,
+                  spreadRadius: isInteractive ? 1 : 0,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
             child: ClipRRect(
@@ -1125,9 +1135,9 @@ class _LiveOrderPillState extends State<_LiveOrderPill>
                     ),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: _isHovered
-                          ? accentColor.withValues(alpha: isDark ? 0.45 : 0.35)
-                          : borderColor,
+                      color: isInteractive
+                          ? accentColor.withValues(alpha: isDark ? 0.55 : 0.45)
+                          : accentColor.withValues(alpha: isDark ? 0.24 : 0.18),
                       width: 1.0,
                     ),
                   ),
