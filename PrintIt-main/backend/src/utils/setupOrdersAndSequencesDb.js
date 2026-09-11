@@ -87,11 +87,46 @@ async function setupOrdersAndSequencesDb() {
             END $$;
         `);
 
-        // 4. Ensure payments unique index
+        // 4. Ensure payments unique constraint (full, non-partial — required for ON CONFLICT to work)
         await client.query(`
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_unique_razorpay_payment_id 
-            ON payments(razorpay_payment_id) 
-            WHERE razorpay_payment_id IS NOT NULL;
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'payments_razorpay_payment_id_unique'
+                ) THEN
+                    BEGIN
+                        ALTER TABLE payments ADD CONSTRAINT payments_razorpay_payment_id_unique UNIQUE (razorpay_payment_id);
+                    EXCEPTION WHEN OTHERS THEN
+                        RAISE NOTICE 'payments_razorpay_payment_id_unique constraint could not be added: %', SQLERRM;
+                    END;
+                END IF;
+            END $$;
+        `);
+
+        // 5. Ensure orders(payment_id) has a proper UNIQUE constraint (not just a partial index).
+        //    A full UNIQUE constraint is required for ON CONFLICT (payment_id) to work in PostgreSQL.
+        //    Drop the old partial index first if it exists (partial indexes cannot be used with ON CONFLICT).
+        await client.query(`DROP INDEX IF EXISTS idx_orders_unique_payment_id;`);
+        await client.query(`
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'orders_payment_id_unique'
+                ) THEN
+                    BEGIN
+                        ALTER TABLE orders ADD CONSTRAINT orders_payment_id_unique UNIQUE (payment_id);
+                    EXCEPTION WHEN OTHERS THEN
+                        RAISE NOTICE 'orders_payment_id_unique constraint could not be added: %', SQLERRM;
+                    END;
+                END IF;
+            END $$;
+        `);
+
+        // Supporting index for fast payment_id lookups on orders (non-unique, for query performance)
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_orders_payment_id 
+            ON orders(payment_id) 
+            WHERE payment_id IS NOT NULL;
         `);
 
         await client.query('COMMIT');

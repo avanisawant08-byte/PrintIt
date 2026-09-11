@@ -124,12 +124,21 @@ router.post('/guest/verify', async (req, res) => {
             });
         }
 
-        await client.query(
-            `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
-             VALUES ($1, $2, 'captured', $3)
-             ON CONFLICT (razorpay_payment_id) DO NOTHING`,
-            [razorpay_order_id, razorpay_payment_id, amount_total]
+        const existingPayment = await client.query(
+            'SELECT 1 FROM payments WHERE razorpay_payment_id = $1',
+            [razorpay_payment_id]
         );
+        if (existingPayment.rows.length === 0) {
+            try {
+                await client.query(
+                    `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
+                     VALUES ($1, $2, 'captured', $3)`,
+                    [razorpay_order_id, razorpay_payment_id, amount_total]
+                );
+            } catch (pErr) {
+                if (pErr.code !== '23505') throw pErr;
+            }
+        }
 
         const queueResult = await client.query(
             `SELECT COUNT(*) FROM orders
@@ -374,12 +383,21 @@ router.post('/verify', async (req, res) => {
         }
 
         // Log payment record in payments table
-        await client.query(
-            `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
-             VALUES ($1, $2, 'captured', $3)
-             ON CONFLICT (razorpay_payment_id) DO NOTHING`,
-            [razorpay_order_id, razorpay_payment_id, amount_total]
+        const existingPayment = await client.query(
+            'SELECT 1 FROM payments WHERE razorpay_payment_id = $1',
+            [razorpay_payment_id]
         );
+        if (existingPayment.rows.length === 0) {
+            try {
+                await client.query(
+                    `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, status, amount)
+                     VALUES ($1, $2, 'captured', $3)`,
+                    [razorpay_order_id, razorpay_payment_id, amount_total]
+                );
+            } catch (pErr) {
+                if (pErr.code !== '23505') throw pErr;
+            }
+        }
 
         // Get queue position for this shop
         const queueResult = await client.query(
