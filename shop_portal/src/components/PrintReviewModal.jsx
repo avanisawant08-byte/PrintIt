@@ -51,11 +51,52 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
   const [sides, setSides] = useState(initialOpts.sides || 'single');
   const [orientation, setOrientation] = useState(initialOpts.orientation || 'portrait');
   const [binding, setBinding] = useState(initialOpts.binding || 'none');
+  const [selectedPrinter, setSelectedPrinter] = useState(initialOpts.printer_name || '');
 
   // Connected Agent / Printer state
   const [agentDevice, setAgentDevice] = useState(null);
   const [loadingAgent, setLoadingAgent] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Available printers list from agent device
+  const availablePrinters = React.useMemo(() => {
+    if (!agentDevice?.available_printers) return [];
+    let raw = agentDevice.available_printers;
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+    }
+    if (!Array.isArray(raw)) return [];
+    return raw.map(p => (typeof p === 'string' ? p : p.name)).filter(Boolean);
+  }, [agentDevice]);
+
+  // Synchronize initial selected printer when agentDevice or colorMode changes
+  useEffect(() => {
+    if (selectedPrinter) return;
+
+    if (availablePrinters.length > 0) {
+      if (colorMode === 'color') {
+        const colorPrinter = availablePrinters.find(p => /color|colour|epson|photo|deskjet|inkjet/i.test(p));
+        if (colorPrinter) {
+          setSelectedPrinter(colorPrinter);
+          return;
+        }
+      } else if (colorMode === 'bw') {
+        const monoPrinter = availablePrinters.find(p => /laser|mono|heavy|xerox|hp/i.test(p) && !/color/i.test(p));
+        if (monoPrinter) {
+          setSelectedPrinter(monoPrinter);
+          return;
+        }
+      }
+
+      if (agentDevice?.selected_printer && availablePrinters.includes(agentDevice.selected_printer)) {
+        setSelectedPrinter(agentDevice.selected_printer);
+      } else {
+        setSelectedPrinter(availablePrinters[0]);
+      }
+    } else if (agentDevice?.selected_printer) {
+      setSelectedPrinter(agentDevice.selected_printer);
+    }
+  }, [agentDevice, availablePrinters, colorMode, selectedPrinter]);
 
   useEffect(() => {
     let isMounted = true;
@@ -84,7 +125,8 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
       size: paperSize,
       sides,
       orientation,
-      binding
+      binding,
+      printer_name: selectedPrinter || agentDevice?.selected_printer || null
     };
 
     try {
@@ -169,7 +211,7 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
                   </span>
                 </div>
                 <p className="text-xs text-on-surface-variant mt-0.5">
-                  Assigned Hardware: <strong className="text-on-surface">{agentDevice?.selected_printer || 'Default Windows Spooler'}</strong>
+                  Assigned Hardware: <strong className="text-primary font-bold">{selectedPrinter || agentDevice?.selected_printer || 'Default Windows Spooler'}</strong>
                 </p>
               </div>
             </div>
@@ -369,6 +411,46 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
                   <option value="spiral">Spiral Binding</option>
                   <option value="soft_cover">Soft Cover Book</option>
                 </select>
+              </div>
+
+              {/* Destination Hardware Printer */}
+              <div className="bg-surface-container-high/30 p-3.5 rounded-xl border border-glass-edge/30 sm:col-span-2">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-primary">local_printshop</span>
+                    Destination Printer Hardware
+                  </label>
+                  {selectedPrinter && selectedPrinter === agentDevice?.selected_printer && (
+                    <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      Station Default
+                    </span>
+                  )}
+                </div>
+                {availablePrinters.length > 0 ? (
+                  <select
+                    value={selectedPrinter}
+                    onChange={(e) => setSelectedPrinter(e.target.value)}
+                    className="w-full py-2.5 px-3 bg-surface-container border border-glass-edge/40 rounded-lg text-xs font-semibold text-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                  >
+                    {availablePrinters.map((p) => (
+                      <option key={p} value={p} className="bg-surface-container text-on-surface">
+                        {p} {p === agentDevice?.selected_printer ? '— (Default Station Printer)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={selectedPrinter}
+                    onChange={(e) => setSelectedPrinter(e.target.value)}
+                    placeholder={agentDevice?.selected_printer || "Default Windows Spooler"}
+                    className="w-full py-2.5 px-3 bg-surface-container border border-glass-edge/40 rounded-lg text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                )}
+                <p className="text-[11px] text-on-surface-variant mt-1.5 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px] text-primary">info</span>
+                  Direct this specific order to any installed printer connected to your shop counter.
+                </p>
               </div>
 
             </div>

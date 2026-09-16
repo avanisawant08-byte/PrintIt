@@ -1214,7 +1214,7 @@ router.get('/agent', async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT id, device_name, pairing_code, pairing_code_expires_at, 
-                    selected_printer, agent_version, status, last_seen_at, updated_at
+                    selected_printer, available_printers, agent_version, status, last_seen_at, updated_at
              FROM agent_devices 
              WHERE shop_id = $1 
              ORDER BY updated_at DESC LIMIT 1`,
