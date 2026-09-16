@@ -4,6 +4,8 @@ import { useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 
 import Landing from './pages/Landing';
+import PageMeta from './components/common/PageMeta';
+import CookieBanner from './components/common/CookieBanner';
 
 // Defer loading scripts until needed to minimize initial JavaScript bundle size
 const Login = lazy(() => import('./pages/Login'));
@@ -47,6 +49,8 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <ErrorBoundary>
+      <PageMeta />
+      <CookieBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Landing />} />

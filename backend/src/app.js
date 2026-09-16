@@ -37,6 +37,16 @@ const app = express();
 // Trust reverse proxy headers (Render, Cloudflare, load balancers)
 app.set('trust proxy', 1);
 
+// Enforce HTTPS in production environments
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
+
 // Attach correlation ID to every incoming request
 app.use(correlationIdMiddleware);
 

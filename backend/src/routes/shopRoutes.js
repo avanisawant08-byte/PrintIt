@@ -525,7 +525,7 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
  */
 router.patch('/orders/:id/status', async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, print_options } = req.body;
 
     // Validate status value
     const validStatuses = ['queued', 'processing', 'ready', 'collected', 'cancelled'];
@@ -539,7 +539,7 @@ router.patch('/orders/:id/status', async (req, res) => {
     try {
         // Fetch order to verify ownership
         const orderResult = await pool.query(
-            'SELECT shop_id, customer_id FROM orders WHERE order_id = $1',
+            'SELECT shop_id, customer_id, files FROM orders WHERE order_id = $1',
             [id]
         );
 
@@ -554,16 +554,40 @@ router.patch('/orders/:id/status', async (req, res) => {
             return res.status(403).json({ error: 'Access denied. This order does not belong to your shop.' });
         }
 
-        // Perform status update
-        const updateResult = await pool.query(
-            `UPDATE orders 
-             SET status = $1::text::order_status,
-                 completed_at = CASE WHEN $1::text = 'collected' OR $1::text = 'cancelled' THEN NOW() ELSE completed_at END,
-                 secure_expires_at = CASE WHEN $1::text = 'cancelled' AND print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
-             WHERE order_id = $2 
-             RETURNING *`,
-            [status, id]
-        );
+        // Perform status update (with updated print_options if verified/customized by shopkeeper)
+        let querySql;
+        let queryParams;
+
+        if (print_options && typeof print_options === 'object') {
+            let files = order.files;
+            if (typeof files === 'string') {
+                try { files = JSON.parse(files); } catch (e) { files = []; }
+            }
+            if (Array.isArray(files) && files.length > 0) {
+                const target = files[0].file_info ? files[0] : files[0];
+                target.print_options = { ...(target.print_options || {}), ...print_options };
+            }
+
+            querySql = `UPDATE orders 
+                 SET status = $1::text::order_status,
+                     print_options = jsonb_strip_nulls(COALESCE(print_options, '{}'::jsonb) || $3::jsonb),
+                     files = $4::jsonb,
+                     completed_at = CASE WHEN $1::text = 'collected' OR $1::text = 'cancelled' THEN NOW() ELSE completed_at END,
+                     secure_expires_at = CASE WHEN $1::text = 'cancelled' AND print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
+                 WHERE order_id = $2 
+                 RETURNING *`;
+            queryParams = [status, id, JSON.stringify(print_options), JSON.stringify(files)];
+        } else {
+            querySql = `UPDATE orders 
+                 SET status = $1::text::order_status,
+                     completed_at = CASE WHEN $1::text = 'collected' OR $1::text = 'cancelled' THEN NOW() ELSE completed_at END,
+                     secure_expires_at = CASE WHEN $1::text = 'cancelled' AND print_mode = 'secure' THEN NOW() + INTERVAL '15 minutes' ELSE secure_expires_at END
+                 WHERE order_id = $2 
+                 RETURNING *`;
+            queryParams = [status, id];
+        }
+
+        const updateResult = await pool.query(querySql, queryParams);
 
         // Immediate deletion on print completion for Secure Printing mode
         if (status === 'collected' && updateResult.rows[0].print_mode === 'secure') {

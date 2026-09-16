@@ -263,7 +263,7 @@ const MyListings = () => {
                 {/* Image & Category Banner */}
                 <div className="relative h-40 bg-surface-container-highest flex items-center justify-center overflow-hidden">
                   {item.cover_photo_url ? (
-                    <img src={item.cover_photo_url} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={item.cover_photo_url} alt={item.title || 'Product listing thumbnail'} className="w-full h-full object-cover" />
                   ) : (
                     <span className="material-symbols-outlined text-5xl text-on-surface-variant/40">menu_book</span>
                   )}
@@ -427,7 +427,7 @@ const MyListings = () => {
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-surface-container-highest shrink-0 flex items-center justify-center overflow-hidden">
                         {prod.cover_photo_url ? (
-                          <img src={prod.cover_photo_url} alt="" className="w-full h-full object-cover" />
+                          <img src={prod.cover_photo_url} alt={prod.title ? `${prod.title} thumbnail` : 'Catalog product thumbnail'} className="w-full h-full object-cover" />
                         ) : (
                           <span className="material-symbols-outlined text-on-surface-variant">book</span>
                         )}

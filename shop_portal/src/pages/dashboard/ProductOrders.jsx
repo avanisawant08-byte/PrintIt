@@ -64,7 +64,7 @@ const ProductOrders = () => {
         {filteredOrders.map(order => (
           <div key={order.order_id} className="bg-surface-container rounded-2xl p-md border border-outline-variant/30 flex flex-col sm:flex-row gap-md items-start sm:items-center">
             {order.cover_photo_url ? (
-              <img src={order.cover_photo_url} alt="Cover" className="w-20 h-24 object-cover rounded-xl" />
+              <img src={order.cover_photo_url} alt={order.product_title ? `${order.product_title} cover` : 'Product order item cover'} className="w-20 h-24 object-cover rounded-xl" />
             ) : (
               <div className="w-20 h-24 bg-surface-container-highest rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined opacity-30">book</span>

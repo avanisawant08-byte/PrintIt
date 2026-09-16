@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => {
+const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onReviewAndAccept }) => {
   const shortId = order.order_id.split('-')[0];
   
   let files = [];
@@ -37,6 +37,10 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal }) => 
   const handleAction = async (status, e) => {
     e.stopPropagation();
     if (status === 'processing') {
+      if (onReviewAndAccept) {
+        onReviewAndAccept(order);
+        return;
+      }
       onPrint(order.order_id, true);
     }
     onStatusUpdate(order.order_id, status);

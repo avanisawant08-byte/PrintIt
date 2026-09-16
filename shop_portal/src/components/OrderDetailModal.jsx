@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
+const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAndAccept }) => {
   if (!order) return null;
 
   const shortId = order.order_id.split('-')[0];
@@ -349,7 +349,15 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint }) => {
             {order.status === 'queued' && (
               <>
                 <button
-                  onClick={() => { onStatusUpdate(order.order_id, 'processing'); onClose(); }}
+                  onClick={() => { 
+                    if (onReviewAndAccept) {
+                      onClose();
+                      onReviewAndAccept(order);
+                    } else {
+                      onStatusUpdate(order.order_id, 'processing'); 
+                      onClose(); 
+                    }
+                  }}
                   className="px-4 py-2 bg-primary-container text-on-primary-container font-bold rounded-lg text-xs hover:bg-primary transition-colors flex items-center gap-1.5 shadow cursor-pointer active:scale-95"
                 >
                   <span className="material-symbols-outlined text-[16px]">download_done</span>

@@ -1,0 +1,18 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Allow: /privacy
+Allow: /terms
+Allow: /refund-policy
+Allow: /security
+Allow: /accessibility
+
+# Disallow private vendor dashboard and restricted system paths
+Disallow: /dashboard/
+Disallow: /403
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://printit-vendor.vercel.app/sitemap.xml

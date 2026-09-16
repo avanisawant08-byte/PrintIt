@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import api from '../../core/api';
 import OrderCard from '../../components/OrderCard';
 import OrderDetailModal from '../../components/OrderDetailModal';
+import PrintReviewModal from '../../components/PrintReviewModal';
 
 const getPickupType = (order) => {
   if (!order) return 'express';
@@ -32,6 +33,7 @@ const LiveQueue = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [activeTab, setActiveTab] = useState('all'); // 'express' | 'scheduled' | 'all'
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [reviewOrder, setReviewOrder] = useState(null);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [colorFilter, setColorFilter] = useState('all'); // 'all' | 'bw' | 'color'
 
@@ -54,7 +56,20 @@ const LiveQueue = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
+    const handleApproveAndPrint = async (orderId, verifiedPrintOptions) => {
+    try {
+      await api.patch(`/shop/orders/${orderId}/status`, { 
+        status: 'processing',
+        print_options: verifiedPrintOptions
+      });
+      fetchOrders();
+    } catch (err) {
+      alert('Failed to approve and print: ' + err.message);
+      throw err;
+    }
+  };
+
+const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       await api.patch(`/shop/orders/${orderId}/status`, { status: newStatus });
       fetchOrders();
@@ -384,6 +399,15 @@ const LiveQueue = () => {
             </div>
           </div>
         </div>
+      )}
+
+            {/* Print Verification & Approval Modal */}
+      {reviewOrder && (
+        <PrintReviewModal
+          order={reviewOrder}
+          onClose={() => setReviewOrder(null)}
+          onApprove={handleApproveAndPrint}
+        />
       )}
 
       {/* Detail Modal */}

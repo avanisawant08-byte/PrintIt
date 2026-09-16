@@ -167,7 +167,7 @@ const DashboardLayout = () => {
 
             <div className="w-9 h-9 rounded-full bg-surface-container overflow-hidden border border-glass-edge shrink-0">
               <img
-                alt="User Avatar"
+                alt="Partner Profile Avatar"
                 width="36"
                 height="36"
                 loading="eager"

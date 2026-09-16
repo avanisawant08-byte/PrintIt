@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /browse-categories
+Allow: /browse-manuals
+Allow: /shop-list/
+
+# Sitemap location
+Sitemap: https://printit.vercel.app/sitemap.xml
