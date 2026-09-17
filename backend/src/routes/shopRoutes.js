@@ -1251,4 +1251,32 @@ router.post('/agent/pairing-code', async (req, res) => {
     }
 });
 
+/**
+ * @route   PUT /api/shop/agent/printer
+ * @desc    Update selected default printer and available printers for this shop's agent
+ * @access  Private (Shop Owner Only)
+ */
+router.put('/agent/printer', async (req, res) => {
+    const { selected_printer, available_printers } = req.body;
+    try {
+        const result = await pool.query(
+            `UPDATE agent_devices 
+             SET selected_printer = COALESCE($1, selected_printer),
+                 available_printers = COALESCE($2::jsonb, available_printers),
+                 updated_at = NOW()
+             WHERE shop_id = $3
+             RETURNING id, device_name, selected_printer, available_printers, status`,
+            [
+                selected_printer || null, 
+                available_printers ? JSON.stringify(available_printers) : null, 
+                req.shop_id
+            ]
+        );
+        res.json({ success: true, device: result.rows[0] || null });
+    } catch (err) {
+        console.error('Error updating agent printer:', err);
+        res.status(500).json({ error: 'Failed to update printer settings' });
+    }
+});
+
 module.exports = router;

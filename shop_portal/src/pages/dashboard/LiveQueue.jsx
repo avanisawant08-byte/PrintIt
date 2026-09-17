@@ -56,12 +56,15 @@ const LiveQueue = () => {
     return () => clearInterval(interval);
   }, []);
 
-    const handleApproveAndPrint = async (orderId, verifiedPrintOptions) => {
+  const handleApproveAndPrint = async (orderId, verifiedPrintOptions, shouldDownload = false) => {
     try {
       await api.patch(`/shop/orders/${orderId}/status`, { 
         status: 'processing',
         print_options: verifiedPrintOptions
       });
+      if (shouldDownload) {
+        await handlePrint(orderId, true);
+      }
       fetchOrders();
     } catch (err) {
       alert('Failed to approve and print: ' + err.message);
@@ -315,6 +318,7 @@ const handleStatusUpdate = async (orderId, newStatus) => {
                     onStatusUpdate={handleStatusUpdate}
                     onPrint={handlePrint}
                     onOpenModal={setSelectedOrder}
+                    onReviewAndAccept={setReviewOrder}
                   />
                 ))
               )}
@@ -354,6 +358,7 @@ const handleStatusUpdate = async (orderId, newStatus) => {
                     onStatusUpdate={handleStatusUpdate}
                     onPrint={handlePrint}
                     onOpenModal={setSelectedOrder}
+                    onReviewAndAccept={setReviewOrder}
                   />
                 ))
               )}
@@ -401,12 +406,13 @@ const handleStatusUpdate = async (orderId, newStatus) => {
         </div>
       )}
 
-            {/* Print Verification & Approval Modal */}
+      {/* Print Verification & Approval Modal */}
       {reviewOrder && (
         <PrintReviewModal
           order={reviewOrder}
           onClose={() => setReviewOrder(null)}
           onApprove={handleApproveAndPrint}
+          onDownload={(orderId) => handlePrint(orderId, true)}
         />
       )}
 
@@ -417,6 +423,10 @@ const handleStatusUpdate = async (orderId, newStatus) => {
           onClose={() => setSelectedOrder(null)}
           onStatusUpdate={handleStatusUpdate}
           onPrint={handlePrint}
+          onReviewAndAccept={(order) => {
+            setSelectedOrder(null);
+            setReviewOrder(order);
+          }}
         />
       )}
     </div>

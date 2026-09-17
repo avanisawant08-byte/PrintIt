@@ -88,6 +88,46 @@ router.post('/agent/pair', async (req, res) => {
   }
 });
 
+// PUT /api/agent/status — Agent reports installed printers, default printer, and heartbeat
+router.put('/agent/status', async (req, res) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'Missing agent auth token' });
+
+  const { available_printers, selected_printer, agent_version } = req.body;
+  const pool = require('../config/db');
+
+  try {
+    const result = await pool.query(
+      `UPDATE agent_devices 
+       SET status = 'ONLINE',
+           last_seen_at = NOW(),
+           available_printers = COALESCE($1::jsonb, available_printers),
+           selected_printer = COALESCE($2, selected_printer),
+           agent_version = COALESCE($3, agent_version),
+           updated_at = NOW()
+       WHERE auth_token = $4
+       RETURNING id, shop_id, device_name, selected_printer, available_printers, status`,
+      [
+        available_printers ? JSON.stringify(available_printers) : null,
+        selected_printer || null,
+        agent_version || null,
+        token
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid agent token' });
+    }
+
+    res.json({ success: true, device: result.rows[0] });
+  } catch (err) {
+    console.error('Agent status update error:', err);
+    res.status(500).json({ error: 'Failed to update agent status' });
+  }
+});
+
+
 
 
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../core/api';
 
-const PrintReviewModal = ({ order, onClose, onApprove }) => {
+const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
   const shortId = order?.order_id ? order.order_id.split('-')[0] : '';
 
   // Parse files
@@ -51,27 +51,64 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
   const [sides, setSides] = useState(initialOpts.sides || 'single');
   const [orientation, setOrientation] = useState(initialOpts.orientation || 'portrait');
   const [binding, setBinding] = useState(initialOpts.binding || 'none');
-  const [selectedPrinter, setSelectedPrinter] = useState(initialOpts.printer_name || '');
+  const [selectedPrinter, setSelectedPrinter] = useState(
+    initialOpts.printer_name || localStorage.getItem('printit_last_selected_printer') || ''
+  );
+  const [alsoDownload, setAlsoDownload] = useState(true);
 
   // Connected Agent / Printer state
   const [agentDevice, setAgentDevice] = useState(null);
   const [loadingAgent, setLoadingAgent] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Available printers list from agent device
-  const availablePrinters = React.useMemo(() => {
-    if (!agentDevice?.available_printers) return [];
-    let raw = agentDevice.available_printers;
-    if (typeof raw === 'string') {
-      try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+  // Local/saved custom printers
+  const [customPrinters, setCustomPrinters] = useState(() => {
+    try {
+      const saved = localStorage.getItem('printit_shop_printers');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
     }
-    if (!Array.isArray(raw)) return [];
-    return raw.map(p => (typeof p === 'string' ? p : p.name)).filter(Boolean);
-  }, [agentDevice]);
+  });
+  const [newPrinterName, setNewPrinterName] = useState('');
+  const [showAddPrinter, setShowAddPrinter] = useState(false);
 
-  // Synchronize initial selected printer when agentDevice or colorMode changes
+  // Available printers list from agent device, saved custom printers, and fallbacks
+  const availablePrinters = React.useMemo(() => {
+    const list = new Set();
+    
+    // 1. From agent device reported printers
+    if (agentDevice?.available_printers) {
+      let raw = agentDevice.available_printers;
+      if (typeof raw === 'string') {
+        try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+      }
+      if (Array.isArray(raw)) {
+        raw.forEach(p => {
+          const name = typeof p === 'string' ? p : p?.name;
+          if (name) list.add(name);
+        });
+      }
+    }
+    if (agentDevice?.selected_printer) {
+      list.add(agentDevice.selected_printer);
+    }
+
+    // 2. From saved custom printers
+    customPrinters.forEach(p => { if (p) list.add(p); });
+
+    // 3. Fallback standard options so list is never empty
+    if (list.size === 0) {
+      list.add('Default Windows Spooler');
+      list.add('Virtual Test Printer (output_prints/)');
+    }
+
+    return Array.from(list);
+  }, [agentDevice, customPrinters]);
+
+  // Synchronize initial selected printer
   useEffect(() => {
-    if (selectedPrinter) return;
+    if (selectedPrinter && availablePrinters.includes(selectedPrinter)) return;
 
     if (availablePrinters.length > 0) {
       if (colorMode === 'color') {
@@ -116,8 +153,22 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
     return () => { isMounted = false; };
   }, []);
 
+  const handleAddCustomPrinter = () => {
+    const trimmed = newPrinterName.trim();
+    if (!trimmed) return;
+    const updated = Array.from(new Set([...customPrinters, trimmed]));
+    setCustomPrinters(updated);
+    try {
+      localStorage.setItem('printit_shop_printers', JSON.stringify(updated));
+    } catch(e) {}
+    setSelectedPrinter(trimmed);
+    setNewPrinterName('');
+    setShowAddPrinter(false);
+  };
+
   const handleApprove = async () => {
     setIsSubmitting(true);
+    const targetPrinter = selectedPrinter || agentDevice?.selected_printer || availablePrinters[0] || 'Default Windows Spooler';
     const verifiedOptions = {
       ...initialOpts,
       color: colorMode,
@@ -126,11 +177,15 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
       sides,
       orientation,
       binding,
-      printer_name: selectedPrinter || agentDevice?.selected_printer || null
+      printer_name: targetPrinter
     };
 
     try {
-      await onApprove(order.order_id, verifiedOptions);
+      localStorage.setItem('printit_last_selected_printer', targetPrinter);
+    } catch (e) {}
+
+    try {
+      await onApprove(order.order_id, verifiedOptions, alsoDownload);
       onClose();
     } catch (err) {
       console.error('Approval failed:', err);
@@ -420,36 +475,60 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
                     <span className="material-symbols-outlined text-[16px] text-primary">local_printshop</span>
                     Destination Printer Hardware
                   </label>
-                  {selectedPrinter && selectedPrinter === agentDevice?.selected_printer && (
-                    <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                      Station Default
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {selectedPrinter && selectedPrinter === agentDevice?.selected_printer && (
+                      <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        Station Default
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowAddPrinter(!showAddPrinter)}
+                      className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">
+                        {showAddPrinter ? 'close' : 'add'}
+                      </span>
+                      {showAddPrinter ? 'Cancel' : 'Add Printer'}
+                    </button>
+                  </div>
                 </div>
-                {availablePrinters.length > 0 ? (
-                  <select
-                    value={selectedPrinter}
-                    onChange={(e) => setSelectedPrinter(e.target.value)}
-                    className="w-full py-2.5 px-3 bg-surface-container border border-glass-edge/40 rounded-lg text-xs font-semibold text-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-                  >
-                    {availablePrinters.map((p) => (
-                      <option key={p} value={p} className="bg-surface-container text-on-surface">
-                        {p} {p === agentDevice?.selected_printer ? '— (Default Station Printer)' : ''}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={selectedPrinter}
-                    onChange={(e) => setSelectedPrinter(e.target.value)}
-                    placeholder={agentDevice?.selected_printer || "Default Windows Spooler"}
-                    className="w-full py-2.5 px-3 bg-surface-container border border-glass-edge/40 rounded-lg text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
+
+                {showAddPrinter && (
+                  <div className="mb-3 p-3 bg-surface-container rounded-lg border border-primary/30 flex items-center gap-2 animate-fade-in">
+                    <input
+                      type="text"
+                      value={newPrinterName}
+                      onChange={(e) => setNewPrinterName(e.target.value)}
+                      placeholder="e.g. EPSON L3250 Series or Virtual Test Printer"
+                      className="flex-1 py-1.5 px-3 bg-surface-container-high border border-glass-edge/40 rounded text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomPrinter(); } }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomPrinter}
+                      className="px-3 py-1.5 bg-primary text-on-primary font-bold rounded text-xs hover:bg-primary/90 transition-colors cursor-pointer shrink-0"
+                    >
+                      Add &amp; Select
+                    </button>
+                  </div>
                 )}
+
+                <select
+                  value={selectedPrinter}
+                  onChange={(e) => setSelectedPrinter(e.target.value)}
+                  className="w-full py-2.5 px-3 bg-surface-container border border-glass-edge/40 rounded-lg text-xs font-semibold text-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                >
+                  {availablePrinters.map((p) => (
+                    <option key={p} value={p} className="bg-surface-container text-on-surface">
+                      {p} {p === agentDevice?.selected_printer ? '— (Default Station Printer)' : ''}
+                    </option>
+                  ))}
+                </select>
+
                 <p className="text-[11px] text-on-surface-variant mt-1.5 flex items-center gap-1">
                   <span className="material-symbols-outlined text-[13px] text-primary">info</span>
-                  Direct this specific order to any installed printer connected to your shop counter.
+                  The PrintIt desktop agent will route this order directly to: <strong className="text-primary font-bold ml-1">{selectedPrinter || 'Default Spooler'}</strong>
                 </p>
               </div>
 
@@ -458,9 +537,21 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
 
           {/* Files List */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-              File Details
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                File Details &amp; Direct Downloads
+              </label>
+              {onDownload && (
+                <button
+                  type="button"
+                  onClick={() => onDownload(order.order_id)}
+                  className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[14px]">download</span>
+                  Download Original File
+                </button>
+              )}
+            </div>
             <div className="space-y-2">
               {files.map((file, idx) => (
                 <div 
@@ -471,11 +562,22 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
                     <span className="material-symbols-outlined text-[20px] text-primary">picture_as_pdf</span>
                     <span className="font-semibold text-on-surface truncate">{file.name}</span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 text-on-surface-variant text-[11px]">
+                  <div className="flex items-center gap-2 shrink-0 text-on-surface-variant text-[11px]">
                     {file.size && <span>{Math.round(file.size / 1024)} KB</span>}
                     <span className="bg-surface-container px-2 py-0.5 rounded border border-glass-edge/30 font-medium">
                       {file.pages} page{file.pages > 1 ? 's' : ''}
                     </span>
+                    {onDownload && (
+                      <button
+                        type="button"
+                        onClick={() => onDownload(order.order_id)}
+                        className="px-2.5 py-1 bg-surface-container hover:bg-surface-variant text-primary rounded-lg border border-glass-edge/40 font-semibold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Download PDF directly"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">download</span>
+                        DL
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -485,34 +587,53 @@ const PrintReviewModal = ({ order, onClose, onApprove }) => {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-outline-variant/60 bg-surface-container-high/40 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2.5 rounded-xl border border-glass-edge/50 hover:bg-surface-variant text-on-surface font-semibold text-xs transition-all cursor-pointer"
-          >
-            Cancel
-          </button>
+        <div className="p-4 border-t border-outline-variant/60 bg-surface-container-high/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <label className="flex items-center gap-2 text-xs text-on-surface cursor-pointer select-none self-start sm:self-center">
+            <input 
+              type="checkbox" 
+              checked={alsoDownload} 
+              onChange={(e) => setAlsoDownload(e.target.checked)}
+              className="rounded border-glass-edge text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+            />
+            <span className="flex items-center gap-1 font-medium">
+              <span className="material-symbols-outlined text-[16px] text-primary">download</span>
+              Also download file to this computer
+            </span>
+          </label>
 
-          <button
-            type="button"
-            onClick={handleApprove}
-            disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs flex items-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <>
-                <span className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
-                <span>Spooling to Agent...</span>
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-[18px]">print</span>
-                <span>Approve &amp; Print Document</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-4 py-2.5 rounded-xl border border-glass-edge/50 hover:bg-surface-variant text-on-surface font-semibold text-xs transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleApprove}
+              disabled={isSubmitting}
+              className="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
+                  <span>Assigning Printer &amp; Spooling...</span>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[18px]">
+                    {alsoDownload ? 'download_done' : 'local_printshop'}
+                  </span>
+                  <span>
+                    {alsoDownload ? 'Accept, Assign Printer & Download' : 'Accept & Print Document'}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

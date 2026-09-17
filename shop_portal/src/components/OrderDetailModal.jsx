@@ -360,8 +360,8 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
                   }}
                   className="px-4 py-2 bg-primary-container text-on-primary-container font-bold rounded-lg text-xs hover:bg-primary transition-colors flex items-center gap-1.5 shadow cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-[16px]">download_done</span>
-                  Accept & DL
+                  <span className="material-symbols-outlined text-[16px]">local_printshop</span>
+                  Accept &amp; Choose Printer
                 </button>
                 <button
                   onClick={() => { onStatusUpdate(order.order_id, 'cancelled'); onClose(); }}
@@ -374,13 +374,28 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
             )}
 
             {order.status === 'processing' && (
-              <button
-                onClick={() => { onStatusUpdate(order.order_id, 'ready'); onClose(); }}
-                className="px-4 py-2 bg-primary-container text-on-primary-container font-bold rounded-lg text-xs hover:bg-primary transition-colors flex items-center gap-1.5 shadow cursor-pointer active:scale-95"
-              >
-                <span className="material-symbols-outlined text-[16px]">check_box</span>
-                Mark Ready for Pickup
-              </button>
+              <>
+                {onReviewAndAccept && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onReviewAndAccept(order);
+                    }}
+                    className="px-3 py-2 bg-surface-bright border border-outline-variant text-primary hover:border-primary font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer active:scale-95"
+                    title="Change target printer or re-spool to Print Agent"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">local_printshop</span>
+                    Change Printer
+                  </button>
+                )}
+                <button
+                  onClick={() => { onStatusUpdate(order.order_id, 'ready'); onClose(); }}
+                  className="px-4 py-2 bg-primary-container text-on-primary-container font-bold rounded-lg text-xs hover:bg-primary transition-colors flex items-center gap-1.5 shadow cursor-pointer active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[16px]">check_box</span>
+                  Mark Ready for Pickup
+                </button>
+              </>
             )}
 
             {order.status === 'ready' && (
