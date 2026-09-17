@@ -55,6 +55,7 @@ dependencies:
   pdfx: ^2.9.2
   archive: ^4.0.2
   mobile_scanner: ^6.0.4
+  http_parser: ^4.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

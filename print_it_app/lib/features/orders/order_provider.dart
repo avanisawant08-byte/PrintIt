@@ -116,6 +116,46 @@ class OrderState {
       ? files[activeFileIndex] 
       : null;
 
+  /// Total physical paper sheets across all configured files (taking duplex/back-to-back into account)
+  int get totalSheets {
+    if (files.isNotEmpty) {
+      int sum = 0;
+      for (final f in files) {
+        final ppp = f.pagesPerPaper > 0 ? f.pagesPerPaper : 1;
+        final p = f.pages > 0 ? f.pages : 1;
+        final printedSides = (p / ppp).ceil();
+        final sheetsPerCopy = f.sides == 'double' ? (printedSides / 2).ceil() : printedSides;
+        sum += sheetsPerCopy * (f.copies > 0 ? f.copies : 1);
+      }
+      return sum > 0 ? sum : 1;
+    }
+    final ppp = pagesPerPaper > 0 ? pagesPerPaper : 1;
+    final p = pages > 0 ? pages : 1;
+    final printedSides = (p / ppp).ceil();
+    final sheetsPerCopy = sides == 'double' ? (printedSides / 2).ceil() : printedSides;
+    final total = sheetsPerCopy * (copies > 0 ? copies : 1);
+    return total > 0 ? total : 1;
+  }
+
+  /// Total document page count across all files multiplied by copies
+  int get totalPagesCount {
+    if (files.isNotEmpty) {
+      int sum = 0;
+      for (final f in files) {
+        final ppp = f.pagesPerPaper > 0 ? f.pagesPerPaper : 1;
+        final p = f.pages > 0 ? f.pages : 1;
+        final printedSides = (p / ppp).ceil();
+        sum += printedSides * (f.copies > 0 ? f.copies : 1);
+      }
+      return sum > 0 ? sum : 1;
+    }
+    final ppp = pagesPerPaper > 0 ? pagesPerPaper : 1;
+    final p = pages > 0 ? pages : 1;
+    final printedSides = (p / ppp).ceil();
+    final total = printedSides * (copies > 0 ? copies : 1);
+    return total > 0 ? total : 1;
+  }
+
   OrderState copyWith({
     String? shopId,
     String? shopName,
@@ -223,14 +263,25 @@ class OrderNotifier extends Notifier<OrderState> {
 
   void setFile(PlatformFile file) {
     state = state.copyWith(file: file);
+    _calculateTotal();
   }
 
   void setFiles(List<FileEntry> files) {
     state = state.copyWith(files: files);
     // Also set the first file as the primary for backward compat
     if (files.isNotEmpty) {
-      state = state.copyWith(file: files.first.file, pages: files.first.pages);
+      state = state.copyWith(
+        file: files.first.file,
+        pages: files.first.pages,
+        colorMode: files.first.colorMode,
+        copies: files.first.copies,
+        binding: files.first.binding,
+        pagesPerPaper: files.first.pagesPerPaper,
+        orientation: files.first.orientation,
+        sides: files.first.sides,
+      );
     }
+    _calculateTotal();
   }
 
   void addDemoFileIfEmpty() {
@@ -438,63 +489,90 @@ class OrderNotifier extends Notifier<OrderState> {
 
   /// Calculate subtotal for a single FileEntry using its own settings.
   double _calculateFileSubtotal(FileEntry entry) {
-    double basePrice = entry.colorMode == 'B&W' ? state.priceBw : state.priceColor;
+    double baseSinglePrice = entry.colorMode == 'B&W' ? state.priceBw : state.priceColor;
+    double baseDoublePrice = baseSinglePrice * 1.5;
     double bindingPrice = 0.0;
 
     if (entry.binding == 'spiral') bindingPrice = 25.0; // ₹25 standard spiral binding
     if (entry.binding == 'hardcover') bindingPrice = 60.0; // ₹60 standard hardcover
 
     String targetColor = entry.colorMode == 'B&W' ? 'bw' : 'color';
-    String targetSides = entry.sides;
 
     for (var rule in state.pricingRules) {
-      if (rule['color'] == targetColor && rule['size'] == 'A4' && rule['sides'] == targetSides) {
-        basePrice = double.tryParse(rule['price_per_page']?.toString() ?? '') ?? basePrice;
+      if (rule['color'] == targetColor && rule['size'] == 'A4') {
+        if (rule['sides'] == 'single') {
+          baseSinglePrice = double.tryParse(rule['price_per_page']?.toString() ?? '') ?? baseSinglePrice;
+        } else if (rule['sides'] == 'double') {
+          baseDoublePrice = double.tryParse(rule['price_per_page']?.toString() ?? '') ?? baseDoublePrice;
+        }
         if (entry.binding == 'spiral' || entry.binding == 'hardcover') {
           bindingPrice = double.tryParse(rule['binding_spiral_price']?.toString() ?? '') ?? bindingPrice;
         }
-        break;
       }
     }
 
     int totalPages = entry.pages > 0 ? entry.pages : 1;
-    int printedSides = (totalPages / entry.pagesPerPaper).ceil();
+    int pagesPerPaper = entry.pagesPerPaper > 0 ? entry.pagesPerPaper : 1;
+    int printedSides = (totalPages / pagesPerPaper).ceil();
     if (printedSides < 1) printedSides = 1;
 
-    // Billing calculation: each printed page/side is charged basePrice
-    double docPrintCost = (basePrice * printedSides) * entry.copies;
+    double sheetCost = 0.0;
+    if (entry.sides == 'double') {
+      int fullDoubleSheets = printedSides ~/ 2;
+      int remainingSingleSides = printedSides % 2;
+      sheetCost = (fullDoubleSheets * baseDoublePrice) + (remainingSingleSides * baseSinglePrice);
+    } else {
+      sheetCost = printedSides * baseSinglePrice;
+    }
 
-    return double.parse((docPrintCost + bindingPrice).toStringAsFixed(2));
+    int validCopies = entry.copies > 0 ? entry.copies : 1;
+    double docPrintCost = (sheetCost * validCopies) + bindingPrice;
+
+    return double.parse(docPrintCost.toStringAsFixed(2));
   }
 
   /// Fallback for when files list is empty (backward compat).
   double _calculateSingleFileSubtotal() {
-    double basePrice = state.colorMode == 'B&W' ? state.priceBw : state.priceColor;
+    double baseSinglePrice = state.colorMode == 'B&W' ? state.priceBw : state.priceColor;
+    double baseDoublePrice = baseSinglePrice * 1.5;
     double bindingPrice = 0.0;
     
     if (state.binding == 'spiral') bindingPrice = 25.0;
     if (state.binding == 'hardcover') bindingPrice = 60.0;
 
     String targetColor = state.colorMode == 'B&W' ? 'bw' : 'color';
-    String targetSides = state.sides;
     
     for (var rule in state.pricingRules) {
-      if (rule['color'] == targetColor && rule['size'] == 'A4' && rule['sides'] == targetSides) {
-        basePrice = double.tryParse(rule['price_per_page']?.toString() ?? '') ?? basePrice;
+      if (rule['color'] == targetColor && rule['size'] == 'A4') {
+        if (rule['sides'] == 'single') {
+          baseSinglePrice = double.tryParse(rule['price_per_page']?.toString() ?? '') ?? baseSinglePrice;
+        } else if (rule['sides'] == 'double') {
+          baseDoublePrice = double.tryParse(rule['price_per_page']?.toString() ?? '') ?? baseDoublePrice;
+        }
         if (state.binding == 'spiral' || state.binding == 'hardcover') {
           bindingPrice = double.tryParse(rule['binding_spiral_price']?.toString() ?? '') ?? bindingPrice;
         }
-        break;
       }
     }
     
     int totalPages = state.pages > 0 ? state.pages : 1;
-    int printedSides = (totalPages / state.pagesPerPaper).ceil();
+    int pagesPerPaper = state.pagesPerPaper > 0 ? state.pagesPerPaper : 1;
+    int printedSides = (totalPages / pagesPerPaper).ceil();
     if (printedSides < 1) printedSides = 1;
 
-    double docPrintCost = (basePrice * printedSides) * state.copies;
+    double sheetCost = 0.0;
+    if (state.sides == 'double') {
+      int fullDoubleSheets = printedSides ~/ 2;
+      int remainingSingleSides = printedSides % 2;
+      sheetCost = (fullDoubleSheets * baseDoublePrice) + (remainingSingleSides * baseSinglePrice);
+    } else {
+      sheetCost = printedSides * baseSinglePrice;
+    }
 
-    return double.parse((docPrintCost + bindingPrice).toStringAsFixed(2));
+    int validCopies = state.copies > 0 ? state.copies : 1;
+    double docPrintCost = (sheetCost * validCopies) + bindingPrice;
+
+    return double.parse(docPrintCost.toStringAsFixed(2));
   }
 
   void reset() {

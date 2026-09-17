@@ -74,7 +74,8 @@ async function calculatePrintSubtotal(client, shopId, files) {
         const rawSides = (entry.sides || printOptions.sides || 'single').toString().toLowerCase();
         const targetSides = rawSides.includes('double') || rawSides.includes('duplex') ? 'double' : 'single';
 
-        let basePrice = isBw ? defaultPriceBw : defaultPriceColor;
+        let baseSinglePrice = isBw ? defaultPriceBw : defaultPriceColor;
+        let baseDoublePrice = baseSinglePrice * 1.5;
         let bindingPrice = 0.0;
 
         const rawBinding = (entry.binding || printOptions.binding || 'none').toString().toLowerCase();
@@ -88,16 +89,17 @@ async function calculatePrintSubtotal(client, shopId, files) {
             const ruleSize = (rule.size || '').toUpperCase();
             const ruleSides = (rule.sides || '').toLowerCase();
 
-            if (ruleColor === targetColor && ruleSize === targetSize && ruleSides === targetSides) {
-                if (rule.price_per_page != null) {
-                    basePrice = parseFloat(rule.price_per_page);
+            if (ruleColor === targetColor && ruleSize === targetSize) {
+                if (ruleSides === 'single' && rule.price_per_page != null) {
+                    baseSinglePrice = parseFloat(rule.price_per_page);
+                } else if (ruleSides === 'double' && rule.price_per_page != null) {
+                    baseDoublePrice = parseFloat(rule.price_per_page);
                 }
                 if (rawBinding.includes('spiral') && rule.binding_spiral_price != null) {
                     bindingPrice = parseFloat(rule.binding_spiral_price);
                 } else if (rawBinding.includes('staple') && rule.binding_staple_price != null) {
                     bindingPrice = parseFloat(rule.binding_staple_price);
                 }
-                break;
             }
         }
 
@@ -111,7 +113,17 @@ async function calculatePrintSubtotal(client, shopId, files) {
         const validCopies = copies > 0 ? copies : 1;
 
         const printedSides = Math.ceil(validPages / validPagesPerPaper);
-        const fileCost = (basePrice * printedSides * validCopies) + bindingPrice;
+
+        let sheetCost = 0.0;
+        if (targetSides === 'double') {
+            const fullDoubleSheets = Math.floor(printedSides / 2);
+            const remainingSingleSides = printedSides % 2;
+            sheetCost = (fullDoubleSheets * baseDoublePrice) + (remainingSingleSides * baseSinglePrice);
+        } else {
+            sheetCost = printedSides * baseSinglePrice;
+        }
+
+        const fileCost = (sheetCost * validCopies) + bindingPrice;
 
         subtotal += fileCost;
     }

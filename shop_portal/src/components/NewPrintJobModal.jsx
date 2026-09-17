@@ -12,9 +12,13 @@ const NewPrintJobModal = ({ onClose, onSubmitJob }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Price Calculation Logic
-  const pricePerPage = colorMode === 'color' ? 10 : 2;
-  const sidesMultiplier = isDoubleSided ? 0.8 : 1.0;
-  const totalPrice = (pageCount * pricePerPage * copies * sidesMultiplier).toFixed(2);
+  const singlePrice = colorMode === 'color' ? 10 : 2;
+  const doublePrice = colorMode === 'color' ? 18 : 3;
+  const sheetsCount = isDoubleSided ? Math.ceil(pageCount / 2) : pageCount;
+  const sheetCost = isDoubleSided
+    ? (Math.floor(pageCount / 2) * doublePrice) + ((pageCount % 2) * singlePrice)
+    : (pageCount * singlePrice);
+  const totalPrice = (sheetCost * copies).toFixed(2);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -242,9 +246,9 @@ const NewPrintJobModal = ({ onClose, onSubmitJob }) => {
         {/* Sticky Payment & Submission Footer */}
         <div className="px-6 py-4 border-t border-glass-edge bg-surface-container-low flex flex-wrap items-center justify-between gap-4 shrink-0">
           <div className="flex flex-col">
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold font-mono text-primary-fixed-dim">₹{totalPrice}</span>
-              <span className="text-xs font-label-sm text-on-surface-variant">Total Cost</span>
+              <span className="text-xs font-label-sm text-on-surface-variant">({sheetsCount * copies} {sheetsCount * copies === 1 ? 'sheet' : 'sheets'}{isDoubleSided ? `, ${pageCount * copies} pages` : ''})</span>
             </div>
             <div className="flex items-center gap-1 text-xs text-status-success font-label-sm mt-0.5">
               <span className="material-symbols-outlined text-sm">timer</span>

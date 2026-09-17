@@ -625,6 +625,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                       ),
                                     ),
                                     title: 'Single Sided',
+                                    subtitle: '1 side / sheet',
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -682,6 +683,7 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                                       ),
                                     ),
                                     title: 'Back-to-Back',
+                                    subtitle: '2 sides / sheet',
                                   ),
                                 ),
                               ],
@@ -949,13 +951,30 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Total ${(orderState.pages / orderState.pagesPerPaper).ceil() * orderState.copies} pages',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            orderState.sides == 'double'
+                                ? 'Total ${orderState.totalSheets} ${orderState.totalSheets == 1 ? 'sheet' : 'sheets'} (${orderState.totalPagesCount} pages)'
+                                : 'Total ${orderState.totalSheets} ${orderState.totalSheets == 1 ? 'sheet' : 'sheets'}',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '₹${orderState.amountTotal.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Color(0xFF0284C7),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       ElevatedButton(
                         onPressed: () {

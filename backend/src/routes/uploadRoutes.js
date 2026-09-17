@@ -1,12 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
+const path = require('path');
 const { randomUUID } = require('crypto');
 const auth = require('../middleware/auth');
 const upload = require('../config/multer');
 const { getStorage } = require('../config/firebase');
 
 const bucket = getStorage().bucket();
+
+const MIME_BY_EXT = {
+    '.pdf': 'application/pdf',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.webp': 'image/webp',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.ppt': 'application/vnd.ms-powerpoint',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.xls': 'application/vnd.ms-excel',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.txt': 'text/plain',
+};
 
 const sanitizeFileName = (name) => {
     return (name || 'document')
@@ -29,8 +45,11 @@ const uploadToFirebase = (file, printMode = 'normal') => {
         const downloadToken = randomUUID();
         const isSecure = (printMode || '').toLowerCase() === 'secure';
         const folder = isSecure ? 'printit/secure_uploads' : 'printit/uploads';
-        const originalName = file.originalname;
-        const mimeType = file.mimetype;
+        const originalName = file.originalname || 'document';
+        const ext = path.extname(originalName).toLowerCase();
+        const mimeType = (file.mimetype && file.mimetype !== 'application/octet-stream')
+            ? file.mimetype
+            : (MIME_BY_EXT[ext] || 'application/octet-stream');
         const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const safeName = sanitizeFileName(originalName);
         const fileName = `${folder}/${uniqueId}_${safeName}`;
@@ -60,7 +79,7 @@ const uploadToFirebase = (file, printMode = 'normal') => {
                 public_id: blob.name,
                 print_mode: isSecure ? 'secure' : 'normal',
                 storage_path: fileName,
-                format: mimeType.split('/')[1] || '',
+                format: ext ? ext.replace('.', '') : (mimeType.split('/')[1] || ''),
                 bytes: file.size || (file.buffer ? file.buffer.length : 0)
             });
         });

@@ -22,6 +22,7 @@ const ALLOWED_MIME_TYPES = new Set([
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/plain',
+    'application/octet-stream', // In web apps, blobs and byte arrays often arrive as octet-stream
 ]);
 
 const ALLOWED_EXTENSIONS = new Set([
@@ -32,8 +33,16 @@ const ALLOWED_EXTENSIONS = new Set([
 const fileFilter = (req, file, cb) => {
     const ext = path.extname(file.originalname || '').toLowerCase();
     
-    if (!ALLOWED_MIME_TYPES.has(file.mimetype) || !ALLOWED_EXTENSIONS.has(ext)) {
-        return cb(new Error('Invalid file type. Only standard documents (PDF, DOCX, PPTX, XLSX, TXT) and images (JPEG, PNG, WEBP) are allowed.'), false);
+    // Check if extension is allowed
+    const isExtAllowed = ALLOWED_EXTENSIONS.has(ext);
+    // If MIME type is standard or generic application/octet-stream, extension check validates it
+    const isMimeAllowed = ALLOWED_MIME_TYPES.has(file.mimetype) || (file.mimetype === 'application/octet-stream' && isExtAllowed);
+
+    if (!isExtAllowed || !isMimeAllowed) {
+        const error = new Error(`Invalid file type (${file.mimetype || 'unknown'}, ${ext || 'none'}). Only standard documents (PDF, DOCX, PPTX, XLSX, TXT) and images (JPEG, PNG, WEBP) are allowed.`);
+        error.status = 400;
+        error.statusCode = 400;
+        return cb(error, false);
     }
     
     cb(null, true);
@@ -53,7 +62,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
     fileFilter
 });
 

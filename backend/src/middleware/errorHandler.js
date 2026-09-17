@@ -27,6 +27,10 @@ function errorHandler(err, req, res, next) {
         status = err.status;
     } else if (typeof err.statusCode === 'number' && err.statusCode >= 400 && err.statusCode < 600) {
         status = err.statusCode;
+    } else if (err.name === 'MulterError') {
+        status = 400;
+    } else if (err.message && (err.message.includes('Invalid file type') || err.message.includes('file too large'))) {
+        status = 400;
     } else if (err.message && err.message.includes('CORS origin restriction')) {
         status = 403;
     }
