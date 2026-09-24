@@ -221,7 +221,7 @@ router.get('/agent/download-url', async (req, res) => {
 
   } catch (err) {
     console.error('[Agent] download-url error:', err);
-    return res.status(500).json({ error: 'Failed to resolve download URL', detail: err.message });
+    return res.status(500).json({ error: 'Failed to resolve download URL. Please try again.' });
   }
 });
 

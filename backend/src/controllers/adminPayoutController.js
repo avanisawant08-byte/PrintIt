@@ -61,10 +61,11 @@ exports.getPendingWithdrawals = async (req, res) => {
   try {
     await ensureWalletTables(pool);
     const result = await pool.query(
-      `SELECT w.*, s.name as shop_name, s.phone_number as shop_phone, 
+      `SELECT w.*, s.name as shop_name, u.phone as shop_phone, 
               b.account_holder_name, b.account_number, b.ifsc_code, b.bank_name, b.account_type, b.upi_id
        FROM withdrawal_requests w
        JOIN shops s ON w.shop_id = s.shop_id
+       JOIN users u ON s.owner_id = u.user_id
        LEFT JOIN shop_bank_accounts b ON w.bank_account_id = b.id
        WHERE w.status IN ('pending', 'processing')
        ORDER BY w.requested_at ASC`
@@ -245,10 +246,11 @@ exports.getPayoutHistory = async (req, res) => {
   try {
     await ensureWalletTables(pool);
     const result = await pool.query(
-      `SELECT w.*, s.name as shop_name, s.phone_number as shop_phone, 
+      `SELECT w.*, s.name as shop_name, u.phone as shop_phone, 
               b.account_holder_name, b.account_number, b.bank_name
        FROM withdrawal_requests w
        JOIN shops s ON w.shop_id = s.shop_id
+       JOIN users u ON s.owner_id = u.user_id
        LEFT JOIN shop_bank_accounts b ON w.bank_account_id = b.id
        WHERE w.status IN ('processed', 'rejected', 'failed')
        ORDER BY w.processed_at DESC NULLS LAST, w.requested_at DESC`
@@ -283,13 +285,14 @@ exports.getAllShopWallets = async (req, res) => {
   try {
     await ensureWalletTables(pool);
     const result = await pool.query(
-      `SELECT s.shop_id, s.name as shop_name, s.phone_number as shop_phone,
+      `SELECT s.shop_id, s.name as shop_name, u.phone as shop_phone,
               COALESCE(w.available_balance, 0.00) as available_balance,
               COALESCE(w.pending_balance, 0.00) as pending_balance,
               COALESCE(w.total_earned, 0.00) as total_earned,
               COALESCE(w.total_withdrawn, 0.00) as total_withdrawn,
               w.updated_at
        FROM shops s
+       JOIN users u ON s.owner_id = u.user_id
        LEFT JOIN shop_wallets w ON s.shop_id = w.shop_id
        ORDER BY w.available_balance DESC NULLS LAST, s.name ASC`
     );
