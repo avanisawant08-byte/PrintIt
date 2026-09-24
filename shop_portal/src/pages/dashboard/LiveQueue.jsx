@@ -56,15 +56,12 @@ const LiveQueue = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleApproveAndPrint = async (orderId, verifiedPrintOptions, shouldDownload = false) => {
+  const handleApproveAndPrint = async (orderId, verifiedPrintOptions) => {
     try {
       await api.patch(`/shop/orders/${orderId}/status`, { 
         status: 'processing',
         print_options: verifiedPrintOptions
       });
-      if (shouldDownload) {
-        await handlePrint(orderId, true);
-      }
       fetchOrders();
     } catch (err) {
       alert('Failed to approve and print: ' + err.message);
@@ -81,44 +78,20 @@ const handleStatusUpdate = async (orderId, newStatus) => {
     }
   };
 
-  const handlePrint = async (orderId, isDownload = false) => {
+  const handlePrint = async (orderId) => {
     try {
-      if (isDownload) {
-        const response = await api.get(`/shop/orders/${orderId}/files/0/proxy`, {
-          responseType: 'blob'
-        });
-        
-        const blob = new Blob([response.data]);
-        const blobUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = blobUrl;
-        
-        let filename = `print_order_${orderId.split('-')[0]}.pdf`;
-        const contentDisposition = response.headers['content-disposition'];
-        if (contentDisposition) {
-          const match = contentDisposition.match(/filename="?([^"]+)"?/);
-          if (match && match[1]) filename = match[1];
-        }
-        
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        
-        window.URL.revokeObjectURL(blobUrl);
-        document.body.removeChild(a);
-        return;
-      }
-
       const res = await api.get(`/shop/orders/${orderId}/files/0/download-url`);
       const url = res.data.download_url;
       const newWin = window.open(url, '_blank');
       if (!newWin) {
-        alert('Popup blocked. Click ok to download directly.');
-        window.location.href = url;
+        alert('Popup blocked. Please allow popups to open the print preview.');
       }
     } catch (err) {
-      alert('Print failed: ' + err.message);
+      if (err.response?.status === 410) {
+        alert('Document Permanently Erased (410):\n' + (err.response.data?.error || 'This document has already been permanently deleted from storage per the Secure Printing privacy policy.'));
+      } else {
+        alert('Print failed: ' + (err.response?.data?.error || err.message));
+      }
     }
   };
 
@@ -412,7 +385,6 @@ const handleStatusUpdate = async (orderId, newStatus) => {
           order={reviewOrder}
           onClose={() => setReviewOrder(null)}
           onApprove={handleApproveAndPrint}
-          onDownload={(orderId) => handlePrint(orderId, true)}
         />
       )}
 

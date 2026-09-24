@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../core/api';
 
-const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
+const PrintReviewModal = ({ order, onClose, onApprove }) => {
   const shortId = order?.order_id ? order.order_id.split('-')[0] : '';
 
   // Parse files
@@ -28,7 +28,7 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
     }).filter(Boolean);
   } catch (e) {}
 
-  // Parse initial print options
+  // Parse initial print options: merge order-level and file-level options so customer choices are never lost
   let initialOpts = {};
   try {
     initialOpts = typeof order?.print_options === 'string' 
@@ -36,11 +36,12 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
       : (order?.print_options || {});
   } catch (e) {}
 
-  if (Object.keys(initialOpts).length === 0 && files.length > 0 && files[0].print_options) {
+  if (files.length > 0 && files[0].print_options) {
     try {
-      initialOpts = typeof files[0].print_options === 'string' 
+      const fileOpts = typeof files[0].print_options === 'string' 
         ? JSON.parse(files[0].print_options) 
         : files[0].print_options;
+      initialOpts = { ...initialOpts, ...fileOpts };
     } catch (e) {}
   }
 
@@ -51,10 +52,10 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
   const [sides, setSides] = useState(initialOpts.sides || 'single');
   const [orientation, setOrientation] = useState(initialOpts.orientation || 'portrait');
   const [binding, setBinding] = useState(initialOpts.binding || 'none');
+  const [pagesPerPaper, setPagesPerPaper] = useState(Number(initialOpts.pages_per_paper) || 1);
   const [selectedPrinter, setSelectedPrinter] = useState(
     initialOpts.printer_name || localStorage.getItem('printit_last_selected_printer') || ''
   );
-  const [alsoDownload, setAlsoDownload] = useState(true);
 
   // Connected Agent / Printer state
   const [agentDevice, setAgentDevice] = useState(null);
@@ -177,6 +178,7 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
       sides,
       orientation,
       binding,
+      pages_per_paper: pagesPerPaper,
       printer_name: targetPrinter
     };
 
@@ -185,7 +187,7 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
     } catch (e) {}
 
     try {
-      await onApprove(order.order_id, verifiedOptions, alsoDownload);
+      await onApprove(order.order_id, verifiedOptions);
       onClose();
     } catch (err) {
       console.error('Approval failed:', err);
@@ -468,6 +470,39 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
                 </select>
               </div>
 
+              {/* Pages Per Sheet (N-Up Grid) */}
+              <div className="bg-surface-container-high/30 p-3.5 rounded-xl border border-glass-edge/30 sm:col-span-2">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-on-surface">Pages Per Sheet (Layout Grid)</label>
+                  {pagesPerPaper > 1 && (
+                    <span className="text-[10px] font-bold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                      {pagesPerPaper} Pages Tiled On 1 Sheet
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { val: 1, label: 'Standard (1 Page)' },
+                    { val: 2, label: '2 Pages (2-up)' },
+                    { val: 4, label: '4 Pages (4-up)' },
+                    { val: 6, label: '6 Pages (6-up)' }
+                  ].map(({ val, label }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setPagesPerPaper(val)}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center transition-all cursor-pointer ${
+                        pagesPerPaper === val
+                          ? 'bg-primary text-on-primary shadow-sm ring-2 ring-primary/40'
+                          : 'bg-surface-container hover:bg-surface-variant text-on-surface border border-glass-edge/40'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Destination Hardware Printer */}
               <div className="bg-surface-container-high/30 p-3.5 rounded-xl border border-glass-edge/30 sm:col-span-2">
                 <div className="flex items-center justify-between mb-2">
@@ -539,18 +574,12 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                File Details &amp; Direct Downloads
+                Document Files
               </label>
-              {onDownload && (
-                <button
-                  type="button"
-                  onClick={() => onDownload(order.order_id)}
-                  className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[14px]">download</span>
-                  Download Original File
-                </button>
-              )}
+              <span className="text-[11px] text-amber-400 font-semibold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[13px]">lock</span>
+                Direct Spool Only
+              </span>
             </div>
             <div className="space-y-2">
               {files.map((file, idx) => (
@@ -567,17 +596,10 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
                     <span className="bg-surface-container px-2 py-0.5 rounded border border-glass-edge/30 font-medium">
                       {file.pages} page{file.pages > 1 ? 's' : ''}
                     </span>
-                    {onDownload && (
-                      <button
-                        type="button"
-                        onClick={() => onDownload(order.order_id)}
-                        className="px-2.5 py-1 bg-surface-container hover:bg-surface-variant text-primary rounded-lg border border-glass-edge/40 font-semibold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
-                        title="Download PDF directly"
-                      >
-                        <span className="material-symbols-outlined text-[13px]">download</span>
-                        DL
-                      </button>
-                    )}
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                      <span className="material-symbols-outlined text-[12px]">security</span>
+                      Protected
+                    </span>
                   </div>
                 </div>
               ))}
@@ -588,18 +610,10 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-outline-variant/60 bg-surface-container-high/40 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <label className="flex items-center gap-2 text-xs text-on-surface cursor-pointer select-none self-start sm:self-center">
-            <input 
-              type="checkbox" 
-              checked={alsoDownload} 
-              onChange={(e) => setAlsoDownload(e.target.checked)}
-              className="rounded border-glass-edge text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-            />
-            <span className="flex items-center gap-1 font-medium">
-              <span className="material-symbols-outlined text-[16px] text-primary">download</span>
-              Also download file to this computer
-            </span>
-          </label>
+          <div className="flex items-center gap-2 text-xs text-amber-400 select-none self-start sm:self-center">
+            <span className="material-symbols-outlined text-[16px]">verified_user</span>
+            <span className="font-semibold text-[11px] tracking-tight">Zero-Trace Secure Print · Files Spooled Directly To Printer</span>
+          </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
@@ -624,12 +638,8 @@ const PrintReviewModal = ({ order, onClose, onApprove, onDownload }) => {
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px]">
-                    {alsoDownload ? 'download_done' : 'local_printshop'}
-                  </span>
-                  <span>
-                    {alsoDownload ? 'Accept, Assign Printer & Download' : 'Accept & Print Document'}
-                  </span>
+                  <span className="material-symbols-outlined text-[18px]">local_printshop</span>
+                  <span>Accept &amp; Print Document</span>
                 </>
               )}
             </button>

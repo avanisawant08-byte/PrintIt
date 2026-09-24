@@ -19,7 +19,13 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
   try {
     opts = typeof order.print_options === 'string' ? JSON.parse(order.print_options) : (order.print_options || {});
   } catch(e) {}
-  if (Object.keys(opts).length === 0 && files.length > 0 && files[0].print_options) {
+  if (files.length > 0 && files[0].print_options) {
+    try {
+      const fileOpts = typeof files[0].print_options === 'string' ? JSON.parse(files[0].print_options) : files[0].print_options;
+      opts = { ...opts, ...fileOpts };
+    } catch(e) {}
+  }
+  if (false) {
     try {
       opts = typeof files[0].print_options === 'string' ? JSON.parse(files[0].print_options) : files[0].print_options;
     } catch(e) {}
@@ -41,14 +47,14 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
         onReviewAndAccept(order);
         return;
       }
-      onPrint(order.order_id, true);
+      onPrint(order.order_id);
     }
     onStatusUpdate(order.order_id, status);
   };
 
   const handlePrintClick = (e) => {
     e.stopPropagation();
-    onPrint(order.order_id, false);
+    onPrint(order.order_id);
   };
 
   return (
@@ -66,12 +72,10 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
                 Pos {order.queue_position}
               </span>
             )}
-            {order.print_mode === 'secure' && (
-              <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.2)]">
-                <span className="material-symbols-outlined text-[12px]">lock</span>
-                SECURE
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.2)]">
+              <span className="material-symbols-outlined text-[12px]">lock</span>
+              SECURE
+            </span>
             {order.files_deleted && (
               <span className="inline-flex items-center gap-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-medium px-1.5 py-0.5 rounded">
                 <span className="material-symbols-outlined text-[11px]">delete_sweep</span>
@@ -157,7 +161,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
               className="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">check</span>
-              Accept &amp; DL
+              Accept &amp; Print
             </button>
             <button
               onClick={(e) => handleAction('cancelled', e)}
@@ -173,7 +177,9 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
           <>
             <button
               onClick={handlePrintClick}
-              className="bg-surface-container border border-glass-edge/40 text-primary px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-variant active:scale-[0.98] transition-all flex items-center gap-1 cursor-pointer"
+              disabled={Boolean(order.files_deleted)}
+              className="bg-surface-container border border-glass-edge/40 text-primary px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-variant active:scale-[0.98] transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              title={order.files_deleted ? "Document files have already been permanently erased per privacy policy" : "Print document"}
             >
               <span className="material-symbols-outlined text-[16px]">print</span>
               Print
@@ -189,13 +195,26 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
         )}
 
         {colType === 'ready' && (
-          <button
-            onClick={(e) => handleAction('collected', e)}
-            className="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
-            Handed to Customer
-          </button>
+          <div className="flex items-center gap-2 w-full">
+            <button
+              type="button"
+              onClick={handlePrintClick}
+              disabled={Boolean(order.files_deleted)}
+              className="bg-surface-container border border-glass-edge/40 text-primary px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-variant active:scale-[0.98] transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              title="Reprint document in case of paper jam, smudge, or error"
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+              Reprint
+            </button>
+            <button
+              type="button"
+              onClick={(e) => handleAction('collected', e)}
+              className="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+              Handed to Customer
+            </button>
+          </div>
         )}
       </div>
     </div>

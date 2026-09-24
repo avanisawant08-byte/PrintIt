@@ -186,14 +186,12 @@ router.get('/orders/:id/files', async (req, res) => {
 
         const fileList = files.map((file, index) => {
             if (!file) return null;
-            let downloadUrl = file.s3_key || file.url;
-            
+            const fileInfo = (file.file_info && typeof file.file_info === 'object') ? file.file_info : file;
             return {
                 index,
-                original_url: file.s3_key || file.url,
-                download_url: downloadUrl,
-                page_count: file.page_count || null,
-                original_name: file.original_name
+                page_count: fileInfo.pages || fileInfo.page_count || null,
+                original_name: fileInfo.original_name || fileInfo.name || 'document.pdf',
+                preview_url: `/api/shop/orders/${id}/files/${index}/proxy`
             };
         }).filter(f => f !== null);
 
@@ -207,59 +205,15 @@ router.get('/orders/:id/files', async (req, res) => {
 
 /**
  * @route   GET /api/shop/orders/:id/files/:index/download
- * @desc    Get order file and redirect to forced download URL
+ * @desc    PROHIBITED: Direct file downloads are disabled across all orders to protect customer privacy
  * @access  Private (Shop Owner Only)
  */
 router.get('/orders/:id/files/:index/download', async (req, res) => {
-    const { id, index } = req.params;
-    const fileIndex = parseInt(index, 10);
-
-    if (isNaN(fileIndex) || fileIndex < 0) {
-        return res.status(400).json({ error: 'Invalid file index' });
-    }
-
-    try {
-        const result = await pool.query(
-            'SELECT shop_id, files FROM orders WHERE order_id = $1',
-            [id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        const order = result.rows[0];
-
-        if (order.shop_id !== req.shop_id) {
-            return res.status(403).json({ error: 'Access denied. This order does not belong to your shop.' });
-        }
-
-        let files = order.files;
-        if (typeof files === 'string') files = JSON.parse(files);
-        files = files || [];
-
-        const rawFile = files[fileIndex];
-        if (!rawFile) {
-            return res.status(404).json({ error: 'File not found at this index' });
-        }
-
-        // Normalize: Flutter wraps file info in a nested 'file_info' object
-        const fileInfo = (rawFile.file_info && typeof rawFile.file_info === 'object')
-            ? rawFile.file_info
-            : rawFile;
-
-        const downloadUrl = fileInfo.s3_key || fileInfo.url;
-        if (!downloadUrl) {
-            return res.status(404).json({ error: 'File URL not found' });
-        }
-
-        return res.redirect(downloadUrl);
-
-    } catch (err) {
-        console.error('Error generating download redirect:', err);
-        res.status(500).json({ error: 'Failed to generate download url' });
-    }
+    return res.status(403).json({
+        error: 'Direct file downloads are permanently disabled across all orders to protect customer privacy and prevent unauthorized document retention.'
+    });
 });
+
 
 /**
  * @route   GET /api/shop/orders/:id/files/:file_index/download-url
@@ -354,44 +308,15 @@ router.get('/orders/:id/files/:file_index/download-url', async (req, res) => {
 
 /**
  * @route   GET /api/shop/orders/:id/files/download-all
- * @desc    Get download URLs for all files in an order
+ * @desc    PROHIBITED: Bulk file downloads are disabled across all orders to protect customer privacy
  * @access  Private (Shop Owner Only)
  */
 router.get('/orders/:id/files/download-all', async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await pool.query(
-            'SELECT shop_id, files FROM orders WHERE order_id = $1',
-            [id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        const order = result.rows[0];
-
-        // Verify ownership
-        if (order.shop_id !== req.shop_id) {
-            return res.status(403).json({ error: 'Access denied. This order does not belong to your shop.' });
-        }
-
-        const files = order.files || [];
-        
-        const urls = files.map(file => {
-            if (!file || !file.s3_key) return null;
-            let downloadUrl = file.s3_key;
-            return downloadUrl;
-        }).filter(url => url !== null);
-
-        return res.json({ urls });
-
-    } catch (err) {
-        console.error('Error generating download urls:', err);
-        res.status(500).json({ error: 'Failed to generate download urls' });
-    }
+    return res.status(403).json({
+        error: 'Bulk file downloads are permanently disabled across all orders to protect customer privacy and prevent unauthorized document retention.'
+    });
 });
+
 
 /**
  * @route   GET /api/shop/orders/:id/files/:file_index/proxy
@@ -417,6 +342,11 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
 
         if (order.files_deleted) {
             return res.status(410).json({ error: 'This document has already been permanently deleted per the customer\'s Secure Printing retention policy.' });
+        }
+
+        // Privacy Enforcement: Block explicit file download requests across all orders
+        if (req.query.download === 'true' || req.query.dl === '1') {
+            return res.status(403).json({ error: 'Direct file downloads are disabled across all orders to protect customer privacy.' });
         }
 
         let files = order.files;
@@ -449,6 +379,15 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
             return res.status(404).json({ error: 'File URL not found' });
         }
 
+        const applySecurityHeaders = (responseStream) => {
+            const contentType = responseStream.headers['content-type'] || 'application/octet-stream';
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(originalName)}"`);
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        };
+
         // ---------------------------------------------------------------
         // Strategy: Try Firebase Admin signed URL first (works for private
         // buckets). Fall back to direct https proxy if it's not a Firebase
@@ -462,7 +401,6 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
                 const { getStorage } = require('../config/firebase');
                 const bucket = getStorage().bucket();
                 const fileRef = bucket.file(filePublicId);
-                const isSecure = order.print_mode === 'secure';
                 const ttlMs = isSecure ? (15 * 60 * 1000) : (30 * 60 * 1000);
 
                 const [signedUrl] = await fileRef.getSignedUrl({
@@ -470,16 +408,14 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
                     expires: Date.now() + ttlMs,
                 });
 
-                // Proxy via signed URL so Content-Disposition can be set
+                // Proxy via signed URL
                 const https = require('https');
                 https.get(signedUrl, (response) => {
                     if (response.statusCode !== 200) {
                         console.error('[proxy] Firebase signed URL returned HTTP error status:', response.statusCode);
                         return res.status(response.statusCode).send('Failed to fetch file');
                     }
-                    const contentType = response.headers['content-type'] || 'application/octet-stream';
-                    res.setHeader('Content-Type', contentType);
-                    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(originalName)}"`);
+                    applySecurityHeaders(response);
                     response.pipe(res);
                 }).on('error', (err) => {
                     console.error('[proxy] Signed URL fetch error:', err.message);
@@ -502,9 +438,7 @@ router.get('/orders/:id/files/:file_index/proxy', async (req, res) => {
                 console.error('[proxy] Direct fetch returned non-200 HTTP status:', response.statusCode);
                 return res.status(response.statusCode).send('Failed to fetch file from storage');
             }
-            const contentType = response.headers['content-type'] || 'application/octet-stream';
-            res.setHeader('Content-Type', contentType);
-            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(originalName)}"`);
+            applySecurityHeaders(response);
             response.pipe(res);
         }).on('error', (err) => {
             console.error('[proxy] Direct proxy error:', err.message);
@@ -590,7 +524,7 @@ router.patch('/orders/:id/status', async (req, res) => {
         const updateResult = await pool.query(querySql, queryParams);
 
         // Immediate deletion on print completion for Secure Printing mode
-        if (status === 'collected' && updateResult.rows[0].print_mode === 'secure') {
+        if (status === 'collected') {
             deleteOrderFilesImmediately(id);
         }
 

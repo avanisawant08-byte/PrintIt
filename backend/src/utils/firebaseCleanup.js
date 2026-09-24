@@ -85,14 +85,13 @@ async function cleanupSecureExpiredFiles() {
         const result = await pool.query(
             `SELECT order_id, files, status, created_at, secure_expires_at
              FROM orders
-             WHERE print_mode = 'secure'
+             WHERE 1=1
                AND files_deleted = false
-               AND (
-                   status = 'collected'
-                   OR (secure_expires_at IS NOT NULL AND secure_expires_at <= NOW())
-                   OR (status = 'cancelled' AND created_at < NOW() - INTERVAL '15 minutes')
-                   OR (status = 'queued' AND created_at < NOW() - INTERVAL '15 minutes')
-               )
+                AND (
+                    status = 'collected'
+                    OR (secure_expires_at IS NOT NULL AND secure_expires_at <= NOW())
+                    OR (status = 'cancelled' AND created_at < NOW() - INTERVAL '15 minutes')
+                )
              LIMIT 25`
         );
 

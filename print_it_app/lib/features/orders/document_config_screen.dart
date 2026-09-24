@@ -870,47 +870,55 @@ class _DocumentConfigScreenState extends ConsumerState<DocumentConfigScreen> {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildSelectableCard(
-                                    isDark: isDark,
-                                    isSelected: orderState.printMode != 'secure',
-                                    onTap: () {
-                                      ref.read(orderProvider.notifier).setPrintMode('normal');
-                                    },
-                                    icon: Icon(
-                                      Icons.print_outlined,
-                                      size: 20,
-                                      color: orderState.printMode != 'secure'
-                                          ? const Color(0xFF0284C7)
-                                          : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
-                                    ),
-                                    title: 'Normal',
-                                    subtitle: 'Standard temp storage',
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0284C7).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFF0284C7).withValues(alpha: 0.25),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildSelectableCard(
-                                    isDark: isDark,
-                                    isSelected: orderState.printMode == 'secure',
-                                    onTap: () {
-                                      ref.read(orderProvider.notifier).setPrintMode('secure');
-                                      _showSecurePrintingExplanation(context, isDark);
-                                    },
-                                    icon: Icon(
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
                                       Icons.security_rounded,
                                       size: 20,
-                                      color: orderState.printMode == 'secure'
-                                          ? const Color(0xFFF59E0B)
-                                          : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                      color: Color(0xFF0284C7),
                                     ),
-                                    title: '🔒 Secure',
-                                    subtitle: 'Auto-erased on print',
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          '100% Privacy Protected',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: Color(0xFF0284C7),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'All documents are printed securely and permanently auto-deleted from both cloud and printer immediately upon completion.',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

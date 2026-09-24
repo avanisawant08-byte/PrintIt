@@ -26,7 +26,7 @@ const orderSchema = Joi.object({
     payment_id: Joi.string().optional(),
     razorpay_payment_id: Joi.string().optional(),
     print_instructions: Joi.string().max(500).allow('', null).optional(),
-    print_mode: Joi.string().valid('normal', 'secure').default('normal')
+    print_mode: Joi.string().valid('normal', 'secure').default('secure')
 });
 
 module.exports = orderSchema;

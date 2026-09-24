@@ -127,7 +127,7 @@ router.post('/guest', async (req, res) => {
                 targetPaymentId,
                 print_instructions,
                 cancelToken,
-                print_mode || 'normal'
+                print_mode || 'secure'
             ]
         );
 
@@ -270,7 +270,7 @@ router.post('/', roleCheck('customer'), async (req, res) => {
                 amount_total,
                 targetPaymentId,
                 print_instructions,
-                print_mode || 'normal'
+                print_mode || 'secure'
             ]
         );
 

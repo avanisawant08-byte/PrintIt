@@ -99,7 +99,7 @@ class OrderState {
     this.repeatImageOnGrid = true,
     this.pickupType = 'express',
     this.pickupTime,
-    this.printMode = 'normal',
+    this.printMode = 'secure',
     this.amountTotal = 0.0,
     this.priceBw = 2.00,
     this.priceColor = 10.00,

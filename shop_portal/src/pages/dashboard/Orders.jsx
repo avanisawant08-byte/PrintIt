@@ -292,11 +292,9 @@ const Orders = () => {
                             }`}>
                               {isScheduled ? '🗓️ Scheduled' : '⚡ Express'}
                             </span>
-                            {o.print_mode === 'secure' && (
-                              <span className="px-2 py-1 rounded text-[0.7rem] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">
-                                🔒 Secure
-                              </span>
-                            )}
+                            <span className="px-2 py-1 rounded text-[0.7rem] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">
+                              🔒 Secure
+                            </span>
                             {(o.files_deleted || o.deletion_status === 'deleted') && (
                               <span className="px-1.5 py-0.5 rounded text-[0.65rem] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700/50">
                                 Erased

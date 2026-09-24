@@ -188,9 +188,46 @@ async function runSecurityTests() {
         assert('Auto-expiry worker set files_deleted_at timestamp', expCheck.rows[0].files_deleted_at !== null);
 
         // -------------------------------------------------------------
-        // Test 5: Clean Up Test Artifacts
+        // Test 5: Download Prohibition & Zero-Trace Enforcement
         // -------------------------------------------------------------
-        await pool.query('DELETE FROM orders WHERE order_id IN ($1, $2)', [testOrderId, expiredOrderId]);
+        console.log('\n--- Test 5: Download Prohibition & Zero-Trace Enforcement ---');
+        const shopFull = await pool.query('SELECT shop_id, owner_id FROM shops WHERE owner_id IS NOT NULL LIMIT 1');
+        const jwt = require('jsonwebtoken');
+        const shopJwt = jwt.sign({ user_id: shopFull.rows[0].owner_id }, process.env.JWT_SECRET || 'your_super_secret_jwt_key_here');
+
+        const secOrderDlTestId = 'sec-dl-' + Date.now();
+        await pool.query(`
+            INSERT INTO orders (
+                order_id, shop_id, status, queue_position, amount_total, payment_status,
+                files, print_mode, files_deleted, deletion_status
+            ) VALUES (
+                $1, $2, 'queued', 1, 15.00, 'captured',
+                $3, 'secure', false, 'retained'
+            )
+        `, [
+            secOrderDlTestId,
+            shopFull.rows[0].shop_id,
+            JSON.stringify([{
+                url: 'https://example.com/test.pdf',
+                s3_key: 'https://example.com/test.pdf',
+                file_info: { original_name: 'Confidential.pdf', size: 2048 }
+            }])
+        ]);
+
+        const dlAttemptRes = await makeRequest(
+            baseUrl,
+            `/api/shop/orders/${secOrderDlTestId}/files/0/proxy?download=true`,
+            'GET',
+            null,
+            { Authorization: `Bearer ${shopJwt}` }
+        );
+        assert('Explicit download query parameter is blocked with 403 Forbidden', dlAttemptRes.status === 403);
+        assert('Download block response clarifies privacy protection', dlAttemptRes.body.error && dlAttemptRes.body.error.includes('privacy'));
+
+        // -------------------------------------------------------------
+        // Test 6: Clean Up Test Artifacts
+        // -------------------------------------------------------------
+        await pool.query('DELETE FROM orders WHERE order_id IN ($1, $2, $3)', [testOrderId, expiredOrderId, secOrderDlTestId]);
 
         console.log('\n================================================================');
         console.log(`TEST SUMMARY: ${passedCount} PASSED, ${failedCount} FAILED`);
