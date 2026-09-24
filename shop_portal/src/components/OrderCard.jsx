@@ -72,10 +72,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
                 Pos {order.queue_position}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.2)]">
-              <span className="material-symbols-outlined text-[12px]">lock</span>
-              SECURE
-            </span>
+
             {order.files_deleted && (
               <span className="inline-flex items-center gap-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-medium px-1.5 py-0.5 rounded">
                 <span className="material-symbols-outlined text-[11px]">delete_sweep</span>

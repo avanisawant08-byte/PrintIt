@@ -102,10 +102,12 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
                   Queue Pos #{order.queue_position}
                 </span>
               )}
-              <span className="bg-amber-500/15 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.25)]">
-                <span className="material-symbols-outlined text-[14px]">lock</span>
-                Secure Print
-              </span>
+              {order.files_deleted && (
+                <span className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">delete_sweep</span>
+                  Files Erased
+                </span>
+              )}
             </div>
             <p className="text-xs text-on-surface-variant mt-1">
               Placed on {new Date(order.created_at).toLocaleString()}
@@ -122,25 +124,7 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
 
         {/* Content */}
         <div className="p-6 overflow-y-auto kanban-col flex flex-col gap-6">
-          {/* Secure Printing Privacy Banner */}
-          <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-400 text-2xl shrink-0 mt-0.5">verified_user</span>
-            <div className="text-xs text-amber-200/90 leading-relaxed">
-              <div className="font-bold text-amber-300 uppercase tracking-wider text-[11px] mb-1 flex items-center gap-1.5">
-                <span>Confidential Secure Print Order</span>
-                {order.files_deleted && (
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0.2 rounded font-semibold uppercase">
-                    ✓ Files Purged
-                  </span>
-                )}
-              </div>
-              <p>
-                {order.files_deleted
-                  ? 'Documents have been permanently erased from storage servers in accordance with the deletion-on-success policy.'
-                  : 'Zero-trace secure print mode active. Direct file downloads to local disk are restricted. Links are strictly single-use (15-min TTL) and all uploaded files are permanently erased immediately once marked collected.'}
-              </p>
-            </div>
-          </div>
+
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
