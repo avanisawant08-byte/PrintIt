@@ -177,8 +177,7 @@ router.post('/guest/verify', async (req, res) => {
             return res.status(409).json({ error: 'This payment has already been used for an existing order.' });
         }
         res.status(500).json({ 
-            error: 'Payment verified but order creation failed',
-            details: err.message 
+            error: 'Payment verified but order creation failed. Please contact support.'
         });
     } finally {
         client.release();
@@ -461,8 +460,7 @@ router.post('/verify', async (req, res) => {
             return res.status(409).json({ error: 'This payment has already been used for an existing order.' });
         }
         res.status(500).json({ 
-            error: 'Payment verified but order creation failed',
-            details: err.message 
+            error: 'Payment verified but order creation failed. Please contact support.'
         });
     } finally {
         client.release();

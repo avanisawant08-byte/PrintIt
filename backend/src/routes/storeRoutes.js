@@ -412,7 +412,7 @@ router.post('/orders', async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Store order placement error:', err);
-        res.status(500).json({ error: 'Failed to complete store order: ' + err.message });
+        res.status(500).json({ error: 'Failed to complete store order. Please try again.' });
     } finally {
         client.release();
     }

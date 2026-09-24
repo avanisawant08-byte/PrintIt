@@ -18,8 +18,7 @@ const roleCheck = (allowedRoles) => {
 
         if (!roles.includes(userRole)) {
             return res.status(403).json({ 
-                error: 'Forbidden: You do not have permission to perform this action',
-                required_role: allowedRoles
+                error: 'Forbidden: You do not have permission to perform this action'
             });
         }
 
