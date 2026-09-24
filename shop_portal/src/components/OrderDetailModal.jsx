@@ -54,6 +54,30 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
     return 283;
   };
 
+  // Dynamic time estimation
+  const getTimeEstimate = () => {
+    if (order.status === 'ready' || order.status === 'collected') return 'Ready!';
+    if (order.status === 'processing') return '~2 mins left';
+
+    // Count total pages across all files
+    const totalPages = files.reduce((sum, f) => sum + (parseInt(f.pages) || 1), 0);
+    const copies = parseInt(opts.copies) || 1;
+    const queuePos = parseInt(order.queue_position) || 1;
+
+    // Estimate: ~2 min base + 0.3 min per page, times copies, times orders ahead
+    const minutesForThisOrder = 2 + (totalPages * 0.3 * copies);
+    // Orders ahead = queuePos - 1 (orders before this one) + this order itself
+    const totalMins = Math.round(minutesForThisOrder * queuePos);
+
+    if (totalMins <= 2) return '~2 mins';
+    if (totalMins >= 60) {
+      const hrs = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      return mins > 0 ? `~${hrs}h ${mins}m` : `~${hrs}h`;
+    }
+    return `~${totalMins} mins`;
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
       <div 
@@ -182,7 +206,7 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
                   <p className="text-3xl font-extrabold text-primary-container drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] font-mono">
                     #{order.queue_position || '1'}
                   </p>
-                  <p className="text-xs font-label-md text-on-surface mt-0.5">~ 4 mins left</p>
+                  <p className="text-xs font-label-md text-on-surface mt-0.5">{getTimeEstimate()}</p>
                 </div>
               </div>
             </div>
