@@ -59,6 +59,7 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
 
   return (
     <div 
+      data-order-id={order.order_id}
       className="bg-surface-container backdrop-blur-md rounded-xl border border-glass-edge/40 p-5 hover:border-primary/50 transition-all shadow-sm hover:shadow-md relative group cursor-pointer flex flex-col"
       onClick={() => onOpenModal(order)}
     >
@@ -70,6 +71,13 @@ const OrderCard = ({ order, colType, onStatusUpdate, onPrint, onOpenModal, onRev
             {order.queue_position && colType === 'queued' && (
               <span className="bg-surface-container/80 px-2 py-0.5 rounded text-[11px] text-on-surface-variant font-medium border border-glass-edge/30">
                 Pos {order.queue_position}
+              </span>
+            )}
+
+            {order.print_mode === 'secure' && (
+              <span className="inline-flex items-center gap-0.5 bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                <span className="material-symbols-outlined text-[11px]">lock</span>
+                SECURE
               </span>
             )}
 

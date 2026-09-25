@@ -225,4 +225,91 @@ router.get('/agent/download-url', async (req, res) => {
   }
 });
 
+// GET /api/agent/jobs — Agent polls for pending print jobs assigned to its shop
+router.get('/agent/jobs', async (req, res) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'Missing agent auth token' });
+
+  const pool = require('../config/db');
+  try {
+    // Resolve shop from agent token
+    const deviceRes = await pool.query(
+      'SELECT id, shop_id FROM agent_devices WHERE auth_token = $1',
+      [token]
+    );
+    if (deviceRes.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid or expired agent token' });
+    }
+    const { id: deviceId, shop_id } = deviceRes.rows[0];
+
+    // Heartbeat: keep the agent marked ONLINE whenever it polls
+    pool.query(
+      "UPDATE agent_devices SET status = 'ONLINE', last_seen_at = NOW() WHERE id = $1",
+      [deviceId]
+    ).catch(e => console.warn('[Agent] Heartbeat update failed:', e.message));
+
+    // Ensure agent_print_jobs exists (idempotent)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS agent_print_jobs (
+        id           SERIAL PRIMARY KEY,
+        shop_id      TEXT NOT NULL,
+        order_id     TEXT NOT NULL,
+        file_index   INT NOT NULL DEFAULT 0,
+        storage_path TEXT,
+        print_options JSONB,
+        status       TEXT NOT NULL DEFAULT 'pending',
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        acked_at     TIMESTAMPTZ
+      )
+    `);
+
+    // Fetch pending jobs for this shop (created in last 2 hours, not yet acked)
+    const jobsRes = await pool.query(
+      `SELECT id, order_id, file_index, storage_path, print_options
+       FROM agent_print_jobs
+       WHERE shop_id = $1 AND status = 'pending' AND created_at > NOW() - INTERVAL '2 hours'
+       ORDER BY created_at ASC
+       LIMIT 10`,
+      [shop_id]
+    );
+
+    return res.json({ jobs: jobsRes.rows });
+  } catch (err) {
+    console.error('[Agent Jobs] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch agent jobs' });
+  }
+});
+
+// PUT /api/agent/jobs/:jobId/ack — Agent acknowledges it has started printing a job
+router.put('/agent/jobs/:jobId/ack', async (req, res) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'Missing agent auth token' });
+
+  const pool = require('../config/db');
+  try {
+    const deviceRes = await pool.query(
+      'SELECT id, shop_id FROM agent_devices WHERE auth_token = $1',
+      [token]
+    );
+    if (deviceRes.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid or expired agent token' });
+    }
+    const { shop_id } = deviceRes.rows[0];
+
+    await pool.query(
+      `UPDATE agent_print_jobs
+       SET status = 'printing', acked_at = NOW()
+       WHERE id = $1 AND shop_id = $2 AND status = 'pending'`,
+      [req.params.jobId, shop_id]
+    );
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[Agent Ack] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to acknowledge job' });
+  }
+});
+
 module.exports = router;

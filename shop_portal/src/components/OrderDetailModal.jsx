@@ -87,8 +87,11 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
         {/* Header */}
         <div className="p-6 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <h3 className="font-display-lg text-2xl font-bold text-primary">#{shortId}</h3>
+              <span className="text-xs text-on-surface-variant font-medium bg-surface-bright px-2 py-0.5 rounded border border-outline-variant">
+                Order Details
+              </span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${
                 order.status === 'queued' ? 'bg-primary/20 text-primary border-primary/30' :
                 order.status === 'processing' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
@@ -100,6 +103,12 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
               {order.queue_position && order.status === 'queued' && (
                 <span className="bg-surface-bright border border-outline-variant px-2.5 py-0.5 rounded text-xs font-mono text-on-surface-variant">
                   Queue Pos #{order.queue_position}
+                </span>
+              )}
+              {order.print_mode === 'secure' && (
+                <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="material-symbols-outlined text-[12px]">lock</span>
+                  SECURE PRINTING
                 </span>
               )}
               {order.files_deleted && (
@@ -124,6 +133,19 @@ const OrderDetailModal = ({ order, onClose, onStatusUpdate, onPrint, onReviewAnd
 
         {/* Content */}
         <div className="p-6 overflow-y-auto kanban-col flex flex-col gap-6">
+
+          {/* Secure Printing & Confidentiality Banner */}
+          {order.print_mode === 'secure' && (
+            <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex items-start gap-3 text-amber-300">
+              <span className="material-symbols-outlined text-amber-400 text-2xl mt-0.5">lock</span>
+              <div>
+                <h4 className="text-sm font-bold text-amber-200">Secure Printing &amp; Confidentiality Notice</h4>
+                <p className="text-xs text-amber-300/90 mt-1 leading-relaxed">
+                  This order is marked as Secure Printing. Document files are strictly confidential and will be permanently destroyed and erased upon customer collection or expiration per the platform privacy policy.
+                </p>
+              </div>
+            </div>
+          )}
 
 
           {/* Quick Stats Grid */}

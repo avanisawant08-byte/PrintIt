@@ -1213,4 +1213,90 @@ router.put('/agent/printer', async (req, res) => {
     }
 });
 
+/**
+ * @route   POST /api/shop/orders/:id/dispatch-to-agent
+ * @desc    Queue a (re)print job to the shop's linked desktop print agent.
+ *          Creates an agent_print_jobs record the agent polls for silent printing.
+ * @access  Private (Shop Owner Only)
+ */
+router.post('/orders/:id/dispatch-to-agent', async (req, res) => {
+    const { id } = req.params;
+    const { file_index = 0 } = req.body;
+
+    try {
+        // Ensure the agent_print_jobs table exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS agent_print_jobs (
+                id          SERIAL PRIMARY KEY,
+                shop_id     TEXT NOT NULL,
+                order_id    TEXT NOT NULL,
+                file_index  INT NOT NULL DEFAULT 0,
+                storage_path TEXT,
+                print_options JSONB,
+                status      TEXT NOT NULL DEFAULT 'pending',
+                created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                acked_at    TIMESTAMPTZ
+            )
+        `);
+
+        // Verify the order belongs to this shop and files aren't deleted
+        const orderRes = await pool.query(
+            'SELECT shop_id, files, files_deleted, print_options FROM orders WHERE order_id = $1',
+            [id]
+        );
+        if (orderRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        const order = orderRes.rows[0];
+        if (order.shop_id !== req.shop_id) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+        if (order.files_deleted) {
+            return res.status(410).json({ error: 'Document files have already been permanently erased.' });
+        }
+
+        // Extract storage path for the requested file
+        let files = order.files || [];
+        if (typeof files === 'string') files = JSON.parse(files);
+        const idx = parseInt(file_index, 10);
+        if (idx >= files.length) {
+            return res.status(404).json({ error: 'File index out of range' });
+        }
+        const rawFile = files[idx];
+        const fileInfo = (rawFile && rawFile.file_info && typeof rawFile.file_info === 'object')
+            ? rawFile.file_info
+            : rawFile;
+        const storagePath = fileInfo && (fileInfo.public_id || fileInfo.s3_key || fileInfo.url || null);
+
+        // Check an agent device is linked and online for this shop
+        const deviceRes = await pool.query(
+            "SELECT id, status FROM agent_devices WHERE shop_id = $1 ORDER BY updated_at DESC LIMIT 1",
+            [req.shop_id]
+        );
+        const device = deviceRes.rows[0];
+        if (!device) {
+            return res.status(400).json({ error: 'No print agent is paired with this shop. Set one up in the Print Agent settings.' });
+        }
+        if (device.status !== 'ONLINE') {
+            return res.status(503).json({ error: 'Print agent is offline. Make sure the PrintIt Agent app is running on your shop PC.' });
+        }
+
+        // Insert the print job
+        const jobRes = await pool.query(
+            `INSERT INTO agent_print_jobs (shop_id, order_id, file_index, storage_path, print_options, status)
+             VALUES ($1, $2, $3, $4, $5, 'pending')
+             RETURNING id`,
+            [req.shop_id, id, idx, storagePath, order.print_options || null]
+        );
+
+        console.log(`[Agent Dispatch] Queued print job #${jobRes.rows[0].id} for order ${id}, file index ${idx}`);
+        return res.json({ success: true, job_id: jobRes.rows[0].id, message: 'Print job dispatched to agent' });
+
+    } catch (err) {
+        console.error('[Agent Dispatch] Error:', err.message);
+        res.status(500).json({ error: 'Failed to dispatch print job to agent' });
+    }
+});
+
 module.exports = router;
+

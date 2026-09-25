@@ -86,12 +86,27 @@ class _ExpressPickupScreenState extends ConsumerState<ExpressPickupScreen> with 
     ref.read(orderProvider.notifier).removeFileEntry(index);
   }
 
+  /// Returns a human-readable ETA string based on the actual total page count.
+  /// Formula: 2 min base + 0.5 min per printed sheet, rounded to nearest minute.
+  String _computeEta(OrderState orderState) {
+    final totalSheets = orderState.totalSheets;
+    if (totalSheets <= 0 || orderState.files.isEmpty) {
+      return '5–10 mins'; // sensible default when no files loaded yet
+    }
+    final minutes = (2 + totalSheets * 0.5).round().clamp(2, 999);
+    if (minutes < 60) return '~$minutes mins';
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    return m > 0 ? '~${h}h ${m}m' : '~${h}h';
+  }
+
   @override
   Widget build(BuildContext context) {
     final orderState = ref.watch(orderProvider);
     final files = orderState.files;
     final totalDocs = files.length;
     final totalPrice = totalDocs * 5.00;
+    final etaText = _computeEta(orderState);
 
     return Scaffold(
       backgroundColor: const Color(0xFF051424),
@@ -272,9 +287,9 @@ class _ExpressPickupScreenState extends ConsumerState<ExpressPickupScreen> with 
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  const Text(
-                                    '5-10 Minutes',
-                                    style: TextStyle(
+                                  Text(
+                                    etaText,
+                                    style: const TextStyle(
                                       color: Color(0xFFD4E4FA),
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,

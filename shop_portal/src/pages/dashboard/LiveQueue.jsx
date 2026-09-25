@@ -80,20 +80,49 @@ const handleStatusUpdate = async (orderId, newStatus) => {
 
   const handlePrint = async (orderId) => {
     try {
-      const res = await api.get(`/shop/orders/${orderId}/files/0/download-url`);
-      const url = res.data.download_url;
-      const newWin = window.open(url, '_blank');
-      if (!newWin) {
-        alert('Popup blocked. Please allow popups to open the print preview.');
-      }
+      // Try dispatching to the linked desktop print agent first
+      await api.post(`/shop/orders/${orderId}/dispatch-to-agent`, { file_index: 0 });
+      // Show a brief non-blocking confirmation
+      const toast = document.createElement('div');
+      toast.textContent = '🖨️ Print job sent to agent';
+      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     } catch (err) {
-      if (err.response?.status === 410) {
-        alert('Document Permanently Erased (410):\n' + (err.response.data?.error || 'This document has already been permanently deleted from storage per the Secure Printing privacy policy.'));
-      } else {
-        alert('Print failed: ' + (err.response?.data?.error || err.message));
+      const status = err.response?.status;
+      const errMsg = err.response?.data?.error || err.message;
+
+      if (status === 410) {
+        // Files permanently erased — no fallback possible
+        alert('Document Permanently Erased (410):\n' + errMsg);
+        return;
       }
+
+      if (status === 400 || status === 503) {
+        // Agent not paired or offline — fall back to browser tab with explanation
+        const reason = status === 400
+          ? 'No print agent is paired with this shop.'
+          : 'Print agent is currently offline.';
+        const useBrowser = window.confirm(
+          `⚠️ ${reason}\n\nFall back to opening the file in your browser instead?\n(Set up the Print Agent app on your shop PC to enable silent printing.)`
+        );
+        if (!useBrowser) return;
+        // Fallback: open in browser tab
+        try {
+          const res = await api.get(`/shop/orders/${orderId}/files/0/download-url`);
+          const url = res.data.download_url;
+          const newWin = window.open(url, '_blank');
+          if (!newWin) alert('Popup blocked. Please allow popups to open the print preview.');
+        } catch (fallbackErr) {
+          alert('Print failed: ' + (fallbackErr.response?.data?.error || fallbackErr.message));
+        }
+        return;
+      }
+
+      alert('Print failed: ' + errMsg);
     }
   };
+
 
   // Filter orders by search, tabs, and color options
   const filteredOrders = orders.filter(order => {

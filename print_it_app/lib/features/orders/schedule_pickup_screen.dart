@@ -104,6 +104,20 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
     return slots;
   }
 
+  /// Returns a human-readable ETA string based on the actual total page count.
+  /// Formula: 2 min base + 0.5 min per printed sheet, rounded to nearest minute.
+  String _computeEta(OrderState orderState) {
+    final totalSheets = orderState.totalSheets;
+    if (totalSheets <= 0 || orderState.files.isEmpty) {
+      return '5–10 mins'; // sensible default when no files loaded yet
+    }
+    final minutes = (2 + totalSheets * 0.5).round().clamp(2, 999);
+    if (minutes < 60) return '~$minutes mins';
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    return m > 0 ? '~${h}h ${m}m' : '~${h}h';
+  }
+
   @override
   Widget build(BuildContext context) {
     final orderState = ref.watch(orderProvider);
@@ -112,6 +126,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
     final totalDocs = files.length;
     final totalPrice = orderState.amountTotal;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final etaText = _computeEta(orderState);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -368,7 +383,7 @@ class _SchedulePickupScreenState extends ConsumerState<SchedulePickupScreen> wit
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '5-10 Minutes',
+                                          etaText,
                                           style: TextStyle(
                                             color: isDark ? Colors.white : const Color(0xFF0F172A),
                                             fontSize: 17,
